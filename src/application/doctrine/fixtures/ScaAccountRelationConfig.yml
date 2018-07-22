@@ -1,0 +1,61 @@
+ScaAccountRelationConfig:
+   AccountRelationConfig_1:
+      sca_account_id: 1
+      sca_account_config_id: 1
+      valor_parametro: 15
+   AccountRelationConfig_2:
+      sca_account_id: 1
+      sca_account_config_id: 2
+      valor_parametro: 'files/1/account_logo.png'
+   AccountRelationConfig_3:
+      sca_account_id: 1
+      sca_account_config_id: 3
+      valor_parametro: 'pt_BR'
+   AccountRelationConfig_4:
+      sca_account_id: 1
+      sca_account_config_id: 4
+      valor_parametro: 'Texto de boas vindas a ser exibido na tela inicial do Sistema'
+   AccountRelationConfig_5:
+      sca_account_id: 1
+      sca_account_config_id: 5
+      valor_parametro: 'Texto a ser exibido no rodapé do Sistema'
+   AccountRelationConfig_6:
+      sca_account_id: 1
+      sca_account_config_id: 6
+      valor_parametro: 'Nome a ser exibido no topo do Portal e na Tela de Boas vindas'
+   AccountRelationConfig_7:
+      sca_account_id: 1
+      sca_account_config_id: 7
+      valor_parametro: 'Texto a ser exibido no rodapé do Portal'
+   AccountRelationConfig_8:
+      sca_account_id: 1
+      sca_account_config_id: 8
+      valor_parametro: 'Texto de boas vindas a ser exibido na tela inicial do Portal'
+   AccountRelationConfig_9:
+      sca_account_id: 1
+      sca_account_config_id: 9
+      valor_parametro: 'SIM'
+   AccountRelationConfig_10:
+      sca_account_id: 1
+      sca_account_config_id: 10
+      valor_parametro: 'smtp.servidor.com.br'
+   AccountRelationConfig_11:
+      sca_account_id: 1
+      sca_account_config_id: 11
+      valor_parametro: '25'
+   AccountRelationConfig_12:
+      sca_account_id: 1
+      sca_account_config_id: 12
+      valor_parametro: 'usuario@servidor.com.br'
+   AccountRelationConfig_13:
+      sca_account_id: 1
+      sca_account_config_id: 13
+      valor_parametro: '********'
+   AccountRelationConfig_14:
+      sca_account_id: 1
+      sca_account_config_id: 14
+      valor_parametro: '100'
+   AccountRelationConfig_15:
+      sca_account_id: 1
+      sca_account_config_id: 15
+      valor_parametro: 'jpg,gif,png,svg,pdf,dwg,rar,zip'

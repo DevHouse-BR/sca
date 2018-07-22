@@ -6,17 +6,17 @@ ScmConfig:
       unsigned: false
       primary: true
     name:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false
     descricao:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false
     value:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false

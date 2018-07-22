@@ -6,12 +6,12 @@ ScaAccountConfig:
       unsigned: false
       primary: true
     nome_parametro:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false
     desc_parametro:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false

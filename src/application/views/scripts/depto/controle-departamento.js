@@ -1,37 +1,41 @@
-var sm = new Ext.grid.CheckboxSelectionModel();
-var ControleDepartamentosWindowFilter = new Ext.ux.grid.GridFilters({
-	local: false,
-	menuFilterText: '<?php echo DMG_Translate::_('grid.filter.label'); ?>',
-	filters: [{
-		type: 'string',
-		dataIndex: 'nm_dpto',
-		phpMode: true
-	}, {
-		type: 'int',
-		dataIndex: 'cod_dpto',
-		phpMode: true
-	}, {
-		type: 'string',
-		dataIndex: 'nm_gerente',
-		phpMode: true
-	<?php if (DMG_Acl::canAccess(14)): ?>
-	}, {
-		type: 'string',
-		dataIndex: 'nm_account',
-		phpmode: true
-	<?php endif; ?>
-	}]
-});
-var ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
+Ext.namespace('dpto');
+dpto.sm = new Ext.grid.CheckboxSelectionModel();
+
+dpto.ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 	border: false,
 	stripeRows: true,
 	loadMask: true,
-	sm: sm,
+	sm: dpto.sm,
 	columnLines: true,
-	plugins: [ControleDepartamentosWindowFilter],
+	listeners:{
+		beforerender: function (cmp) {
+			Application.AccessController.applyPermission({
+				defaultAction:'hide',
+				items:[{
+                    objeto:cmp.getColumnModel(),
+                    acl:14,
+                    tipo:'coluna',
+                    columnIndex:7
+				}, {
+					objeto:'btnAddDepartamento_ControleDepartamentosWindow',
+					acl:16,
+					tipo:'componente'
+				}, {
+					objeto: 'btnExcluirDepartamento_ControleDepartamentosWindow',
+					acl:16,
+					tipo:'componente' 
+				}, {
+					objeto:cmp,
+					funcao:'_onGridRowDblClick',
+					acl:16,
+					tipo:'funcao'
+				}]
+			});
+		}
+	},
 	initComponent: function () {
 		this.store = new Ext.data.JsonStore({
-			url: '<?php echo $this->url(array('controller' => 'departamentos', 'action' => 'list'), null, true); ?>',
+			url: 'departamentos/list',
 			root: 'data',
 			idProperty: 'id',
 			totalProperty: 'total',
@@ -48,100 +52,94 @@ var ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 			fields: [
 				{name: 'id', type: 'int'},
 				{name: 'nm_dpto', type: 'string'},
-				{name: 'cod_dpto', type: 'int'},
+				{name: 'cod_dpto', type: 'string'},
 				{name: 'nm_gerente', type: 'string'},
-				<?php if (DMG_Acl::canAccess(14)): ?>
+				{name: 'nm_criador', type: 'string'},
+				{name: 'data_criacao', type: 'string'},
 				{name: 'nm_account', type: 'string'},
-				<?php endif; ?>
 			]
 		});
 		var paginator = new Ext.PagingToolbar({
 			store: this.store,
-			pageSize: 30,
-			plugins: [ControleDepartamentosWindowFilter]
+			pageSize: 30
 		});
-		paginator.addSeparator();
-		var button = new Ext.Toolbar.Button();
-		button.text = '<?php echo DMG_Translate::_('grid.bbar.clearfilter'); ?>';
-		button.addListener('click', function(a, b) {
-			ControleDepartamentosWindowFilter.clearFilters();
-		});
-		paginator.addButton(button);
+		
 		Ext.apply(this, {
 			viewConfig: {
-				emptyText: '<?php echo DMG_Translate::_('grid.empty'); ?>',
+				emptyText: Application.app.language('grid.empty'),
 				deferEmptyText: false
 			},
-                        bbar: paginator,
-<?php if (DMG_Acl::canAccess(16)): ?>
-                        tbar: ['->',
-                        {
-                                text: '<?php echo DMG_Translate::_('grid.form.add'); ?>',
-                                iconCls: 'silk-add',
-                                scope: this,
-                                handler: this._onBtnNovoUsuarioClick
-                        },
-                        {
-                                text: '<?php echo DMG_Translate::_('grid.form.delete'); ?>',
-                                iconCls: 'silk-delete',
-                                scope: this,
-                                handler: this._onBtnExcluirSelecionadosClick
-                        },
+            bbar: paginator,
+            tbar: ['->',
+            {
+                    text: Application.app.language('grid.form.add'),
+                    iconCls: 'silk-add',
+                    scope: this,
+                    handler: this._onBtnNovoUsuarioClick,
+					id: 'btnAddDepartamento_ControleDepartamentosWindow'
+            },
+            {
+                    text: Application.app.language('grid.form.delete'),
+                    iconCls: 'silk-delete',
+                    scope: this,
+                    handler: this._onBtnExcluirSelecionadosClick,
+					id: 'btnExcluirDepartamento_ControleDepartamentosWindow'
+            }
                         ],
-<?php endif; ?>
-			columns: [sm, {
+			columns: [dpto.sm, {
 				dataIndex: 'id',
-				header: '<?php echo DMG_Translate::_('departamento.columns.id.text'); ?>',
+				header: Application.app.language('departamento.columns.id.text'),
 				width: 40,
 				sortable: true
 			}, {
 				dataIndex: 'nm_dpto',
-				header: '<?php echo DMG_Translate::_('departamento.columns.nm_departamento.text'); ?>',
+				header: Application.app.language('departamento.columns.nm_departamento.text'),
 				sortable: true
 			}, {
 				dataIndex: 'cod_dpto',
-				header: '<?php echo DMG_Translate::_('departamento.columns.cod.text'); ?>',
+				header: Application.app.language('departamento.columns.cod.text'),
 				sortable: true
 			}, {
 				dataIndex: 'nm_gerente',
-				header: '<?php echo DMG_Translate::_('departamento.columns.nm_gerente.text'); ?>',
+				header: Application.app.language('departamento.columns.nm_gerente.text'),
 				sortable: true
-			<?php if (DMG_Acl::canAccess(14)): ?>
+			}, {
+				dataIndex: 'nm_criador',
+				header: Application.app.language('departamento.columns.nm_criador.text'),
+				sortable: true
+			}, {
+				dataIndex: 'data_criacao',
+				header: Application.app.language('departamento.columns.data_criacao.text'),
+				sortable: true
 			}, {
 				dataIndex: 'nm_account',
-				header: '<?php echo DMG_Translate::_('administration.user.form.account.text'); ?>',
+				header: Application.app.language('administration.user.form.account.text'),
 				sortable: false,
 				width: 120
-			<?php endif; ?>	
 			}]
 		});
-		ControleDepartamentosWindow.superclass.initComponent.call(this);
+		dpto.ControleDepartamentosWindow.superclass.initComponent.call(this);
 	},
 	initEvents: function () {
-		ControleDepartamentosWindow.superclass.initEvents.call(this);
+		dpto.ControleDepartamentosWindow.superclass.initEvents.call(this);
 		this.on({
 			scope: this,
-			<?php if (DMG_Acl::canAccess(16)): ?>
 			rowdblclick: this._onGridRowDblClick
-			<?php endif; ?>
 		});
 	},
 	onDestroy: function () {
-		ControleDepartamentosWindow.superclass.onDestroy.apply(this, arguments);
+		dpto.ControleDepartamentosWindow.superclass.onDestroy.apply(this, arguments);
 		Ext.destroy(this.window);
 		this.window = null;
 	},
-	<?php if (DMG_Acl::canAccess(16)): ?>
 	_onBntGroupClick: function () {
 		var arrSelecionados = this.getSelectionModel().getSelections();
 		if (arrSelecionados.length > 1) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('administration.user.group.manyerror'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('administration.user.group.manyerror'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('administration.user.group.manyerror')});
 			return false;
 		}
 		if (arrSelecionados.length === 0) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('administration.user.group.oneerror'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('administration.user.group.oneerror'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('administration.user.group.oneerror')});
 			return false;
 		}
 		var id = arrSelecionados[0].get('id');
@@ -161,16 +159,13 @@ var ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 		}
 		return this.group;
 	},
-	<?php endif; ?>
-        <?php if (DMG_Acl::canAccess(16)): ?>
         _onBtnExcluirSelecionadosClick: function () {
                 var arrSelecionados = this.getSelectionModel().getSelections();
                 if (arrSelecionados.length === 0) {
-                        //Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>');
-                        uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>'});
+                        Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.select')});
                         return false;
                 }
-                uiHelper.confirm('<?php echo DMG_Translate::_('grid.form.confirm.title'); ?>', '<?php echo DMG_Translate::_('grid.form.confirm.delete'); ?>', function (opt) {
+                Application.app.confirm(Application.app.language('grid.form.confirm.title'), Application.app.language('grid.form.confirm.delete'), function (opt) {
                         if (opt === 'no') {
                                 return;
                         }
@@ -178,9 +173,9 @@ var ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
                         for (var i = 0; i < arrSelecionados.length; i++) {
                                 id.push(arrSelecionados[i].get('id'));
                         }
-                        this.el.mask('<?php echo DMG_Translate::_('grid.form.deleting'); ?>');
+                        this.el.mask(Application.app.language('grid.form.deleting'));
                         Ext.Ajax.request({
-                                url: '<?php echo $this->url(array('controller' => 'departamentos', 'action' => 'delete'), null, true); ?>',
+                                url: 'departamentos/delete',
                                 params: {
                                         'id[]': id
                                 },
@@ -190,18 +185,18 @@ var ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
                                                 var c = Ext.decode(a.responseText);
                                         } catch (e) {};
                                         if (c.failure == true) {
-                                                //Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', c.message);
-                                                uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: c.message});
+                                                Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: c.message});
                                         }
                                         this.el.unmask();
                                         this.store.reload();
-                                },
+                                }
                         });
                 },
                 this);
         },
-        <?php endif; ?>
-	<?php if (DMG_Acl::canAccess(16)): ?>
+	_load_preSelected_gerente: function (a, b, c) {
+
+	},
 	_onGridRowDblClick: function (grid, rowIndex, e) {
 		var record = grid.getStore().getAt(rowIndex);
 		var id = record.get('id');
@@ -209,8 +204,6 @@ var ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 		this.window.setUser(id);
 		this.window.show();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(16)): ?>
 	_onBtnNovoUsuarioClick: function () {
 		this._newForm();
 		this.window.forceReload(0);
@@ -219,11 +212,9 @@ var ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 	_onCadastroUsuarioSalvarExcluir: function () {
 		this.store.reload();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(16)): ?>
 	_newForm: function () {
 		if (!this.window) {
-			this.window = new ControleDepartamentosForm({
+			this.window = new departamentos.ControleDepartamentosForm({
 				renderTo: this.body,
 				listeners: {
 					scope: this,
@@ -234,6 +225,5 @@ var ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 		}
 		return this.window;
 	}
-	<?php endif; ?>
 });
-Ext.reg('controle-departamentos', ControleDepartamentosWindow);
+Ext.reg('controle-departamentos', dpto.ControleDepartamentosWindow);

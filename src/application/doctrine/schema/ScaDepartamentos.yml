@@ -7,12 +7,14 @@ ScaDepartamentos:
       primary: true
       autoincrement: true
     cod_departamento:
-      type: string()
-      fixed: false
-      notnull: false
-      primary: false
+      type: string(255)
     nome_departamento:
-      type: string()
+      type: string(255)
+      fixed: false
+      notnull: true
+      primary: false
+    dt_criacao:
+      type: timestamp
       fixed: false
       notnull: true
       primary: false
@@ -21,12 +23,25 @@ ScaDepartamentos:
       unsigned: false
       notnull: false
       primary: false
+    id_criador:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
     sca_account_id:
       type: integer(4)
       unsigned: false
       notnull: true
       primary: false
   relations:
+    ScmUser: 
+      local: id_criador
+      foreign: id
+      type: one
+    ScmUser:
+      local: id_gerente
+      foreign: id
+      type: one
     ScaAccount:
       local: sca_account_id
       foreign: id

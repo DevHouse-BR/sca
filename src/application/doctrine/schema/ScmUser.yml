@@ -19,25 +19,25 @@ ScmUser:
     sca_departamentos_id:
       type: integer(4)
       unsigned: false
-      notnull: true
+      notnull: false
       primary: false
     tipo_usuario:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false
     nome_usuario:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false
     login_usuario:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false
     senha_usuario:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false
@@ -46,12 +46,12 @@ ScmUser:
       notnull: false
       primary: false
     idioma_usuario:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false
     email:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false

@@ -7,7 +7,12 @@ class DepartamentosController extends Zend_Controller_Action {
 	}
 	public function listAction () {
 		if (DMG_Acl::canAccess(15)) {
+			$order = $this->getRequest()->getParam('sort');
+			$dir = $this->getRequest()->getParam('dir'); 
+
 			if(DMG_Acl::canAccess(14)) {
+				//NAO ATUALIZADO... (esta parte do if contem codigo legado...)
+/*
 				$table = Doctrine::getTable('ScaDepartamentos')->findAll();
 				$answer = array();				
 				$number=0;
@@ -17,7 +22,15 @@ class DepartamentosController extends Zend_Controller_Action {
 					$answer[$number]['cod_dpto'] = $k->cod_departamento;
 					$answer[$number]['nm_dpto'] = $k->nome_departamento;
 					$answer[$number]['nm_account'] = $k->ScaAccount->nome_account;
-					
+					$answer[$number]['data_criacao'] = $k->dt_criacao;
+
+					try {
+						$place = Doctrine::getTable('ScmUser')->findById($k->id_criador);
+						$answer[$number]['nm_criador'] = $place[0]->nome_usuario;
+					} catch (exception $e) {
+						$answer[$number]['nm_criador'] = "";
+					}
+				
 					try {
 						$place = Doctrine::getTable('ScmUser')->findById($k->id_gerente);
 						$answer[$number]['nm_gerente'] = $place[0]->nome_usuario;
@@ -31,9 +44,23 @@ class DepartamentosController extends Zend_Controller_Action {
 					$number++;
 				} 
 
-				echo Zend_Json::encode(array('success' => true, 'data' => $answer));
+				echo Zend_Json::encode(array('success' => true, 'data' => $answer)); */
 			} else {
-				$table = Doctrine_Query::create()->select()->from('ScaDepartamentos sd')->where('sd.sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id )->orderBy('id ASC')->execute();
+				$table = Doctrine_Query::create()->from('ScaDepartamentos sd')
+					->addSelect('sd.id')
+					->addSelect('sd.cod_departamento as cod_dpto')
+					->addSelect('sd.nome_departamento as nm_dpto')
+					->addSelect('sd.dt_criacao as data_criacao')
+					->addSelect('(SELECT u1.nome_usuario FROM ScmUser u1 WHERE u1.id = sd.id) AS nm_criador')
+					->addSelect('(SELECT u2.nome_usuario FROM ScmUser u2 WHERE u2.id = sd.id) AS nm_gerente')
+					->addWhere('sd.sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+				;
+				
+				if($order and $dir){
+					$table->orderBy("$order $dir");
+				}
+
+				$table = $table->execute();
 
                                 $answer = array();
                                 $number=0;
@@ -42,53 +69,58 @@ class DepartamentosController extends Zend_Controller_Action {
                                         $answer[$number]['id'] = $k->id;
                                         $answer[$number]['cod_dpto'] = $k->cod_departamento;
                                         $answer[$number]['nm_dpto'] = $k->nome_departamento;
+                                        $answer[$number]['data_criacao'] = $k->dt_criacao;
+
+                                        try {
+                                                $place = Doctrine::getTable('ScmUser')->findById($k->id_criador);
+                                                $answer[$number]['nm_criador'] = $place[0]->nome_usuario;
+                                        } catch (exception $e) {
+                                                $answer[$number]['nm_criador'] = "";
+                                        }
 
                                         try {
                                                 $place = Doctrine::getTable('ScmUser')->findById($k->id_gerente);
                                                 $answer[$number]['nm_gerente'] = $place[0]->nome_usuario;
 
 						if($answer[$number]['nm_gerente'] == NULL)
-							$answer[$number]['nm_gerente'] = 'N/A';
+							$answer[$number]['nm_gerente'] = '';
                                         } catch (exception $e) {
-                                                $answer[$number]['nm_gerente'] = 'N/A';
+                                                $answer[$number]['nm_gerente'] = '';
                                         }
 
                                         $number++;
                                 }
 
-				echo Zend_Json::encode(array('success' => true, 'data' => $answer));
+				$this->_helper->json(array('success' => true, 'data' => $answer));
 			}
 		} else {
-			echo Zend_Json::encode(array('success' => false));
+			$this->_helper->json(array('success' => false));
 		}
 	}
 	public function listusersAction() {
+		$answer = array();
 		if(DMG_Acl::canAccess(3)){
-			$id = $this->getRequest()->getParam('id');
-			if($id == 0 ) {
-				echo Zend_Json::encode(array('success' => true, 'data' => ""));
-			} else {
-				$table = Doctrine::getTable('ScmUser')->findByScaDepartamentosId($id);
-				$answer;
-				$loop=0;				
+			$table = Doctrine_Query::create()->from('ScmUser')			
+			->where('tipo_usuario = ?', "I")
+			->addWhere('sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+			->execute();
+			
+			
+			$loop=0;				
 
-				foreach($table as $l){
-					if($l->tipo_usuario == "I") {
-						$answer[$loop]['id'] = $l->id;
-						$answer[$loop]['name'] = $l->nome_usuario;
-	
-						$loop++;
-					}
-				}
+			foreach($table as $l){
+				//if($l->tipo_usuario == "I") {
+					$answer[$loop]['id'] = $l->id;
+					$answer[$loop]['name'] = $l->nome_usuario;
 
-				if($answer === null)
-					$answer = "";
-
-				echo Zend_Json::encode(array('success' => true, 'data' => $answer));
+					$loop++;
+				//}
 			}
-		} else {
-			echo Zend_Json::encode(array('success' => false));
+
+			if($answer === null)
+				$answer = "";
 		}
+		$this->_helper->json(array('success' => true, 'data' => $answer));
 	}
 	public function getAction () {
 		if (DMG_Acl::canAccess(16)) {
@@ -102,7 +134,7 @@ class DepartamentosController extends Zend_Controller_Action {
 			}
 		
 			if($obj === NULL){
-				echo Zend_Json::encode(array('success' => false));
+				$this->_helper->json(array('success' => false));
 				return;
 			}
 					
@@ -110,7 +142,7 @@ class DepartamentosController extends Zend_Controller_Action {
 			$return['cod'] = $obj->cod_departamento;
 			$return['id'] = $obj->id;
 
-			echo Zend_Json::encode(array('success' => true, 'data' => $return));
+			$this->_helper->json(array('success' => true, 'data' => $return));
 //			echo DMG_Crud::get('ScmGroup', (int) $this->getRequest()->getParam('id'));
 		}
 	}
@@ -127,10 +159,11 @@ class DepartamentosController extends Zend_Controller_Action {
 					$this->deleteDepartamento($id);
 				}
 				Doctrine_Manager::getInstance()->getCurrentConnection()->commit();
-				echo Zend_Json::encode(array('success' => true));
-			} catch (Exception $e) {
+				$this->_helper->json(array('success' => true));
+			}
+			catch (Exception $e) {
 				Doctrine_Manager::getInstance()->getCurrentConnection()->rollback();
-				echo Zend_Json::encode(array('failure' => true, 'message' => DMG_Translate::_('administration.group.form.cannotdelete')));
+				$this->_helper->json(array('failure' => true, 'message' => DMG_Translate::_('departamento.cannotdelete')));
 			}
 		}
 	}
@@ -142,44 +175,48 @@ class DepartamentosController extends Zend_Controller_Action {
 		$group->delete();
 	}
 	public function saveAction () {
-		$id = (int) $this->getRequest()->getParam('id');
-		if ($id > 0) {
-			if (DMG_Acl::canAccess(16)) {
-				$obj = Doctrine::getTable('ScaDepartamentos')->find($id);
-				if ($obj && ( ( $obj->sca_account_id == Zend_Auth::getInstance()->getIdentity()->sca_account_id ) or (DMG_Acl::canAccess(14))) ) {
-					$obj->nome_departamento = $this->getRequest()->getParam('name');
-					$obj->cod_departamento = $this->getRequest()->getParam('cod');
-					$obj->id_gerente = $this->getRequest()->getParam('listUser');
-					if(DMG_Acl::canAccess(14))
-						$obj->sca_account_id = $this->getRequest()->getParam('accountD');
-					try {
-						$obj->save();
-						echo Zend_Json::encode(array('success' => true));
-					} catch (Exception $e) {
-						echo Zend_Json::encode(array('success' => false));
-					}
-				} else {
-					echo Zend_Json::encode(array('success' => false));
-				}
-			}
-		} else {
-			if (DMG_Acl::canAccess(16)) {
-				$obj = new ScaDepartamentos();
-				$obj->nome_departamento = $this->getRequest()->getParam('name');
+		if (DMG_Acl::canAccess(18)) {
+			$id = (int) $this->getRequest()->getParam('id');
 			
-				if(DMG_Acl::canAccess(14))
-					$obj->sca_account_id = $this->getRequest()->getParam('accountD');
-				else
-					$obj->sca_account_id = Zend_Auth::getInstance()->getIdentity()->sca_account_id;
-
-				$obj->cod_departamento = $this->getRequest()->getParam('cod');
-				try {
-					$obj->save();
-					echo Zend_Json::encode(array('success' => true));
-				} catch (Exception $e) {
-					echo Zend_Json::encode(array('success' => false));
+			$nome_departamento = $this->getRequest()->getParam('name');
+			$codigo = $this->getRequest()->getParam('cod');
+			$id_gerente = $this->getRequest()->getParam('listUser');
+			$cliente = false;
+			
+			if($id) $departamento = Doctrine::getTable('ScaDepartamentos')->find($id);
+			
+			if(($id == 0)||($departamento->nome_departamento != $nome_departamento)){
+				$query = Doctrine_Query::create()
+					->from('ScaDepartamentos')
+					->addWhere('sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+					->addWhere('nome_departamento = ?', $nome_departamento)
+					->execute();
+				if($query->count()>0){
+					$this->_helper->json(array('success' => false, 'errormsg' => DMG_Translate::_('departamento.form.departamento.existe')));
+					return;
 				}
 			}
+
+			if(!$departamento){
+				$departamento = new ScaDepartamentos();
+				$departamento->sca_account_id = Zend_Auth::getInstance()->getIdentity()->sca_account_id;
+				$departamento->id_criador = Zend_Auth::getInstance()->getIdentity()->id;
+				$departamento->dt_criacao = DMG_Date::now();
+			}
+
+			$departamento->nome_departamento = $nome_departamento;
+			$departamento->cod_departamento = $codigo;
+			if($id_gerente) $departamento->id_gerente = $id_gerente;
+
+			try {
+				$departamento->save();
+			} catch (exception $e) {
+				$this->_helper->json(array('success' => false, 'errormsg' => $e->getMessage()));
+				return;
+			}
+			$this->_helper->json(array('success' => true));
+		} else {
+			$this->_helper->json(array('success' => false, 'errormsg' => DMG_Translate::_('administration.group.permission.denied')));
 		}
 	}
 	public function permissionAction () {
@@ -217,7 +254,7 @@ class DepartamentosController extends Zend_Controller_Action {
 				unset($pr);
 			}
 		}
-		echo Zend_Json::encode(array('success' => true));
+		$this->_helper->json(array('success' => true));
 	}
 	protected function getUnassigned () {
 		$grouprule = array();
@@ -257,7 +294,7 @@ class DepartamentosController extends Zend_Controller_Action {
 				);
 			}
 		}
-		echo Zend_Json::encode($data);
+		$this->_helper->json($data);
 	}
 	protected function getAssigned () {
 		$grouprule = array();
@@ -292,6 +329,6 @@ class DepartamentosController extends Zend_Controller_Action {
 				);
 			}
 		}
-		echo Zend_Json::encode($data);
+		$this->_helper->json($data);
 	}
 }

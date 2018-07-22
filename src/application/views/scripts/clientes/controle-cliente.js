@@ -1,50 +1,50 @@
-var smGridPrincipal = new Ext.grid.CheckboxSelectionModel();
-var ControleClientesWindowFilter = new Ext.ux.grid.GridFilters({
-	local: false,
-	menuFilterText: '<?php echo DMG_Translate::_('grid.filter.label'); ?>',
-	filters: [{
-			type: 'string',
-			dataIndex: 'cod_cliente',
-			phpMode: true
-		}, {
-                        type: 'string',
-                        dataIndex: 'nome_cliente',
-                        phpMode: true
-		}, {
-                        type: 'boolean',
-                        dataIndex: 'fl_acesso_portal',
-	                options: [
-        	                [0, '<?php echo DMG_Translate::_('administration.user.form.status.inactive'); ?>'],
-                	        [1, '<?php echo DMG_Translate::_('administration.user.form.status.active'); ?>']
-	                ],
-                        phpMode: true
-		}, {
-                        type: 'string',
-                        dataIndex: 'responsavel',
-                        phpMode: true
-		<?php if (DMG_Acl::canAccess(14)): ?>
-		}, {
-			type: 'string',
-			dataIndex: 'nome_account',
-			phpMode: true
-		<?php endif; ?>
-	}]
-});
-var ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
+Ext.namespace('Clientes');
+Clientes.smGridPrincipal = new Ext.grid.CheckboxSelectionModel();
+
+Clientes.ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
 	border: false,
 	stripeRows: true,
 	loadMask: true,
-	sm: smGridPrincipal,
+	sm: Clientes.smGridPrincipal,
 	columnLines: true,
-	plugins: [ControleClientesWindowFilter],
+	listeners:{
+		beforerender:function(grid){
+			Application.AccessController.applyPermission({
+				defaultAction:'hide',
+				items:[{
+					objeto:'btnAdicionar_ControleClientesWindow',
+					acl:18,
+					tipo:'componente'
+				},{
+					objeto:'btnDelete_ControleClientesWindow',
+					acl:18,
+					tipo:'componente'
+				},{
+					objeto:'btnAddUser_ControleClientesWindow',
+					acl:19,
+					tipo:'componente'
+				},{
+					objeto:grid.getColumnModel(),
+					acl:14,
+					tipo:'coluna',
+					columnIndex:8
+				},{
+					objeto:grid,
+					funcao:'_onGridRowDblClick',
+					acl:18,
+					tipo:'funcao'
+				}]
+			});
+		}
+	},
 	initComponent: function () {
 		this.store = new Ext.data.JsonStore({
-			url: '<?php echo $this->url(array('controller' => 'clientes', 'action' => 'list'), null, true); ?>',
+			url: 'clientes/list',
 			root: 'data',
 			idProperty: 'id',
 			totalProperty: 'total',
 			autoLoad: true,
-			autoDestroy: true,
+			autoDestroy: false,
 			remoteSort: true,
 			sortInfo: {
 				field: 'id',
@@ -59,144 +59,140 @@ var ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
 				{name: 'cod_cliente', type: 'string'},
 				{name: 'responsavel', type: 'string'},
 				{name: 'fl_acesso_portal', type: 'boolean'},
-				<?php if (DMG_Acl::canAccess(14)): ?>
+                {name: 'nm_criador', type: 'string'},
+                {name: 'data_criacao', type: 'string'},
 				{name: 'nome_account', type: 'string'}
-				<?php endif; ?>
 			]
 		});
 		var paginator = new Ext.PagingToolbar({
 			store: this.store,
-			pageSize: 30,
-			plugins: [ControleClientesWindowFilter]
+			pageSize: 30
 		});
-		paginator.addSeparator();
-		var button = new Ext.Toolbar.Button();
-		button.text = '<?php echo DMG_Translate::_('grid.bbar.clearfilter'); ?>';
-		button.addListener('click', function(a, b) {
-			ControleClientesWindowFilter.clearFilters();
-		});
-		paginator.addButton(button);
+		
 		Ext.apply(this, {
 			viewConfig: {
-				emptyText: '<?php echo DMG_Translate::_('grid.empty'); ?>',
+				emptyText: Application.app.language('grid.empty'),
 				deferEmptyText: false
 			},
 			bbar: paginator,
-			<?php if (DMG_Acl::canAccess(18) or DMG_Acl::canAccess(19)): ?>
 			tbar: ['->',
-			<?php if (DMG_Acl::canAccess(18)): ?>
 			{
-				text: '<?php echo DMG_Translate::_('grid.form.add'); ?>',
+				text: Application.app.language('grid.form.add'),
+				id:'btnAdicionar_ControleClientesWindow',
 				iconCls: 'silk-add',
 				scope: this,
 				handler: this._onBtnNovoUsuarioClick
-			},
-			{
-				text: '<?php echo DMG_Translate::_('grid.form.delete'); ?>',
+			},{
+				text: Application.app.language('grid.form.delete'),
+				id:'btnDelete_ControleClientesWindow',
 				iconCls: 'silk-delete',
 				scope: this,
 				handler: this._onBtnExcluirSelecionadosClick
-			},
-			<?php endif; ?>
-			<?php if (DMG_Acl::canAccess(19)): ?>
-			{
-                                text: '<?php echo DMG_Translate::_('controle.cliente.addUser.text'); ?>',
-                                iconCls: 'silk-group',
-                                scope: this,
-                                handler: this._onBtnAddUserClick
-			},
-			<?php endif; ?>
-			],
-			<?php endif; ?>
-			columns: [smGridPrincipal, {
+			},{
+                text: Application.app.language('controle.cliente.addUser.text'),
+                id:'btnAddUser_ControleClientesWindow',
+                iconCls: 'silk-group',
+                scope: this,
+                handler: this._onBtnAddUserClick
+			}],
+			columns: [Clientes.smGridPrincipal, {
 				dataIndex: 'id',
-				header: '<?php echo DMG_Translate::_('controle.clientes.id.text'); ?>',
+				header: Application.app.language('controle.clientes.id.text'),
 				width: 40,
 				sortable: true
 			}, {
 				dataIndex: 'nome_cliente',
-				header: '<?php echo DMG_Translate::_('controle.clientes.nome.text'); ?>',
+				header: Application.app.language('controle.clientes.nome.text'),
 				sortable: true
-                        }, {
-                                dataIndex: 'cod_cliente',
-                                header: '<?php echo DMG_Translate::_('controle.clientes.cod.text'); ?>',
-                                sortable: true
-                        }, {
-                                dataIndex: 'responsavel',
-                                header: '<?php echo DMG_Translate::_('controle.clientes.responsavel.text'); ?>',
-                                sortable: true
-                        }, {
-                                dataIndex: 'fl_acesso_portal',
-                                header: '<?php echo DMG_Translate::_('controle.clientes.portal.text'); ?>',
-                                sortable: true,
-                                renderer: function (e) {
-                                        if(e == true) {
-                                                return '<center><img src="extjs/resources/images/default/dd/drop-yes.gif" alt="<?php echo DMG_Translate::_('administration.user.form.status.active'); ?>" title="<?php echo DMG_Translate::_('administration.user.form.status.active'); ?>" /></center>';
-                                        } else {
-                                                return '<center><img src="extjs/resources/images/default/dd/drop-no.gif" alt="<?php echo DMG_Translate::_('administration.user.form.status.inactive'); ?>" title="<?php echo DMG_Translate::_('administration.user.form.status.inactive'); ?>" /></center>';
-                                        }
-                                }
-			<?php if (DMG_Acl::canAccess(14)): ?>
+            }, {
+                dataIndex: 'cod_cliente',
+                header: Application.app.language('controle.clientes.cod.text'),
+                sortable: true
+            }, {
+                dataIndex: 'responsavel',
+                header: Application.app.language('controle.clientes.responsavel.text'),
+                sortable: true
+            }, {
+                dataIndex: 'nm_criador',
+                header: Application.app.language('departamento.columns.nm_criador.text'),
+                sortable: true
+            }, {
+                dataIndex: 'data_criacao',
+                header: Application.app.language('departamento.columns.data_criacao.text'),
+                sortable: true
+            }, {
+                dataIndex: 'fl_acesso_portal',
+                header: Application.app.language('controle.clientes.portal.text'),
+                sortable: true,
+                renderer: function (e) {
+                        if(e == true) {
+                                return '<center><img src="extjs/resources/images/default/dd/drop-yes.gif" alt="' + Application.app.language('administration.user.form.status.active') + '" title="' + Application.app.language('administration.user.form.status.active') + '" /></center>';
+                        } else {
+                                return '<center><img src="extjs/resources/images/default/dd/drop-no.gif" alt="' + Application.app.language('administration.user.form.status.inactive') + '" title="' + Application.app.language('administration.user.form.status.inactive') + '" /></center>';
+                        }
+                }
 			}, {
 				dataIndex: 'nome_account',
-				header: '<?php echo DMG_Translate::_('administration.group.account.text'); ?>',
+				header: Application.app.language('administration.group.account.text'),
 				sortable: true
-			<?php endif; ?>
 			}]
 		});
-		ControleClientesWindow.superclass.initComponent.call(this);
+		Clientes.ControleClientesWindow.superclass.initComponent.call(this);
 	},
 	initEvents: function () {
-		ControleClientesWindow.superclass.initEvents.call(this);
+		Clientes.ControleClientesWindow.superclass.initEvents.call(this);
 		this.on({
 			scope: this,
-			<?php if (DMG_Acl::canAccess(18)): ?>
 			rowdblclick: this._onGridRowDblClick
-			<?php endif; ?>
 		});
 	},
 	onDestroy: function () {
-		ControleClientesWindow.superclass.onDestroy.apply(this, arguments);
+		Clientes.ControleClientesWindow.superclass.onDestroy.apply(this, arguments);
 		Ext.destroy(this.window);
 		this.window = null;
 	},
-	<?php if (DMG_Acl::canAccess(18)): ?>
 	_onBtnNovoUsuarioClick: function () {
-		this._newForm();
-		this.window.setGroup(0);
+		this._newForm(0);
+		//this.window.setGroup(0);
 		this.window.show();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(19)): ?>
 	_onBtnAddUserClick: function () {
 		var arrSelecionados = this.getSelectionModel().getSelections();
 
 		if(arrSelecionados.length === 0){
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.select')});
 			return false;
 		}
 		
 		if(arrSelecionados.length > 1){
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.selectless'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.selectless')});
 			return false;
 		}
-		/////////////////////////////////Comesa Aqui
-		var idGet = arrSelecionados[0].get('id');
-		this._newAddUserWindow();
-		this.windowAddUser._setClienteId(idGet);
-		this.windowAddUser.show();
-		////////////////////////////////Termina Aqui
+		this.idGet = arrSelecionados[0].get('id');
+		this.nameGet = arrSelecionados[0].get('nome_cliente');
+        var titulo = Application.app.language('grid.form.user.name') + ' ' + this.nameGet;
+        var novaAba = Application.app.tabPanel.items.find(function(aba){
+			return aba.title == titulo;
+        });
+		if(!novaAba) {
+	    	novaAba = Application.app.tabPanel.add({
+            	title: titulo,
+                xtype: 'tab_user_cli_create',
+				clienteId:this.idGet
+        	});
+			//novaAba._setClienteId(this.idGet);
+		}
+        Application.app.tabPanel.activate(novaAba);
+		novaAba.store.load();
+		//novaAba._forceReload();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(18)): ?>
 	_onBtnExcluirSelecionadosClick: function () {
 		var arrSelecionados = this.getSelectionModel().getSelections();
 		if (arrSelecionados.length === 0) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.select')});
 			return false;
 		}
-		uiHelper.confirm('<?php echo DMG_Translate::_('grid.form.confirm.title'); ?>', '<?php echo DMG_Translate::_('grid.form.confirm.delete'); ?>', function (opt) {
+		Application.app.confirm(Application.app.language('grid.form.confirm.title'), Application.app.language('grid.form.confirm.delete'), function (opt) {
 			if (opt === 'no') {
 				return;
 			}
@@ -204,9 +200,9 @@ var ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
 			for (var i = 0; i < arrSelecionados.length; i++) {
 				id.push(arrSelecionados[i].get('id'));
 			}
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.deleting'); ?>');
+			this.el.mask(Application.app.language('grid.form.deleting'));
 			Ext.Ajax.request({
-				url: '<?php echo $this->url(array('controller' => 'clientes', 'action' => 'delete'), null, true); ?>',
+				url: 'clientes/delete',
 				params: {
 					'id[]': id
 				},
@@ -216,56 +212,45 @@ var ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
 						var c = Ext.decode(a.responseText);
 					} catch (e) {};
 					if (c.failure == true) {
-						//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', c.message);
-						uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: c.message});
+						Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: c.message});
 					}
 					this.el.unmask();
 					this.store.reload();
-				},
+				}
 			});
 		},
 		this);
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(18)): ?>
 	_onCadastroUsuarioSalvarExcluir: function () {
 		this.store.reload();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(18)): ?>
 	_onGridRowDblClick: function (grid, rowIndex, e) {
 		var record = grid.getStore().getAt(rowIndex);
 		var id = record.get('id');
-		this._newForm();
-		this.window.setGroup(id);
+		this._newForm(id);
+		//this.window.setGroup(id);
 		this.window.show();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(19)): ?>
 	_newAddUserWindow: function () {
-                        if (!this.windowAddUser) {
-                                this.windowAddUser = new ControleClienteUserForm({ });     
-                        }                       
-                                        
-                return this.windowAddUser;     
+        if (!this.windowAddUser) {
+           this.windowAddUser = new ControleClienteUserForm({ });
+        }                       
+		return this.windowAddUser;     
  	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(18)): ?>
-	_newForm: function () {
-		if (!this.window) {
-			this.window = new ControleClientesForm({
+
+	_newForm: function (id) {
+		//if (!this.window) {
+			this.window = new Clientes.ControleClientesForm({
 				renderTo: this.body,
+				group:id,
 				listeners: {
 					scope: this,
 					salvar: this._onCadastroUsuarioSalvarExcluir,
-					<?php if (DMG_Acl::canAccess(10)): ?>
 					excluir: this._onCadastroUsuarioSalvarExcluir
-					<?php endif; ?>
 				}
 			});
-		}
+		//}
 		return this.window;
 	}
-	<?php endif; ?>
 });
-Ext.reg('controle-clientes', ControleClientesWindow);
+Ext.reg('controle-clientes', Clientes.ControleClientesWindow);

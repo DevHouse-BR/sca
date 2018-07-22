@@ -3,14 +3,5 @@ ScmGroup:
     name: 'Administradores'
     ScaAccount: Account_1
   Group_2:
-    name: 'Gerentes'
+    name: 'Operadores'
     ScaAccount: Account_1
-  Group_3:
-    name: 'Técnicos'
-    ScaAccount: Account_1
-  Group_4:
-    name: 'Listados'
-    ScaAccount: Account_1
-  Group_5:
-    name: 'Root'
-    ScaAccount: Account_2

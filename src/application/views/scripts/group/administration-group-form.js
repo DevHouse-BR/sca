@@ -1,16 +1,13 @@
-var AdministrationGroupForm = Ext.extend(Ext.Window, {
+Groups.AdministrationGroupForm = Ext.extend(Ext.Window, {
 	group: 0,
 	modal: true,
 	constrain: true,
 	maximizable: false,
+	iconCls:'silk-group',
 	resizable: false,
 	width: 450,
-	<?php if(DMG_Acl::canAccess(14)): ?>
-	height: 130,
-	<?php else: ?>
-	height: 100,
-	<?php endif; ?>
-	title: '<?php echo DMG_Translate::_('administration.group.form.title'); ?>',
+	height: 140,
+	title: Application.app.language('administration.group.form.title'),
 	layout: 'fit',
 	closeAction: 'hide',
 	setGroup: function(group) {
@@ -18,13 +15,36 @@ var AdministrationGroupForm = Ext.extend(Ext.Window, {
 	},
 	constructor: function() {
 		this.addEvents({salvar: true, excluir: true});
-		AdministrationGroupForm.superclass.constructor.apply(this, arguments);
+		Groups.AdministrationGroupForm.superclass.constructor.apply(this, arguments);
 	},
 	initComponent: function() {
-                <?php if(DMG_Acl::canAccess(14)): ?>
+				this.on('beforerender',function(janela){
+					Application.AccessController.applyPermission({
+						defaultAction:'hide',
+						items:[{
+							objeto:'comboAccountG_AdministrationGroupForm',
+							acl:14,
+							tipo:'componente'
+						},{
+							objeto:this,
+							acl:14,
+							tipo:'execute',
+							funcao: function(objeto){
+								objeto.height = 110;
+							}
+						},{
+							objeto:'btnExcluir_AdministrationGroupForm',
+							acl:10,
+							tipo:'componente'
+						}]
+					});
+				});
+		
+
                 this.accountG = new Ext.form.ComboBox({
+                		id:'comboAccountG_AdministrationGroupForm',
                         store: new Ext.data.JsonStore({
-                                url: '<?php echo $this->url(array('controller' => 'user', 'action' => 'accountsList'), null, true); ?>',
+                                url: 'user/accountsList',
                                 root: 'data',
                                 autoLoad: true,
                                 remoteSort: true,
@@ -43,98 +63,109 @@ var AdministrationGroupForm = Ext.extend(Ext.Window, {
                         valueField: 'id',
                         mode: 'local',
                         triggerAction: 'all',
-                        emptyText: '<?php echo DMG_Translate::_('administration.user.form.account.helper'); ?>',
-                        fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.account.text'); ?>'
+                        emptyText: Application.app.language('administration.user.form.account.helper'),
+                        fieldLabel: Application.app.language('administration.user.form.account.text')
                 });
-                <?php endif; ?>
+
 		this.formPanel = new Ext.form.FormPanel({
 			bodyStyle: 'padding:10px;',
 			border: false,
 			autoScroll: true,
+			monitorValid:true,
 			defaultType: 'textfield',
 			defaults: {anchor: '-19'},
-			items:[
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.group.form.name.text'); ?>', name: 'name', allowBlank: false, maxLength: 255},
-				<?php if(DMG_Acl::canAccess(14)): ?>
-				this.accountG,
-				<?php endif; ?>
-			]
+			items:[{
+				fieldLabel: Application.app.language('administration.group.form.name.text'), 
+				name: 'name',
+				id:'fieldName_AdministrationGroupForm',
+				allowBlank: false, 
+				maxLength: 255
+			},
+				this.accountG
+			],
+			buttons: [{
+				text: Application.app.language('grid.form.save'),
+				iconCls: 'icon-save',
+				formBind:true,
+				scope: this,
+				handler: this._onBtnSalvarClick
+			},{
+				id:'btnExcluir_AdministrationGroupForm',
+				text: Application.app.language('grid.form.delete'),
+				iconCls: 'silk-delete',
+				scope: this,
+				handler: this._onBtnDeleteClick
+			},{
+				text: Application.app.language('grid.form.cancel'), 
+				iconCls: 'silk-cross', 
+				scope: this, 
+				handler: this._onBtnCancelarClick
+			}]
 		});
+		
 		Ext.apply(this, {
-			items: this.formPanel,
-			bbar: [
-				'->',
-				{text: '<?php echo DMG_Translate::_('grid.form.save'); ?>',iconCls: 'icon-save',scope: this,handler: this._onBtnSalvarClick},
-				<?php if (DMG_Acl::canAccess(10)): ?>
-				this.btnExcluir = new Ext.Button({text: '<?php echo DMG_Translate::_('grid.form.delete'); ?>', iconCls: 'silk-delete', scope: this, handler: this._onBtnDeleteClick}),
-				<?php endif; ?>
-				{text: '<?php echo DMG_Translate::_('grid.form.cancel'); ?>', iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
-			]
+			items: this.formPanel
 		});
-		AdministrationGroupForm.superclass.initComponent.call(this);
+		
+		Groups.AdministrationGroupForm.superclass.initComponent.call(this);
 	},
 	show: function() {
 		this.formPanel.getForm().reset();
-		AdministrationGroupForm.superclass.show.apply(this, arguments);
-		if(this.group !== 0) {
-			<?php if (DMG_acl::canAccess(10)): ?>
-			this.btnExcluir.show();
-			<?php endif; ?>
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.loading'); ?>');
+		
+		if(this.group !== 0) {			
 			this.formPanel.getForm().load({
-				url: '<?php echo $this->url(array('controller' => 'group', 'action' => 'get'), null, true); ?>',
+				waitTitle: Application.app.language("auth.alert"),
+			    waitMsg: Application.app.language("auth.loading"),
+				url: 'group/get',
 				params: {
 					id: this.group
 				},
-				scope: this,
-				success: this._onFormLoad
+				scope: this
 			});
+			if(Application.AccessController.hasPermission(10)){
+				Ext.getCmp('btnExcluir_AdministrationGroupForm').show();
+			}
 		} else {
-			<?php if (DMG_acl::canAccess(10)): ?>
-			this.btnExcluir.hide();
-			<?php endif; ?>
+			Ext.getCmp('btnExcluir_AdministrationGroupForm').hide();
 		}
+		
+		Groups.AdministrationGroupForm.superclass.show.apply(this, arguments);
+		
+		Ext.getCmp('fieldName_AdministrationGroupForm').focus(false, 500);
 	},
 	onDestroy: function() {
-		AdministrationGroupForm.superclass.onDestroy.apply(this, arguments);
+		Groups.AdministrationGroupForm.superclass.onDestroy.apply(this, arguments);
 		this.formPanel = null;
-	},
-	_onFormLoad: function(form, request) {
-		this.el.unmask();
 	},
 	_onBtnSalvarClick: function() {
 		var form = this.formPanel.getForm();
 		if(!form.isValid()) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('grid.form.alert.invalid'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.invalid'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.invalid')});
 			return false;
 		}
-		this.el.mask('<?php echo DMG_Translate::_('grid.form.saving'); ?>');
 		form.submit({
-			url: '<?php echo $this->url(array('controller' => 'group', 'action' => 'save'), null, true); ?>',
+			waitTitle: Application.app.language("auth.alert"),
+		    waitMsg: Application.app.language("auth.loading"),
+			url: 'group/save',
 			params: {
 				id: this.group
 			},
 			scope:this,
 			success: function() {
-				this.el.unmask();
 				this.hide();
 				this.fireEvent('salvar', this);
 			},
-			failure: function () {
-				this.el.unmask();
-			}
+			failure: Application.app.failHandler
 		});
 	},
-	<?php if (DMG_acl::canAccess(10)): ?>
 	_onBtnDeleteClick: function() {
-		uiHelper.confirm('<?php echo DMG_Translate::_('grid.form.confirm.title'); ?>', '<?php echo DMG_Translate::_('grid.form.confirm.delete'); ?>', function(opt) {
+		Application.app.confirm(Application.app.language('grid.form.confirm.title'), Application.app.language('grid.form.confirm.delete'), function(opt) {
 			if(opt === 'no') {
 				return;
 			}
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.deleting'); ?>');
+			this.el.mask(Application.app.language('grid.form.deleting'));
 			Ext.Ajax.request({
-				url: '<?php echo $this->url(array('controller' => 'group', 'action' => 'delete'), null, true); ?>',
+				url: 'group/delete',
 				params: {
 					id: this.group
 				},
@@ -147,7 +178,6 @@ var AdministrationGroupForm = Ext.extend(Ext.Window, {
 			});
 		}, this);
 	},
-	<?php endif; ?>
 	_onBtnCancelarClick: function() {
 		this.hide();
 	}

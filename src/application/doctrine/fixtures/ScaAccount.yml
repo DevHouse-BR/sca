@@ -1,9 +1,5 @@
 ScaAccount:
    Account_1:
-      nome_account: 'thisAcconunt'
+      nome_account: 'Conta Padrão'
       email_account: 'mail@mail.com'
-      fl_ativa: true
-   Account_2:
-      nome_account: 'rootAccount'
-      email_account: 'none'
       fl_ativa: true

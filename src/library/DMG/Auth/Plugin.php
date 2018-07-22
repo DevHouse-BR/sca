@@ -8,16 +8,18 @@ class DMG_Auth_Plugin extends Zend_Controller_Plugin_Abstract {
 			// acesso ao portal
 		} else {
 			if (!Zend_Auth::getInstance()->hasIdentity()) {
-				// usuário não autenticado
-				// permissões: index/index, index/auth
-				if (!($controller == 'index' && ($action == 'index' || $action == 'auth' || $action = 'js'))) {
-					$request->setModuleName('default')->setControllerName('index')->setActionName('null')->setDispatched(false);
+				// usuï¿½rio nï¿½o autenticado
+				// permissï¿½es: index/index, index/auth
+				if ( !($controller == 'index' && ($action == 'index' || $action == 'auth' || $action = 'compressedjs' || $action = 'compressedcss' || $action = 'language')) && !($controller == 'config' && ($action == 'getmultiple' || $action == 'getaccountcfg')) ) {
+					//$request->setModuleName('default')->setControllerName('index')->setActionName('null')->setDispatched(false);
+					die("VocÃª nÃ£o tem permissÃ£o para acessar este recurso");
 				}
 			} else {
-				// usuário autenticado
-				// permissões: todas
+				// usuï¿½rio autenticado
+				// permissï¿½es: todas
 				if ($controller == 'index' && $action == 'auth') {
-					$request->setModuleName('default')->setControllerName('index')->setActionName('null')->setDispatched(false);
+					//$request->setModuleName('default')->setControllerName('index')->setActionName('null')->setDispatched(false);
+					die("VocÃª nÃ£o tem permissÃ£o para acessar este recurso");
 				}
 			}		
 		}

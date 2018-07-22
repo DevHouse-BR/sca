@@ -6,12 +6,12 @@ ScmRule:
       unsigned: false
       primary: true
     name:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false
     description:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false

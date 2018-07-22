@@ -6,6 +6,11 @@ ScaPostagens:
       unsigned: false
       primary: true
       autoincrement: true
+    titulo_postagem:
+      type: string(255)
+      fixed: false
+      notnull: true
+      primary: false
     data_postagem:
       type: timestamp(25)
       notnull: false
@@ -41,6 +46,10 @@ ScaPostagens:
       notnull: false
       primary: false
     fl_publicado:
+      type: boolean(1)
+      notnull: false
+      primary: false
+    fl_lida:
       type: boolean(1)
       notnull: false
       primary: false

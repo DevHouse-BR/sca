@@ -3,10 +3,12 @@
 class DMG_Auth_Adapter implements Zend_Auth_Adapter_Interface {
 	private $_username;
 	private $_password;
+	private $_account;
 
-	public function __construct($username, $password) {
+	public function __construct($username, $password, $account) {
                 $this->_username = $username;
                 $this->_password = $password;
+                $this->_account = $account;
 	}
 
 	public static function getInstance() {
@@ -19,8 +21,16 @@ class DMG_Auth_Adapter implements Zend_Auth_Adapter_Interface {
 
 	public function authenticate() {
 		try {
-			$user = Doctrine_Query::create()->from('ScmUser')->where('login_usuario = ?', $this->_username)
-					->addWhere('senha_usuario = ?', $this->_password)->addWhere('fl_status = ?', 1)->addWhere('tipo_usuario = ?', 'I')->fetchOne();
+			$user = Doctrine_Query::create()
+					->from('ScmUser u')
+					->where('u.login_usuario = ?', $this->_username)
+					->innerJoin('u.ScaAccount a')
+					->addWhere('u.senha_usuario = ?', $this->_password)
+					->addWhere('u.sca_account_id = ?', $this->_account)
+					->addWhere('u.fl_status = ?', 1)
+					->addWhere('u.tipo_usuario = ?', 'I')
+					->addWhere('a.fl_ativa = ?', true)
+					->fetchOne();
 			if (!$user) {
 				return new Zend_Auth_Result(Zend_Auth_Result::FAILURE, null, array('auth.loginerror'));
 			} else {

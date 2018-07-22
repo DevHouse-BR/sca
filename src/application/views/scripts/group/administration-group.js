@@ -1,29 +1,69 @@
-var sm = new Ext.grid.CheckboxSelectionModel();
-var AdministrationGroupWindowFilter = new Ext.ux.grid.GridFilters({
+Ext.namespace('Groups');
+
+Groups.sm = new Ext.grid.CheckboxSelectionModel();
+Groups.AdministrationGroupWindowFilter = new Ext.ux.grid.GridFilters({
 	local: false,
-	menuFilterText: '<?php echo DMG_Translate::_('grid.filter.label'); ?>',
+	menuFilterText: Application.app.language('grid.filter.label'),
 	filters: [{
-			type: 'string',
-			dataIndex: 'name',
-			phpMode: true
-		<?php if (DMG_Acl::canAccess(14)): ?>
-		}, {
-			type: 'string',
-			dataIndex: 'nome_account',
-			phpMode: true
-		<?php endif; ?>
+		type: 'string',
+		dataIndex: 'name',
+		phpMode: true
+	}, {
+		type: 'string',
+		dataIndex: 'nome_account',
+		phpMode: true
 	}]
 });
-var AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
+Groups.AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 	border: false,
 	stripeRows: true,
 	loadMask: true,
-	sm: sm,
+	sm: Groups.sm,
 	columnLines: true,
-	plugins: [AdministrationGroupWindowFilter],
+	plugins: [Groups.AdministrationGroupWindowFilter],
+	listeners:{
+		beforerender:function(grid){
+			Application.AccessController.applyPermission({
+				defaultAction:'hide',
+				items:[{
+					objeto:'btnAdicionar_AdministrationGroupWindow',
+					acl:9,
+					tipo:'componente'
+				},{
+					objeto:'btnDelete_AdministrationGroupWindow',
+					acl:10,
+					tipo:'componente'
+				},{
+					objeto:'btnPermissions_AdministrationGroupWindow',
+					acl:11,
+					tipo:'componente'
+				},{
+					objeto:grid.getColumnModel(),
+					acl:14,
+					tipo:'coluna',
+					columnIndex:3
+				},{
+					objeto:grid,
+					funcao:'_onGridRowDblClick',
+					acl:8,
+					tipo:'funcao'
+				},{
+					objeto:grid,
+					funcao:'_onCadastroUsuarioSalvarExcluir',
+					acl:[8,9,10],
+					tipo:'funcao'
+				},{
+					objeto:grid,
+					funcao:'_newForm',
+					acl:[8,9],
+					tipo:'funcao'
+				}]
+			});
+		}
+	},
 	initComponent: function () {
 		this.store = new Ext.data.JsonStore({
-			url: '<?php echo $this->url(array('controller' => 'group', 'action' => 'list'), null, true); ?>',
+			url: 'group/list',
 			root: 'data',
 			idProperty: 'id',
 			totalProperty: 'total',
@@ -40,101 +80,84 @@ var AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 			fields: [
 				{name: 'id', type: 'int'},
 				{name: 'name', type: 'string'},
-				<?php if (DMG_Acl::canAccess(14)): ?>
 				{name: 'nome_account', type: 'string'}
-				<?php endif; ?>
 			]
 		});
 		var paginator = new Ext.PagingToolbar({
 			store: this.store,
 			pageSize: 30,
-			plugins: [AdministrationGroupWindowFilter]
+			plugins: [Groups.AdministrationGroupWindowFilter]
 		});
 		paginator.addSeparator();
 		var button = new Ext.Toolbar.Button();
-		button.text = '<?php echo DMG_Translate::_('grid.bbar.clearfilter'); ?>';
+		button.text = Application.app.language('grid.bbar.clearfilter');
 		button.addListener('click', function(a, b) {
-			AdministrationGroupWindowFilter.clearFilters();
+			Groups.AdministrationGroupWindowFilter.clearFilters();
 		});
 		paginator.addButton(button);
 		Ext.apply(this, {
 			viewConfig: {
-				emptyText: '<?php echo DMG_Translate::_('grid.empty'); ?>',
+				emptyText: Application.app.language('grid.empty'),
 				deferEmptyText: false
 			},
 			bbar: paginator,
-			<?php if (DMG_Acl::canAccess(9) || DMG_Acl::canAccess(10)): ?>
 			tbar: ['->',
-			<?php if (DMG_Acl::canAccess(9)): ?>
 			{
-				text: '<?php echo DMG_Translate::_('grid.form.add'); ?>',
+				text: Application.app.language('grid.form.add'),
 				iconCls: 'silk-add',
+				id:'btnAdicionar_AdministrationGroupWindow',
 				scope: this,
 				handler: this._onBtnNovoUsuarioClick
-			},
-			<?php endif; ?>
-			<?php if (DMG_Acl::canAccess(10)): ?>
-			{
-				text: '<?php echo DMG_Translate::_('grid.form.delete'); ?>',
+			},{
+				text: Application.app.language('grid.form.delete'),
 				iconCls: 'silk-delete',
+				id:'btnDelete_AdministrationGroupWindow',
 				scope: this,
 				handler: this._onBtnExcluirSelecionadosClick
-			},
-			<?php endif; ?>
-			<?php if (DMG_Acl::canAccess(11)): ?>
-			{
-				text: '<?php echo DMG_Translate::_('administration.group.permission.label'); ?>',
+			},{
+				text: Application.app.language('administration.group.permission.label'),
 				iconCls: 'silk-key',
+				id:'btnPermissions_AdministrationGroupWindow',
 				scope: this,
 				handler: this._onBntPermissionClick
-			}
-			<?php endif; ?>
-			],
-			<?php endif; ?>
-			columns: [sm, {
+			}],
+			columns: [Groups.sm, {
 				dataIndex: 'id',
-				header: '<?php echo DMG_Translate::_('administration.group.form.id.text'); ?>',
+				header: Application.app.language('administration.group.form.id.text'),
 				width: 40,
 				sortable: true
 			}, {
 				dataIndex: 'name',
-				header: '<?php echo DMG_Translate::_('administration.group.form.name.text'); ?>',
+				header: Application.app.language('administration.group.form.name.text'),
 				sortable: true
-			<?php if (DMG_Acl::canAccess(14)): ?>
 			}, {
 				dataIndex: 'nome_account',
-				header: '<?php echo DMG_Translate::_('administration.group.account.text'); ?>',
+				header: Application.app.language('administration.group.account.text'),
 				sortable: true
-			<?php endif; ?>
 			}]
 		});
-		AdministrationGroupWindow.superclass.initComponent.call(this);
+		Groups.AdministrationGroupWindow.superclass.initComponent.call(this);
 	},
 	initEvents: function () {
-		AdministrationGroupWindow.superclass.initEvents.call(this);
+		Groups.AdministrationGroupWindow.superclass.initEvents.call(this);
 		this.on({
 			scope: this,
-			<?php if (DMG_Acl::canAccess(8)): ?>
 			rowdblclick: this._onGridRowDblClick
-			<?php endif; ?>
 		});
 	},
 	onDestroy: function () {
-		AdministrationGroupWindow.superclass.onDestroy.apply(this, arguments);
+		Groups.AdministrationGroupWindow.superclass.onDestroy.apply(this, arguments);
 		Ext.destroy(this.window);
 		this.window = null;
 	},
-	<?php if (DMG_Acl::canAccess(11)): ?>
 	_onBntPermissionClick: function () {
 		var arrSelecionados = this.getSelectionModel().getSelections();
 		if (arrSelecionados.length > 1) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('administration.group.permission.manyerror'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('administration.group.permission.manyerror'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('administration.group.permission.manyerror')});
 			return false;
 		}
 		if (arrSelecionados.length === 0) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('administration.group.permission.oneerror'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('administration.group.permission.oneerror'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('administration.group.permission.oneerror')});
 			return false;
 		}
 		var group = arrSelecionados[0].get('id');
@@ -145,7 +168,7 @@ var AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 	},
 	newPermission: function () {
 		if (!this.permission) {
-			this.permission = new AdministrationGroupPermission({
+			this.permission = new Groups.AdministrationGroupPermission({
 				renderTo: this.body,
 				listeners: {
 					scope: this
@@ -154,23 +177,18 @@ var AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 		}
 		return this.permission;
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(9)): ?>
 	_onBtnNovoUsuarioClick: function () {
 		this._newForm();
 		this.window.setGroup(0);
 		this.window.show();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(10)): ?>
 	_onBtnExcluirSelecionadosClick: function () {
 		var arrSelecionados = this.getSelectionModel().getSelections();
 		if (arrSelecionados.length === 0) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.select')});
 			return false;
 		}
-		uiHelper.confirm('<?php echo DMG_Translate::_('grid.form.confirm.title'); ?>', '<?php echo DMG_Translate::_('grid.form.confirm.delete'); ?>', function (opt) {
+		Application.app.confirm(Application.app.language('grid.form.confirm.title'), Application.app.language('grid.form.confirm.delete'), function (opt) {
 			if (opt === 'no') {
 				return;
 			}
@@ -178,9 +196,9 @@ var AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 			for (var i = 0; i < arrSelecionados.length; i++) {
 				id.push(arrSelecionados[i].get('id'));
 			}
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.deleting'); ?>');
+			//this.el.mask(Application.app.language('grid.form.deleting'));
 			Ext.Ajax.request({
-				url: '<?php echo $this->url(array('controller' => 'group', 'action' => 'delete'), null, true); ?>',
+				url: 'group/delete',
 				params: {
 					'id[]': id
 				},
@@ -189,24 +207,29 @@ var AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 					try {
 						var c = Ext.decode(a.responseText);
 					} catch (e) {};
-					if (c.failure == true) {
-						//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', c.message);
-						uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: c.message});
-					}
-					this.el.unmask();
 					this.store.reload();
+					if (c.sucess == false) {
+						Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: c.errormsg});
+						return;
+					}
+					Application.app.showNotification({
+						title:Application.app.language('operation.sucess.title'),
+						iconCls:'icon-ok',
+						html: Application.app.language('operation.sucess')
+					});
+					//this.el.unmask();
+					
 				},
+				failure:Application.app.failHandler
 			});
 		},
 		this);
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(8) || DMG_Acl::canAccess(9) || DMG_Acl::canAccess(10)): ?>
+	
 	_onCadastroUsuarioSalvarExcluir: function () {
 		this.store.reload();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(8)): ?>
+	
 	_onGridRowDblClick: function (grid, rowIndex, e) {
 		var record = grid.getStore().getAt(rowIndex);
 		var id = record.get('id');
@@ -214,23 +237,20 @@ var AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 		this.window.setGroup(id);
 		this.window.show();
 	},
-	<?php endif; ?>
-	<?php if (DMG_Acl::canAccess(8) || DMG_Acl::canAccess(9)): ?>
+	
 	_newForm: function () {
 		if (!this.window) {
-			this.window = new AdministrationGroupForm({
+			this.window = new Groups.AdministrationGroupForm({
 				renderTo: this.body,
 				listeners: {
 					scope: this,
 					salvar: this._onCadastroUsuarioSalvarExcluir,
-					<?php if (DMG_Acl::canAccess(10)): ?>
 					excluir: this._onCadastroUsuarioSalvarExcluir
-					<?php endif; ?>
 				}
 			});
 		}
 		return this.window;
 	}
-	<?php endif; ?>
 });
-Ext.reg('administration-group', AdministrationGroupWindow);
+
+Ext.reg('administration-group', Groups.AdministrationGroupWindow);

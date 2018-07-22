@@ -45,9 +45,9 @@ class SettingsController extends Zend_Controller_Action {
 				$obj[$loop]['parm'] = $l->valor_parametro; 
 				$loop++;
 			}
-			echo Zend_Json::encode(array('success' => true, 'data' => $obj));
+			$this->_helper->json(array('success' => true, 'data' => $obj));
 		} else {
-			echo Zend_Json::encode(array('success' => false));
+			$this->_helper->json(array('success' => false));
 		}
 	}
 	public function getAction () {
@@ -62,16 +62,16 @@ class SettingsController extends Zend_Controller_Action {
 				$obj['name'] = $query[0]->ScaAccountConfig->nome_parametro;
 				$obj['value'] = $query[0]->valor_parametro;
 			} catch (exception $e) {
-				echo Zend_Json::encode(array('success' => false));
+				$this->_helper->json(array('success' => false));
 			}
 
                         if ($obj) {
-                                echo Zend_Json::encode(array('success' => true, 'data' => $obj));
+				$this->_helper->json(array('success' => true, 'data' => $obj));
                         } else {
-				echo Zend_Json::encode(array('success' => false));
+				$this->_helper->json(array('success' => false));
 			}
 		} else {
-			echo Zend_Json::encode(array('success' => false));
+			$this->_helper->json(array('success' => false));
 		}
 	}
 	public function saveAction () {
@@ -85,15 +85,87 @@ class SettingsController extends Zend_Controller_Action {
 					$obj = Doctrine::getTable('ScaAccountRelationConfig')->find($query[0]->id);
 					$obj->valor_parametro = $this->getRequest()->getParam('value');
 					$obj->save();
+					$this->_helper->json(array('success' => true));
 				} catch (exception $e) {
-					echo Zend_Json::encode(array('success' => false));
+					$this->_helper->json(array('success' => false));
 				}
 
 			} else {
-				echo Zend_Json::encode(array('success' => false));
+				$this->_helper->json(array('success' => false));
 			}
 		} else {
-			echo Zend_Json::encode(array('success' => false));
+			$this->_helper->json(array('success' => false));
 		}
+	}
+	
+	public function logoAction(){
+		try {
+			$upload = new Zend_File_Transfer_Adapter_Http();
+			
+			$info = @$upload->getFileInfo();
+			
+			$filename = 'files/'. Zend_Auth::getInstance()->getIdentity()->sca_account_id . '/' . "account_logo." . $this->_findexts($info['logo']['name']);
+						
+			@$upload->addFilter('Rename', array(
+				'target'=> $filename,
+				'overwrite' => true
+			),'logo');
+			
+			$upload->addValidator('IsImage', false, array('image/jpeg', 'image/gif', 'image/png'));
+			
+			if (!$upload->isValid()) {
+				throw new Exception(DMG_Translate::_('administration.setting.form.upload.notimage'));
+			}
+			
+			$upload->addValidator('ImageSize', false, array(
+				'minwidth' => 1,
+				'maxwidth' => 220,
+				'minheight' => 1,
+				'maxheight' => 52
+			));
+			
+			if (!$upload->isValid()) {
+				throw new Exception(DMG_Translate::_('administration.setting.form.upload.imagesizeinvalid'));
+			}
+			
+			if($upload->receive()){
+				$config = Doctrine_Query::create()
+					->select()
+					->from('ScaAccountRelationConfig arc')
+					->where('arc.sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+					->addWhere('arc.sca_account_config_id = 2')
+					->fetchOne();
+					
+				if(($config->valor_parametro != $filename)&& (trim($config->valor_parametro) != ""))@unlink($config->valor_parametro);
+				$config->valor_parametro = $filename;
+				$config->save();
+				echo Zend_Json::encode(array('success' => true));
+			}
+		} 
+		catch (Exception $e){
+			echo Zend_Json::encode(array('success' => false, 'errormsg' => $e->getMessage()));
+		}		
+	}
+	
+	protected function _findexts($filename){
+		$filename = strtolower($filename);
+		$exts = explode(".", $filename);
+		$n = count($exts)-1;
+		$exts = $exts[$n];
+		return $exts;
+	}
+	
+	
+	public function testeAction(){
+		try {
+			$upload = new Zend_File_Transfer_Adapter_Http();
+			
+			$info = @$upload->getFileInfo();
+			
+			print_r($info);
+		}
+		catch (Exception $e){
+			echo Zend_Json::encode(array('success' => false, 'errormsg' => $e->getMessage()));
+		}	
 	}
 }

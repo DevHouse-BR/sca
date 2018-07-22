@@ -16,7 +16,7 @@ ScaMensagensLog:
       notnull: false
       primary: false
     texto_log:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false

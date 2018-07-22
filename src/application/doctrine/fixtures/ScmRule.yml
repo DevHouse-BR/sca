@@ -51,10 +51,6 @@ ScmRule:
     id: 13
     name: 'Listar Departamentos'
     ScmModule: Module_1
-  Rule_14:
-    id: 14
-    name: 'Gerenciar Accounts'
-    ScmModule: Module_1
   Rule_15:
     id: 15
     name: 'Visualizar Deparatamentos'
@@ -78,4 +74,12 @@ ScmRule:
   Rule_20:
    id: 20
    name: 'Gerenciar usuarios de clientes'
+   ScmModule: Module_1
+  Rule_21:
+   id: 21
+   name: 'Visualizar Postagens'
+   ScmModule: Module_1
+  Rule_22:
+   id: 22
+   name: 'Gerir Postagens'
    ScmModule: Module_1

@@ -7,12 +7,12 @@ ScaClientes:
       primary: true
       autoincrement: true
     cod_cliente:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false
     nome_cliente:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false
@@ -25,6 +25,15 @@ ScaClientes:
       type: integer(4)
       unsigned: false
       notnull: false
+      primary: false
+    id_criador:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    dt_cadastro:
+      type: timestamp
+      notnull: true
       primary: false
     fl_acesso_portal:
       type: boolean(1)
@@ -43,3 +52,11 @@ ScaClientes:
       local: id
       foreign: sca_clientes_id
       type: many
+    ScmUser:
+      local: id_responsavel
+      foreign: id
+      type: one
+    ScmUser:
+      local: id_criador
+      foreign: id
+      type: one

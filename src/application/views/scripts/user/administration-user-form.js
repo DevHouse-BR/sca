@@ -1,56 +1,83 @@
-var AdministrationUserForm = Ext.extend(Ext.Window, {
+User.AdministrationUserForm = Ext.extend(Ext.Window, {
 	user: 0,
+	idCliente:0,
 	modal: true,
 	constrain: true,
 	maximizable: false,
 	resizable: false,
+	iconCls:'icon-user',
 	width: 450,
-	<?php if(DMG_Acl::canAccess(14)): ?>
-		height: 380,
-	<?php else: ?>
-		height: 350,
-	<?php endif; ?>
-	title: '<?php echo DMG_Translate::_('administration.user.form.title'); ?>',
+	height: 380,
+	title: Application.app.language('administration.user.form.title'),
 	layout: 'fit',
-	closeAction: 'hide',
 	setUser: function(user) {
 		this.user = user;
 	},
+	setIdCliente: function (value) {
+		this.idCliente = value;
+	},
 	constructor: function() {
 		this.addEvents({salvar: true, excluir: true});
-		AdministrationUserForm.superclass.constructor.apply(this, arguments);
+		User.AdministrationUserForm.superclass.constructor.apply(this, arguments);
 	},
 	initComponent: function() {
+		
+		this.on('beforerender',function(janela){
+			Application.AccessController.applyPermission({
+				defaultAction:'hide',
+				items:[{
+					objeto:'comboAccountG_AdministrationUserForm',
+					acl:14,
+					tipo:'componente'
+				},{
+					objeto:this,
+					acl:14,
+					tipo:'execute',
+					funcao: function(objeto){
+						objeto.height = 350;
+					}
+				},{
+					objeto:'btnExcluir_AdministrationUserForm',
+					acl:6,
+					tipo:'componente'
+				}]
+			});
+		});
+		
+		
 		this.languages = new Ext.form.ComboBox({
 			scope: this,
-                        store: new Ext.data.SimpleStore({
-                                fields: ['code', 'name'],
-                                data: languages
-                        }),
+            store: new Ext.data.SimpleStore({
+                    fields: ['code', 'name'],
+                    data: Application.app.languages
+            }),
 			hiddenName: 'idioma_usuario',
 			allowBlank: true,
 			displayField: 'name',
 			valueField: 'code',
 			mode: 'local',
 			triggerAction: 'all',
-			emptyText: '<?php echo DMG_Translate::_('administration.user.form.language.helper'); ?>',
-			fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.language.text'); ?>'
+			emptyText: Application.app.language('administration.user.form.language.helper'),
+			fieldLabel: Application.app.language('administration.user.form.language.text')
 		});
+		
 		this.departamentos = new Ext.form.ComboBox({
+			scope: this,
 			store: new Ext.data.JsonStore({
-				url: '<?php echo $this->url(array('controller' => 'user', 'action' => 'departamentosList'), null, true); ?>',
+				scope: this,
+				url: 'user/departamentosList',
 				root: 'data',
 				autoLoad: true,
 				autoDestroy: true,
 				remoteSort: true,
-	                        sortInfo: {
-        	                        field: 'name',
-                	                direction: 'ASC'
-                        	},
-	                        fields: [
-        	                        {name: 'id', type: 'int'},
-                	                {name: 'name', type: 'string'}
-                        	]
+                sortInfo: {
+                        field: 'name',
+    	                direction: 'ASC'
+            	},
+                fields: [
+                        {name: 'id', type: 'int'},
+    	                {name: 'name', type: 'string'}
+            	]
 			}),
 			hiddenName: 'departamento',
 			allowBlank: 'false',
@@ -58,13 +85,15 @@ var AdministrationUserForm = Ext.extend(Ext.Window, {
 			valueField: 'id',
 			mode: 'local',
 			triggerAction: 'all',
-			emptyText: '<?php echo DMG_Translate::_('administration.user.form.departamentos.helper'); ?>',
-			fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.departamentos.text'); ?>'
+			emptyText: Application.app.language('administration.user.form.departamentos.helper'),
+			fieldLabel: Application.app.language('administration.user.form.departamentos.text')
 		});
-		<?php if(DMG_Acl::canAccess(14)): ?>
+		
+		this.departamentos.store.addListener('load', this.carrega_ajax_departamentos, this);
+		
 		this.accountM = new Ext.form.ComboBox({
 			store: new Ext.data.JsonStore({
-				url: '<?php echo $this->url(array('controller' => 'user', 'action' => 'accountsList'), null, true); ?>',
+				url: 'user/accountsList',
 				root: 'data',
 				autoLoad: true,
 				remoteSort: true,
@@ -77,123 +106,219 @@ var AdministrationUserForm = Ext.extend(Ext.Window, {
 					{name: 'name', type: 'string'}
 				]
 			}),
+			id:'comboAccountG_AdministrationUserForm',
 			hiddenName: 'accountM',
 			allowBlank: 'false',
 			displayField: 'name',
 			valueField: 'id',
 			mode: 'local',
 			triggerAction: 'all',
-			emptyText: '<?php echo DMG_Translate::_('administration.user.form.account.helper'); ?>',
-			fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.account.text'); ?>'
+			emptyText: Application.app.language('administration.user.form.account.helper'),
+			fieldLabel: Application.app.language('administration.user.form.account.text')
 		});
-		<?php endif; ?>
+		
 		this.recebeMsg = new Ext.form.Checkbox({
+			name: 'recebe_msg',
 			hiddenName: 'recebe_msg',
-			fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.mensagem.text'); ?>'
+			fieldLabel: Application.app.language('administration.user.form.mensagem.text')
 		});
+		
 		this.formUPanel = new Ext.form.FormPanel({
 			bodyStyle: 'padding:10px;',
 			border: false,
 			autoScroll: true,
+			monitorValid:true,
 			defaultType: 'textfield',
 			defaults: {anchor: '-19'},
-			items:[
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.name.text'); ?>', name: 'name', allowBlank: false, maxLength: 255},
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.username.text'); ?>', name: 'username', allowBlank: false, maxLength: 255},
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.email.text'); ?>', name: 'email', allowBlank: false, maxLength: 255},
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.password.text'); ?>', name: 'password', allowBlank: false, maxLength: 64, inputType: 'password', id: 'password', vtype: 'password', initialPassField: 'password2'},
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.password2.text'); ?>', name: 'password2', allowBlank: false, maxLength: 64, inputType: 'password', id: 'password2', vtype: 'password', initialPassField: 'password'},
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.status.text'); ?>', xtype: 'radiogroup', name: 'status', items: [
-					{boxLabel: '<?php echo DMG_Translate::_('administration.user.form.status.active'); ?>', name: 'status', inputValue: '1'},
-					{boxLabel: '<?php echo DMG_Translate::_('administration.user.form.status.inactive'); ?>', name: 'status', inputValue: '0'}
-				]},
+			items:[{
+				fieldLabel: Application.app.language('administration.user.form.name.text'), 
+				name: 'name',
+				id:'fieldName_AdministrationUserForm',
+				allowBlank: false, 
+				maxLength: 255
+			},{
+				fieldLabel: Application.app.language('administration.user.form.username.text'), 
+				name: 'username', 
+				allowBlank: false, 
+				maxLength: 255, 
+				id: 'login_usuario_edit'
+			},{
+				fieldLabel: Application.app.language('administration.user.form.email.text'), 
+				name: 'email', 
+				allowBlank: false, 
+				maxLength: 255
+			},{
+				fieldLabel: Application.app.language('administration.user.form.password.text'), 
+				name: 'password', 
+				allowBlank: false, 
+				maxLength: 64, 
+				inputType: 'password', 
+				id: 'password', 
+				vtype: 'password', 
+				initialPassField: 'password2'
+			},{
+				fieldLabel: Application.app.language('administration.user.form.password2.text'), 
+				name: 'password2', 
+				allowBlank: false, 
+				maxLength: 64, 
+				inputType: 'password', 
+				id: 'password2', 
+				vtype: 'password', 
+				initialPassField: 'password'
+			},{
+				fieldLabel: Application.app.language('administration.user.form.status.text'), 
+				xtype: 'radiogroup', 
+				name: 'status', 
+				items: [{
+					boxLabel: Application.app.language('administration.user.form.status.active'), 
+					name: 'status', 
+					inputValue: '1', 
+					checked:true
+				},{
+					boxLabel: Application.app.language('administration.user.form.status.inactive'), 
+					name: 'status', 
+					inputValue: '0'
+				}]
+			},
 				this.recebeMsg,
 				this.departamentos,
 				this.languages,
-				<?php if(DMG_Acl::canAccess(14)): ?>
-				this.accountM,
-				<?php endif; ?>
-			]
+				this.accountM
+			],
+			buttons: [{
+				text: Application.app.language('grid.form.save'),
+				iconCls: 'icon-save',
+				scope: this,
+				formBind:true,
+				handler: this._onBtnSalvarClick
+			},{
+				id: 'btnExcluir_AdministrationUserForm',
+				text: Application.app.language('grid.form.delete'), 
+				iconCls: 'silk-delete', 
+				scope: this, 
+				handler: this._onBtnDeleteClick
+			},{
+				text: Application.app.language('grid.form.cancel'), 
+				iconCls: 'silk-cross', 
+				scope: this, 
+				handler: this._onBtnCancelarClick
+			}]
 		});
 		Ext.apply(this, {
-			items: this.formUPanel,
-			bbar: [
-				'->',
-				{text: '<?php echo DMG_Translate::_('grid.form.save'); ?>',iconCls: 'icon-save',scope: this,handler: this._onBtnSalvarClick},
-				<?php if (DMG_Acl::canAccess(6)): ?>
-				this.btnExcluir = new Ext.Button({text: '<?php echo DMG_Translate::_('grid.form.delete'); ?>', iconCls: 'silk-delete', scope: this, handler: this._onBtnDeleteClick}),
-				<?php endif; ?>
-				{text: '<?php echo DMG_Translate::_('grid.form.cancel'); ?>', iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
-			]
+			items: this.formUPanel			
 		});
-		AdministrationUserForm.superclass.initComponent.call(this);
+		User.AdministrationUserForm.superclass.initComponent.call(this);
 	},
 	show: function() {
-		this.formUPanel.getForm().reset();
-		AdministrationUserForm.superclass.show.apply(this, arguments);
+		//this.formUPanel.getForm().reset();
+		
+		if (this.idCliente != 0) {
+			this.departamentos.hide();
+			this.setHeight(310);
+		}		
+		
+		User.AdministrationUserForm.superclass.show.apply(this, arguments);
 		if(this.user !== 0) {
 			this.formUPanel.findById("password").allowBlank = true;
 			this.formUPanel.findById("password2").allowBlank = true;
-			<?php if (DMG_Acl::canAccess(6)): ?>
-			this.btnExcluir.show();
-			<?php endif; ?>
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.loading'); ?>');
+			
 			this.formUPanel.getForm().load({
-				url: '<?php echo $this->url(array('controller' => 'user', 'action' => 'get'), null, true); ?>',
+				waitTitle: Application.app.language("auth.alert"),
+			    waitMsg: Application.app.language("auth.loading"),
+				url: 'user/get',
 				params: {
 					id: this.user
 				},
-				scope: this,
-				success: this._onFormLoad
+				scope: this
 			});
+			this.languages.setValue(this.idiomaGet);
+			if(Application.AccessController.hasPermission(6)){
+				Ext.getCmp('btnExcluir_AdministrationUserForm').show();
+			}
+			
+			this.departamentos.store.load();
 		} else {
 			this.formUPanel.findById("password").allowBlank = false;
 			this.formUPanel.findById("password2").allowBlank = false;
-			<?php if (DMG_Acl::canAccess(6)): ?>
-			this.btnExcluir.hide();
-			<?php endif; ?>
+			this.languages.setValue("");
+			this.departamentos.store.load();
+			Ext.getCmp('btnExcluir_AdministrationUserForm').hide();
+		}
+		Ext.getCmp('fieldName_AdministrationUserForm').focus(false, 500);
+	},
+	carrega_ajax_departamentos: function (a, b, c) {
+		if(this.user){
+			Ext.Ajax.request({
+				scope: this,
+				url: 'user/userdept',
+				params: {
+					'id': this.user
+				},
+				success: function (a, b) {
+					try {
+						var c = Ext.decode(a.responseText);
+					}
+					catch (e) {};
+					if (c.failure == true) {
+						this.departamentos.setValue("");
+						return;
+					}
+					this.departamentos.setValue(c.data);
+				}
+			});
 		}
 	},
-	onDestroy: function() {
-		AdministrationUserForm.superclass.onDestroy.apply(this, arguments);
-		this.formUPanel = null;
+	setIdiomaGet: function (info){
+		this.idiomaGet = info;
 	},
-	_onFormLoad: function(form, request) {
-		this.el.unmask();
+	onDestroy: function() {
+		User.AdministrationUserForm.superclass.onDestroy.apply(this, arguments);
+		this.formUPanel = null;
 	},
 	_onBtnSalvarClick: function() {
 		var form = this.formUPanel.getForm();
-		if(!form.isValid()) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('grid.form.alert.invalid'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.invalid'); ?>'});
-			return false;
-		}
-		this.el.mask('<?php echo DMG_Translate::_('grid.form.saving'); ?>');
+		
+		form.on('beforeaction', function(form, action) {
+			if (action.type == 'submit') {
+				Ext.getCmp('password').disable();
+				Ext.getCmp('password2').disable();
+				action.options.params = action.options.params || {};
+				Ext.apply(action.options.params, {
+					password: b64_hmac_md5(b64_hmac_md5(Ext.getCmp('password').getValue(), "GB7gj123fLphg7%$g2f"), Ext.getCmp('login_usuario_edit').getValue())
+				});
+			}
+		});
+		
+
 		form.submit({
-			url: '<?php echo $this->url(array('controller' => 'user', 'action' => 'save'), null, true); ?>',
+			waitTitle: Application.app.language("auth.alert"),
+		    waitMsg: Application.app.language("auth.loading"),
+			url: 'user/save',
 			params: {
-				id: this.user
+				id: this.user,
+				idcliente: this.idCliente
 			},
 			scope:this,
 			success: function() {
-				this.el.unmask();
-				this.hide();
 				this.fireEvent('salvar', this);
+				this.close();
 			},
-			failure: function () {
-				this.el.unmask();
-			}
+			failure: function(formulario, action){
+				Ext.getCmp('password').enable();
+				Ext.getCmp('password2').enable();
+				Application.app.failHandler(formulario, action);
+			} 
+			
 		});
 	},
-	<?php if (DMG_Acl::canAccess(6)): ?>
 	_onBtnDeleteClick: function() {
-		uiHelper.confirm('<?php echo DMG_Translate::_('grid.form.confirm.title'); ?>', '<?php echo DMG_Translate::_('grid.form.confirm.delete'); ?>', function(opt) {
+		Application.app.confirm(Application.app.language('grid.form.confirm.title'), Application.app.language('grid.form.confirm.delete'), function(opt) {
 			if(opt === 'no') {
 				return;
 			}
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.deleting'); ?>');
+			this.el.mask(Application.app.language('grid.form.deleting'));
 			Ext.Ajax.request({
-				url: '<?php echo $this->url(array('controller' => 'user', 'action' => 'delete'), null, true); ?>',
+				url: 'user/delete',
 				params: {
 					id: this.user
 				},
@@ -206,15 +331,15 @@ var AdministrationUserForm = Ext.extend(Ext.Window, {
 			});
 		}, this);
 	},
-	<?php endif; ?>
 	_onBtnCancelarClick: function() {
-		this.hide();
+		//this.hide();
+		this.close();
 	}
 });
 Ext.apply(Ext.form.VTypes, {
 	password: function(value, field) {
 		var pwd = Ext.getCmp(field.initialPassField);
-		this.passwordText = '<?php echo DMG_Translate::_('administration.user.form.password.error'); ?>';
+		this.passwordText = Application.app.language('administration.user.form.password.error');
 		return (value == pwd.getValue());
 	}
 });

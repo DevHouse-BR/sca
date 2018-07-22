@@ -1,20 +1,21 @@
-var AdministrationSettingsForm = Ext.extend(Ext.Window, {
-	id: 0,
+Settings.AdministrationSettingsForm = Ext.extend(Ext.Window, {
+	id_settings: 0,
 	modal: true,
 	constrain: true,
 	maximizable: false,
 	resizable: false,
 	width: 450,
 	height: 125,
-	title: '<?php echo DMG_Translate::_('config.form.title'); ?>',
+	iconCls:'icon-config',
+	title: Application.app.language('administration.config.form.title'),
 	layout: 'fit',
 	closeAction: 'hide',
 	setid: function(id) {
-		this.id = id;
+		this.id_settings = id;
 	},
 	constructor: function() {
 		this.addEvents({salvar: true});
-		AdministrationSettingsForm.superclass.constructor.apply(this, arguments);
+		Settings.AdministrationSettingsForm.superclass.constructor.apply(this, arguments);
 	},
 	initComponent: function() {
 		this.formSettings = new Ext.form.FormPanel({
@@ -24,29 +25,32 @@ var AdministrationSettingsForm = Ext.extend(Ext.Window, {
 			defaultType: 'textfield',
 			defaults: {anchor: '-19'},
 			items:[
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.config.form.name.text'); ?>', disabled: 'disabled', name: 'name', allowBlank: false, maxLength: 255},
-				{fieldLabel: '<?php echo DMG_Translate::_('administration.config.form.value.text'); ?>', name: 'value', allowBlank: false, maxLength: 255}
+				{fieldLabel: Application.app.language('administration.config.form.name.text'), disabled: 'disabled', name: 'name', allowBlank: false, maxLength: 255},
+				{fieldLabel: Application.app.language('administration.config.form.value.text'), name: 'value', allowBlank: false, maxLength: 255}
 			]
 		});
 		Ext.apply(this, {
 			items: this.formSettings,
 			bbar: [
 				'->',
-				{text: '<?php echo DMG_Translate::_('grid.form.save'); ?>',iconCls: 'icon-save',scope: this,handler: this._onBtnSalvarClick},
-				{text: '<?php echo DMG_Translate::_('grid.form.cancel'); ?>', iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
+				{text: Application.app.language('grid.form.save'), iconCls: 'icon-save',scope: this,handler: this._onBtnSalvarClick},
+				{text: Application.app.language('grid.form.cancel'), iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
 			]
 		});
-		AdministrationSettingsForm.superclass.initComponent.call(this);
+		Settings.AdministrationSettingsForm.superclass.initComponent.call(this);
 	},
 	show: function() {
 		this.formSettings.getForm().reset();
-		AdministrationSettingsForm.superclass.show.apply(this, arguments);
-		if(this.id !== 0) {
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.loading'); ?>');
+		Settings.AdministrationSettingsForm.superclass.show.apply(this, arguments);
+		if(this.id_settings !== 0) {
+			this.el.mask(Application.app.language('grid.form.loading'));
 			this.formSettings.getForm().load({
-				url: '<?php echo $this->url(array('controller' => 'settings', 'action' => 'get'), null, true); ?>',
+				waitTitle: Application.app.language("auth.alert"),
+				waitMsg: Application.app.language("auth.loading"),
+				fail: Application.app.faiHandler,
+				url: 'settings/get',
 				params: {
-					id: this.id
+					id: this.id_settings
 				},
 				scope: this,
 				success: this._onFormLoad
@@ -54,14 +58,13 @@ var AdministrationSettingsForm = Ext.extend(Ext.Window, {
 		}
 	},
 	onDestroy: function() {
-		AdministrationSettingsForm.superclass.onDestroy.apply(this, arguments);
+		Settings.AdministrationSettingsForm.superclass.onDestroy.apply(this, arguments);
 		this.formSettings = null;
 	},
 	_onFormLoad: function(form, request) {
 		if (request.result.data.system == true) {
 			this.el.unmask();
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('administration.config.form.systemerror'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('administration.config.form.systemerror'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('administration.config.form.systemerror')});
 			this.hide();
 		} else {
 			this.el.unmask();
@@ -70,15 +73,14 @@ var AdministrationSettingsForm = Ext.extend(Ext.Window, {
 	_onBtnSalvarClick: function() {
 		var form = this.formSettings.getForm();
 		if(!form.isValid()) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('grid.form.alert.invalid'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.invalid'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.invalid')});
 			return false;
 		}
-		this.el.mask('<?php echo DMG_Translate::_('grid.form.saving'); ?>');
+		this.el.mask(Application.app.language('grid.form.saving'));
 		form.submit({
-			url: '<?php echo $this->url(array('controller' => 'settings', 'action' => 'save'), null, true); ?>',
+			url: 'settings/save',
 			params: {
-				id: this.id
+				id: this.id_settings
 			},
 			scope:this,
 			success: function() {

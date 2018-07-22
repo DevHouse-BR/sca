@@ -13,4 +13,15 @@ class DMG_Config {
 		}
 		return $configs[$id];
 	}
+	public static function getAccountCfg($id) {
+		$config = $query = Doctrine_Query::create()
+				->select('valor_parametro')
+				->from('ScaAccountRelationConfig c')
+				->where('c.sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+				->addWhere('c.sca_account_config_id = ?', $id);
+				
+		foreach ($query->execute(array(), Doctrine::HYDRATE_SCALAR) as $k) {
+			return $k['c_valor_parametro'];
+		}
+	}
 }

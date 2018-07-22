@@ -5,16 +5,22 @@ ScaClientes:
        ScaAccount: Account_1
        id_responsavel: 1
        fl_acesso_portal: true
+       ScmUser: User_1
+       dt_cadastro: now
    Clientes_2:
        cod_cliente: '56'
        nome_cliente: 'Rosca'
        id_responsavel: 2
        fl_acesso_portal: false 
        ScaAccount: Account_1
+       ScmUser: User_1
+       dt_cadastro: now
    Clientes_3:
        cod_cliente: '57'
        nome_cliente: 'Roscar'
        id_responsavel: 2
        fl_acesso_portal: false
-       ScaAccount: Account_2
+       ScaAccount: Account_1
+       ScmUser: User_1
+       dt_cadastro: now
 

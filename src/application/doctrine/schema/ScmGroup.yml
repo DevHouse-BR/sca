@@ -7,7 +7,7 @@ ScmGroup:
       primary: true
       autoincrement: true
     name:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false

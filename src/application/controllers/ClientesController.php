@@ -5,9 +5,44 @@ class ClientesController extends Zend_Controller_Action {
 		$this->_helper->viewRenderer->setNoRender(true);
 		$this->view->headMeta()->appendHttpEquiv('Content-Type', 'application/json; charset=UTF-8');
 	}
+	public function mostraresponsavelAction () {
+                if(DMG_Acl::canAccess(3) and DMG_Acl::canAccess(17)){
+                        $id = (int) $this->getRequest()->getParam('id');
+                        $obj = Doctrine::getTable('ScaClientes')->find($id);
+                
+                        if($obj->sca_account_id == Zend_Auth::getInstance()->getIdentity()->sca_account_id){
+                                $blah = $obj->id_responsavel;
+                                if($blah == null)
+                                        $blah = 0;
+                                $this->_helper->json(array('success' => true, 'data' => $blah));
+                        }
+                } else {
+                        $this->_helper->json(array('faliure' => true));
+                }       
+	}
 	public function listAction () {
 		if (DMG_Acl::canAccess(17)) {
-			$query = DMG_Crud::rawIndex('ScaClientes', 'id, cod_cliente, nome_cliente, id_responsavel, fl_acesso_portal');
+			$order = $this->getRequest()->getParam('sort');
+			$dir = $this->getRequest()->getParam('dir');
+			$filtro = $this->getRequest()->getParam('query');
+
+			$query = Doctrine_Query::create()->from('ScaClientes sd')
+				->addSelect('sd.id')
+				->addSelect('sd.cod_cliente as cod_cliente')
+				->addSelect('sd.nome_cliente')
+				->addSelect('sd.fl_acesso_portal')
+				->addSelect('sd.dt_cadastro as data_criacao')
+				->addSelect('(SELECT u1.nome_usuario FROM ScmUser u1 WHERE u1.id = sd.id) AS nm_criador')
+				->addSelect('(SELECT u2.nome_usuario FROM ScmUser u2 WHERE u2.id = sd.id) AS responsavel')
+			;
+					
+			if($filtro){
+				$query->addWhere('sd.nome_cliente LIKE ?', $filtro . '%');
+			}
+			
+			if($order && $dir){
+				$query->orderBy("$order $dir");
+			}
 
 			if(!(DMG_Acl::canAccess(14)))
 				$query->addWhere('sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id);
@@ -22,6 +57,15 @@ class ClientesController extends Zend_Controller_Action {
 				$answer[$pos]['cod_cliente'] = $k->cod_cliente;
 				$answer[$pos]['nome_cliente'] = $k->nome_cliente;
 				$answer[$pos]['fl_acesso_portal'] = $k->fl_acesso_portal;
+                                $answer[$pos]['data_criacao'] = $k->dt_cadastro;
+                               
+                                try {
+                                        $place = Doctrine::getTable('ScmUser')->findById($k->id_criador);
+                                        $answer[$pos]['nm_criador'] = $place[0]->nome_usuario;
+                                } catch (exception $e) {
+                                        $answer[$pos]['nm_criador'] = "";
+                                }
+
 
 				if(DMG_Acl::canAccess(14)){
 					$answer[$pos]['nome_account'] = $k->ScaAccount->nome_account;
@@ -43,16 +87,27 @@ class ClientesController extends Zend_Controller_Action {
 				$pos++;	
 			}
 
-			echo Zend_Json::encode(array('success' => true, 'data' => $answer));
+			$this->_helper->json(array('success' => true, 'data' => $answer));
 		}
 	}
 	public function getAction () {
 		if (DMG_Acl::canAccess(17)) {
 			$id = (int) $this->getRequest()->getParam('id');
 			$obj = Doctrine::getTable('ScaClientes')->find($id);
-			if ($obj) {
-				echo Zend_Json::encode(array('success' => true, 'data' => $obj->toArray()));
-			}
+			if($obj->fl_acesso_portal)
+				$obj->fl_acesso_portal = 1;
+
+			$return['id'] = $id;
+			$return['cod_cliente'] = $obj->cod_cliente;
+			$return['nome_cliente'] = $obj->nome_cliente;
+			$return['id_responsavel'] = $obj->id_responsavel;
+			
+			if($obj->fl_acesso_portal)
+				$return['portal'] = 1;
+			else
+				$return['portal'] = 0;
+
+			$this->_helper->json(array('success' => true, 'data' => $return));
 		}
 	}
 	public function saveAction () {
@@ -61,30 +116,97 @@ class ClientesController extends Zend_Controller_Action {
 
 			$nome = $this->getRequest()->getParam('nome_cliente');
 			$codigo = $this->getRequest()->getParam('cod_cliente');
-			$responsavel = $this->getRequest()->getParam('responsavel');
+			$responsavel = (int) $this->getRequest()->getParam('responsavel');
 			$isAtivo = (int) $this->getRequest()->getParam('portal');
-
-			$salvar = Doctrine::getTable('ScaClientes')->find($id);
-
-			if(!$salvar){
-				$salvar = new ScaClientes();
-				$salvar->sca_account_id = Zend_Auth::getInstance()->getIdentity()->sca_account_id;
+			$cliente = false;
+			
+			if($id) $cliente = Doctrine::getTable('ScaClientes')->find($id);
+			
+			
+			if(($id == 0)||($cliente->nome_cliente != $nome)){
+				$query = Doctrine_Query::create()
+					->from('ScaClientes')
+					->addWhere('sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+					->addWhere('nome_cliente = ?', $nome)
+					->execute();
+				if($query->count()>0){
+					echo Zend_Json::encode(array('success' => false, 'errormsg' => DMG_Translate::_('controle.cliente.existe')));
+					return;
+				}
+			}
+			
+			if(($id == 0)||($cliente->cod_cliente != $codigo)){
+				$query = Doctrine_Query::create()
+					->from('ScaClientes')
+					->addWhere('sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+					->addWhere('cod_cliente = ?', $codigo)
+					->execute();
+				if($query->count()>0){
+					echo Zend_Json::encode(array('success' => false, 'errormsg' => DMG_Translate::_('controle.cliente.cod.existe')));
+					return;
+				}
+			}
+			
+			if(!$cliente){
+				$cliente = new ScaClientes();
+				$cliente->sca_account_id = Zend_Auth::getInstance()->getIdentity()->sca_account_id;
+				$cliente->id_criador = Zend_Auth::getInstance()->getIdentity()->id;
+				$cliente->dt_cadastro = DMG_Date::now();
 			}
 
-			$salvar->nome_cliente = $nome;
-			$salvar->cod_cliente = $codigo;
-			$salvar->id_responsavel = $responsavel;
-			$salvar->fl_acesso_portal = (bool)$isAtivo;
+			$cliente->nome_cliente = $nome;
+			$cliente->cod_cliente = $codigo;
+			if($responsavel) $cliente->id_responsavel = $responsavel;
+			$cliente->fl_acesso_portal = (bool)$isAtivo;
 
 			try {
-				$salvar->save();
+				$cliente->save();
+
+				/*
+				 * UPLOAD DA LOGOMARCA
+				 */
+
+				$upload = new Zend_File_Transfer_Adapter_Http();
+				
+				$info = @$upload->getFileInfo();
+				
+				$filename = 'files/' . Zend_Auth::getInstance()->getIdentity()->sca_account_id . "/client_logo_" . $cliente->id;
+							
+				@$upload->addFilter('Rename', array(
+					'target'=> $filename,
+					'overwrite' => true
+				),'logo');
+				
+				$upload->addValidator('IsImage', false, array('image/jpeg', 'image/gif', 'image/png'));
+				
+				if (!$upload->isValid()) {
+					throw new Exception(DMG_Translate::_('administration.setting.form.upload.notimage'));
+				}
+				
+				$upload->addValidator('ImageSize', false, array(
+					'minwidth' => 1,
+					'maxwidth' => 220,
+					'minheight' => 1,
+					'maxheight' => 52
+				));
+				
+				if (!$upload->isValid()) {
+					throw new Exception(DMG_Translate::_('administration.setting.form.upload.imagesizeinvalid'));
+				}
+				
+				if(!$upload->receive()){
+				    $erros = implode("<br />", $upload->getMessages());
+					echo Zend_Json::encode(array('success' => false, 'errormsg'=>$erros));
+				}
+				
+				
 			} catch (exception $e) {
-				echo Zend_Json::encode(array('success' => false));
+				echo Zend_Json::encode(array('success' => false, 'errormsg' => $e->getMessage()));
 				return;
 			}
 			echo Zend_Json::encode(array('success' => true));
 		} else {
-			echo Zend_Json::encode(array('success' => false));
+			echo Zend_Json::encode(array('success' => false, 'errormsg' => DMG_Translate::_('administration.group.permission.denied')));
 		}
 	}
 	public function deleteAction () {
@@ -100,19 +222,22 @@ class ClientesController extends Zend_Controller_Action {
                                         $this->deleteClientes($id);
                                 }
                                 Doctrine_Manager::getInstance()->getCurrentConnection()->commit();
-                                echo Zend_Json::encode(array('success' => true));
+                                $this->_helper->json(array('success' => true));
                         } catch (Exception $e) {
                                 Doctrine_Manager::getInstance()->getCurrentConnection()->rollback();
-                                echo Zend_Json::encode(array('failure' => true, 'message' => DMG_Translate::_('administration.group.form.cannotdelete')));
+                                $this->_helper->json(array('failure' => true, 'message' => DMG_Translate::_('administration.group.form.cannotdelete')));
 			}
 		} else {
-			echo Zend_Json::encode(array('success' => false));
+			$this->_helper->json(array('success' => false));
 		}
 	}
 	private function deleteClientes ($id) {
                 $cli = Doctrine::getTable('ScaClientes')->find($id);
+		$usr_cli = Doctrine::getTable('ScmUser')->findByScaClientesId($cli->id);
 
-		foreach( $cli->ScmUser as $l){
+		
+
+		foreach( $usr_cli as $l){
 			$l->delete();
 		}
 
@@ -147,9 +272,9 @@ class ClientesController extends Zend_Controller_Action {
 			if($answer === null)
 				$answer = "";
 
-			echo Zend_Json::encode(array('success' => true, 'data' => $answer));
+			$this->_helper->json(array('success' => true, 'data' => $answer));
                 } else {
-                        echo Zend_Json::encode(array('success' => false));
+                        $this->_helper->json(array('success' => false));
                 }
         }
 
@@ -157,15 +282,20 @@ class ClientesController extends Zend_Controller_Action {
 		$id = (int) $this->getRequest()->getParam('id');
 
 		$query = Doctrine_Query::create()->select()->from('ScmUser g')->Where('g.sca_clientes_id = ?', $id)->addWhere('tipo_usuario = \'P\'');
-
+		
+		$sort = $this->getRequest()->getParam('sort');
+		$dir = $this->getRequest()->getParam('dir');
+		
+		if(strlen($sort)>0) $query->orderBy($sort . " " . $dir);
+		
 		if(!DMG_Acl::canAccess(14)){
-			$query = $query->addWhere('sca_departamentos_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id);
+			$query = $query->addWhere('sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id);
 		}
 
 		try {
 			$array = $query->execute();
 			$loop = 0;
-			$answer;
+			$answer = array();
 
 			foreach($array as $p){
 				$answer[$loop]['id'] = $p->id;
@@ -181,24 +311,26 @@ class ClientesController extends Zend_Controller_Action {
 			if($answer === null)
 				$answer = "";
 
-			echo Zend_Json::encode(array('success' => true, 'data' => $answer));
+			$this->_helper->json(array('success' => true, 'data' => $answer));
 		} catch (exception $e) {
-			echo Zend_Json::encode(array('success' => false));
+			$this->_helper->json(array('success' => false));
 		}
 	}
 
         private function delete_user_cli ($id){
-                $row = Doctrine::getTable('ScmUser')->find($id);
+                $row = Doctrine::getTable('ScmUser')->find((int)$id);
                 if(!$row)
                         return false;
-                if($row->sca_account_id != Zend_Auth::getInstance()->getIdentity()->sca_account_id && $row->tipo_usuario == 'P'){
+                if($row->sca_account_id == Zend_Auth::getInstance()->getIdentity()->sca_account_id && $row->tipo_usuario == 'P'){
                         try {
                                 $row->delete();
                                 return true;
                         } catch (exception $e) {
                                 return false;
                         }
-                }
+                } else {
+			return false;
+		}
         }
 
 	public function deleteuserclienteAction(){
@@ -216,8 +348,8 @@ class ClientesController extends Zend_Controller_Action {
 		}
 
 		if($allOk)
-			echo Zend_Json::encode(array('success' => true));
+			$this->_helper->json(array('success' => true));
 		else
-			echo Zend_Json::encode(array('faliure' => true, 'data' => DMG_Translate::_('administration.user.form.cannotdelete')));
+			$this->_helper->json(array('faliure' => true, 'data' => DMG_Translate::_('administration.user.form.cannotdelete')));
 	}
 }

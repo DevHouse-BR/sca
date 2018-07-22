@@ -7,7 +7,7 @@ ScaStatusMensagem:
       primary: true
       autoincrement: true
     nome_status:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: true
       primary: false

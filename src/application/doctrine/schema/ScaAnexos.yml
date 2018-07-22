@@ -12,17 +12,17 @@ ScaAnexos:
       notnull: true
       primary: false
     nome_anexo:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false
     caminho_anexo:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false
     tipo_anexo:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false

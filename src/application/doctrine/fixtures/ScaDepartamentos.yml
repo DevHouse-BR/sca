@@ -1,11 +1,6 @@
 ScaDepartamentos:
    Departamentos_1:
-      cod_departamento: 101
-      nome_departamento: 'Deptmo'
-      id_gerente: 105
+      id_criador: 1
+      nome_departamento: 'Padrão'
+      dt_criacao: now
       ScaAccount: Account_1
-   Departamentos_2:
-      cod_departamento: 102
-      nome_departamento: 'SUDeptmo'
-      id_gerente: 999
-      ScaAccount: Account_2

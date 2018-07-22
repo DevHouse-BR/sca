@@ -7,6 +7,7 @@ class GroupController extends Zend_Controller_Action {
 	}
 	public function listAction () {
 		if (DMG_Acl::canAccess(7)) {
+			$this->getResponse()->setHeader("Content-Type", "application/json");
 			if(DMG_Acl::canAccess(14)) {
 				echo DMG_Crud::index('ScmGroup', 'id, name, ScaAccount.nome_account');
 			} else {
@@ -16,6 +17,7 @@ class GroupController extends Zend_Controller_Action {
 	}
 	public function getAction () {
 		if (DMG_Acl::canAccess(8)) {
+			$this->getResponse()->setHeader("Content-Type", "application/json");
 			echo DMG_Crud::get('ScmGroup', (int) $this->getRequest()->getParam('id'));
 		}
 	}
@@ -32,10 +34,10 @@ class GroupController extends Zend_Controller_Action {
 					$this->deleteGroup($id);
 				}
 				Doctrine_Manager::getInstance()->getCurrentConnection()->commit();
-				echo Zend_Json::encode(array('success' => true));
+				$this->_helper->json(array('success' => true));
 			} catch (Exception $e) {
 				Doctrine_Manager::getInstance()->getCurrentConnection()->rollback();
-				echo Zend_Json::encode(array('failure' => true, 'message' => DMG_Translate::_('administration.group.form.cannotdelete')));
+				$this->_helper->json(array('success' => false, 'errormsg' => DMG_Translate::_('administration.group.form.cannotdelete')));
 			}
 		}
 	}
@@ -55,12 +57,12 @@ class GroupController extends Zend_Controller_Action {
 					$obj->name = $this->getRequest()->getParam('name');
 					try {
 						$obj->save();
-						echo Zend_Json::encode(array('success' => true));
+						$this->_helper->json(array('success' => true));
 					} catch (Exception $e) {
-						echo Zend_Json::encode(array('success' => false));
+						$this->_helper->json(array('success' => false, 'errormsg'=>$e->getMessage()));
 					}
 				} else {
-					echo Zend_Json::encode(array('success' => false));
+					$this->_helper->json(array('success' => false, 'errormsg'=>DMG_Translate::_('administration.group.permission.denied')));
 				}
 			}
 		} else {
@@ -73,11 +75,23 @@ class GroupController extends Zend_Controller_Action {
 				else
 					$obj->sca_account_id = Zend_Auth::getInstance()->getIdentity()->sca_account_id;
 
+				$grupo = Doctrine_Query::create()
+							->select()
+							->from('ScmGroup')
+							->where('sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+							->addWhere('name = ?', $obj->name)
+							->fetchOne();
+
+				if($grupo){
+					$this->_helper->json(array('success' => false, 'errormsg'=>DMG_Translate::_('administration.group.permission.manyerror')));
+					return;
+				}
+
 				try {
 					$obj->save();
-					echo Zend_Json::encode(array('success' => true));
+					$this->_helper->json(array('success' => true));
 				} catch (Exception $e) {
-					echo Zend_Json::encode(array('success' => false));
+					$this->_helper->json(array('success' => false, 'errormsg'=>$e->getMessage()));
 				}
 			}
 		}
@@ -117,7 +131,7 @@ class GroupController extends Zend_Controller_Action {
 				unset($pr);
 			}
 		}
-		echo Zend_Json::encode(array('success' => true));
+		$this->_helper->json(array('success' => true));
 	}
 	protected function getUnassigned () {
 		$grouprule = array();
@@ -157,7 +171,7 @@ class GroupController extends Zend_Controller_Action {
 				);
 			}
 		}
-		echo Zend_Json::encode($data);
+		$this->_helper->json($data);
 	}
 	protected function getAssigned () {
 		$grouprule = array();
@@ -192,6 +206,6 @@ class GroupController extends Zend_Controller_Action {
 				);
 			}
 		}
-		echo Zend_Json::encode($data);
+		$this->_helper->json($data);
 	}
 }

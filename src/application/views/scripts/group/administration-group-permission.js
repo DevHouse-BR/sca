@@ -1,13 +1,14 @@
-var AdministrationGroupPermission = Ext.extend(Ext.Window, {
+Groups.AdministrationGroupPermission = Ext.extend(Ext.Window, {
 	group: 0,
 	toSave: [],
 	modal: true,
 	constrain: true,
 	maximizable: false,
+	iconCls:'silk-key',
 	resizable: false,
 	width: 600,
 	height: 350,
-	title: '<?php echo DMG_Translate::_('administration.group.permission.title'); ?>',
+	title: Application.app.language('administration.group.permission.title'),
 	layout: 'fit',
 	closeAction: 'hide',
 	setGroup: function(group) {
@@ -15,7 +16,7 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 	},
 	constructor: function() {
 		this.addEvents({salvar: true, excluir: true});
-		AdministrationGroupPermission.superclass.constructor.apply(this, arguments);
+		Groups.AdministrationGroupPermission.superclass.constructor.apply(this, arguments);
 	},
 	initComponent: function() {
 		var tree1 = new Ext.tree.TreePanel({
@@ -28,7 +29,7 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 			enableDD: true,
 			overflow: 'scroll',
 			dragConfig: {
-				ddGroup: 'tree1',
+				ddGroup: 'tree1'
 			},
 			dropConfig: {
 				ddGroup: 'tree2',
@@ -61,15 +62,15 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 				}
 			},
 			loader: new Ext.tree.TreeLoader({
-				dataUrl: '<?php echo $this->url(array('controller' => 'group', 'action' => 'permission'), null, true); ?>',
+				dataUrl: 'group/permission',
 				baseParams: {
 					act: 'getUnassigned',
-					group: this.group,
+					group: this.group
 				}
 			}),
 			root: new Ext.tree.AsyncTreeNode({
 				nodeType: 'async',
-				text: '<?php echo DMG_Translate::_('administration.group.permission.treeunassigned'); ?>',
+				text: Application.app.language('administration.group.permission.treeunassigned'),
 				iconCls: 'folder',
 				draggable: false,
 				id: '0'
@@ -84,7 +85,7 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 			useArrows: true,
 			enableDD: true,
 			dragConfig: {
-				ddGroup: 'tree2',
+				ddGroup: 'tree2'
 			},
 			dropConfig: {
 				ddGroup: 'tree1',
@@ -117,15 +118,15 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 				}
 			},
 			loader: new Ext.tree.TreeLoader({
-				dataUrl: '<?php echo $this->url(array('controller' => 'group', 'action' => 'permission'), null, true); ?>',
+				dataUrl: 'group/permission',
 				baseParams: {
 					act: 'getAssigned',
-					group: this.group,
+					group: this.group
 				}
 			}),
 			root: new Ext.tree.AsyncTreeNode({
 				nodeType: 'async',
-				text: '<?php echo DMG_Translate::_('administration.group.permission.treeassigned'); ?>',
+				text: Application.app.language('administration.group.permission.treeassigned'),
 				iconCls: 'folder',
 				draggable: false,
 				id: '0'
@@ -150,12 +151,12 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 					columnWidth: .5,
 					autoHeight: true,
 					layout: 'form',
-					items: [tree1],
+					items: [tree1]
 				}, {
 					columnWidth: .5,
 					autoHeight: true,
 					layout: 'form',
-					items: [tree2],
+					items: [tree2]
 				}]
 			}]
 		});
@@ -163,11 +164,11 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 			items: this.formPanel,
 			bbar: [
 				'->',
-				{text: '<?php echo DMG_Translate::_('grid.form.save'); ?>', iconCls: 'icon-save', scope: this, handler: this._onBtnSalvarClick},
-				{text: '<?php echo DMG_Translate::_('grid.form.cancel'); ?>', iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
+				{text: Application.app.language('grid.form.save'), iconCls: 'icon-save', scope: this, handler: this._onBtnSalvarClick},
+				{text: Application.app.language('grid.form.cancel'), iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
 			]
 		});
-		AdministrationGroupPermission.superclass.initComponent.call(this);
+		Groups.AdministrationGroupPermission.superclass.initComponent.call(this);
 	},
 	show: function() {
 		this.formPanel.group = this.group;
@@ -177,14 +178,11 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 		tree2.loader.baseParams.group = this.group;
 		tree1.root.reload();
 		tree2.root.reload();
-		AdministrationGroupPermission.superclass.show.apply(this, arguments);
+		Groups.AdministrationGroupPermission.superclass.show.apply(this, arguments);
 	},
 	onDestroy: function() {
-		AdministrationGroupPermission.superclass.onDestroy.apply(this, arguments);
+		Groups.AdministrationGroupPermission.superclass.onDestroy.apply(this, arguments);
 		this.formPanel = null;
-	},
-	_onFormLoad: function(form, request) {
-		this.el.unmask();
 	},
 	_checkChild: function (node) {
 		if (node.hasChildNodes()) {
@@ -200,10 +198,10 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 		this.toSave = [];
 		this._checkChild(this.formPanel.items.items[0].items.items[1].items.items[0].root);
 		var dialog = this;
-		dialog.el.mask("<?php echo DMG_Translate::_('grid.form.saving'); ?>");
+		dialog.el.mask(Application.app.language('grid.form.saving'));
 		var con = new Ext.data.Connection();
 		con.request({
-			url: '<?php echo $this->url(array('controller' => 'group', 'action' => 'permission'), null, true); ?>',
+			url: 'group/permission',
 			method: 'post',
 			params: {
 				act: 'save',
@@ -217,13 +215,13 @@ var AdministrationGroupPermission = Ext.extend(Ext.Window, {
 		});
 	},
 	_onBtnDeleteClick: function() {
-		uiHelper.confirm('<?php echo DMG_Translate::_('grid.form.confirm.title'); ?>', '<?php echo DMG_Translate::_('grid.form.confirm.delete'); ?>', function(opt) {
+		uiHelper.confirm(Application.app.language('grid.form.confirm.title'), Application.app.language('grid.form.confirm.delete'), function(opt) {
 			if(opt === 'no') {
 				return;
 			}
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.deleting'); ?>');
+			this.el.mask(Application.app.language('grid.form.deleting'));
 			Ext.Ajax.request({
-				url: '<?php echo $this->url(array('controller' => 'group', 'action' => 'delete'), null, true); ?>',
+				url: 'group/delete',
 				params: {
 					id: this.group
 				},

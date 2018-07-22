@@ -1,13 +1,61 @@
 ScaAccountConfig:
    AccountConfig_1:
       id: 1
-      nome_parametro: 'Paginacao'
-      desc_parametro: 'Valor maximo exibido por pagina'
+      nome_parametro: 'Paginação'
+      desc_parametro: 'Itens a serem exibidos nas grids antes de paginar'
    AccountConfig_2:
       id: 2
-      nome_parametro: 'Logo'
-      desc_parametro: 'Logomarca exibida para o usuario'
+      nome_parametro: 'Logo da Conta'
+      desc_parametro: 'Caminho da Logo da sua Conta'
    AccountConfig_3:
       id: 3
-      nome_parametro: 'Generico'
-      desc_parametro: 'Parametro sem utilidade'
+      nome_parametro: 'Idioma Padrão'
+      desc_parametro: 'Idioma padrão para a Conta'
+   AccountConfig_4:
+      id: 4
+      nome_parametro: 'Welcome Sistema'
+      desc_parametro: 'Texto de boas vindas a ser exibido na tela inicial do Sistema'
+   AccountConfig_5:
+      id: 5
+      nome_parametro: 'Texto Rodapé Sistema'
+      desc_parametro: 'Texto a ser exibido no rodapé do Sistema'
+   AccountConfig_6:
+      id: 6
+      nome_parametro: 'Nome do Portal'
+      desc_parametro: 'Nome a ser exibido no topo do Portal e na Tela de Boas vindas'
+   AccountConfig_7:
+      id: 7
+      nome_parametro: 'Texto Rodapé Portal'
+      desc_parametro: 'Texto a ser exibido no rodapé do Portal'
+   AccountConfig_8:
+      id: 8
+      nome_parametro: 'Welcome Portal'
+      desc_parametro: 'Texto de boas vindas a ser exibido na tela inicial do Portal'
+   AccountConfig_9:
+      id: 9
+      nome_parametro: 'Utilizar Servidor SMTP?'
+      desc_parametro: 'Se ativado, o sistema utiliza as configurações de Servidor SMTP para enviar E-Mails'
+   AccountConfig_10:
+      id: 10
+      nome_parametro: 'Endereço Servidor SMTP'
+      desc_parametro: 'Informe o endereço completo do Servidor SMTP'
+   AccountConfig_11:
+      id: 11
+      nome_parametro: 'Porta Servidor SMTP'
+      desc_parametro: 'Porta do Servidor SMTP a ser utilizada para envio de E-Mails'
+   AccountConfig_12:
+      id: 12
+      nome_parametro: 'Usuário SMTP'
+      desc_parametro: 'Usuário SMTP para envio de E-Mails'
+   AccountConfig_13:
+      id: 13
+      nome_parametro: 'Senha SMTP'
+      desc_parametro: 'Senha SMTP para envio de E-Mails'
+   AccountConfig_14:
+      id: 14
+      nome_parametro: 'Máx. Upload em MB'
+      desc_parametro: 'Tamanho máximo que um arquivo deve ter para permitir o Upload. Se estiver em branco, não há limite'
+   AccountConfig_15:
+      id: 15
+      nome_parametro: 'Extensões Permitidas'
+      desc_parametro: 'Extensões de arquivos permitidos para Upload (separados por vírgula). Se estiver em branco, permite todas as extensões!'

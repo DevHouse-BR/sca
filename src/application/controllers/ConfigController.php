@@ -6,8 +6,8 @@ class ConfigController extends Zend_Controller_Action {
 		$this->view->headMeta()->appendHttpEquiv('Content-Type', 'application/json; charset=UTF-8');
 	}
 	public function listAction () {
-		if (DMG_Acl::canAccess(1) and DMG_Acl::canAccess(14)) {
-			echo DMG_Crud::index('ScmConfig', 'id, name, value, fl_system');
+		if (DMG_Acl::canAccess(1)) {
+			echo DMG_Crud::index('ScmConfig', 'id, name, value, system');
 		}
 	}
 	public function getAction () {
@@ -15,7 +15,7 @@ class ConfigController extends Zend_Controller_Action {
 			$id = (int) $this->getRequest()->getParam('id');
 			$obj = Doctrine::getTable('ScmConfig')->find($id);
 			if ($obj) {
-				echo Zend_Json::encode(array('success' => true, 'data' => $obj->toArray()));
+				$this->_helper->json(array('success' => true, 'data' => $obj->toArray()));
 			}
 		}
 	}
@@ -24,4 +24,39 @@ class ConfigController extends Zend_Controller_Action {
 			echo DMG_Crud::save('ScmConfig', (int) $this->getRequest()->getParam('id'), array('value'));
 		}
 	}
+	
+	public function getmultipleAction () {
+		$data = array();
+		if (DMG_Acl::canAccess(1)) {
+			$query = Doctrine_Query::create()
+				->select('id')
+				->addSelect('value')
+				->from('ScmConfig')
+				->whereIn('id', $this->getRequest()->getParam('id'));
+			
+			foreach ($query->execute() as $k) {
+				$data[(int)$k->id] = $k->value;
+			}
+		}
+		$this->_helper->json($data);
+	}
+	
+	public function getaccountcfgAction () {
+		$data = array();
+		if (DMG_Acl::canAccess(1)) {
+			$query = Doctrine_Query::create()
+				->select('sca_account_config_id')
+				->addSelect('valor_parametro')
+				->from('ScaAccountRelationConfig')
+				->where('sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
+				->orderBy('sca_account_config_id ASC');
+			
+			foreach ($query->execute() as $k) {
+				$data[(int)$k->sca_account_config_id] = $k->valor_parametro;
+			}
+		}
+		$this->_helper->json($data);
+	}
+	
+	
 }

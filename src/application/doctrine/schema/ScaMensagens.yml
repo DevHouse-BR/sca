@@ -31,17 +31,17 @@ ScaMensagens:
       notnull: false
       primary: false
     remetente:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false
     destinatarios:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false
     assunto:
-      type: string()
+      type: string(255)
       fixed: false
       notnull: false
       primary: false

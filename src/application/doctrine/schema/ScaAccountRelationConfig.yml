@@ -13,9 +13,9 @@ ScaAccountRelationConfig:
          type: int(4)
          notnull: true
       valor_parametro:
-         type: string()
+         type: string(255)
          fixed: false
-         notnull: true
+         notnull: false
    relations:
       ScaAccount:
          local: sca_account_id

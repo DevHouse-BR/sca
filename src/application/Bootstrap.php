@@ -5,6 +5,20 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 		Zend_Loader_Autoloader::getInstance()->registerNamespace('DMG');
 		Zend_Loader_Autoloader::getInstance()->registerNamespace('Khronos');
 	}
+	public function _initRouter () {
+		Zend_Controller_Front::getInstance()->getRouter()->addRoute('css', new Zend_Controller_Router_Route_Regex(
+			'extjs\/resources\/css\/([a-zA-Z0-9-_.]*)\.css',
+			array('action' => 'compressedcss', 'controller' => 'index', 'module' => 'default'),
+			array(1 => 'slug'),
+			'extjs/resources/css/%s.css'
+		));
+		
+		Zend_Controller_Front::getInstance()->getRouter()->addRoute('login', new Zend_Controller_Router_Route('login/:token', array(
+			'module'=> 'default',  
+			'controller' => 'index',  
+			'action'=> 'index'
+		)));
+	}
 	public function _initDoctrine () {
 		require_once 'Doctrine.php';
 		$loader = Zend_Loader_Autoloader::getInstance();

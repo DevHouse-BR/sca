@@ -1,28 +1,25 @@
-var ControleDepartamentosForm = Ext.extend(Ext.Window, {
+Ext.namespace('departamentos');
+departamentos.ControleDepartamentosForm = Ext.extend(Ext.Window, {
 	user: 0,
 	modal: true,
 	constrain: true,
 	maximizable: false,
 	resizable: false,
 	width: 450,
-	<?php if(DMG_Acl::canAccess(14)): ?>
-		height: 190,
-	<?php else: ?>
-		height: 160,
-	<?php endif; ?>
-	title: '<?php echo DMG_Translate::_('administration.user.form.title'); ?>',
+	height: 160,
+	title: Application.app.language('menu.controle.departamentos'),
 	layout: 'fit',
 	closeAction: 'hide',
 	forceReload: function(id) {
 		this.iddpto = id;
                 this.comboStore.load({
-	                url: '<?php echo $this->url(array('controller' => 'departamentos', 'action' => 'listusers'), null, true); ?>',
+	                url: 'departamentos/listusers',
                         params: {
           	              id: this.iddpto
                         },
                         scope: this,
                         success: this.el.unmask(),
-                        faliure: this.el.unmask(),
+                        faliure: this.el.unmask()
 		});
 	},
 	setUser: function(user) {
@@ -30,52 +27,90 @@ var ControleDepartamentosForm = Ext.extend(Ext.Window, {
 	},
 	constructor: function() {
 		this.addEvents({salvar: true, excluir: true});
-		ControleDepartamentosForm.superclass.constructor.apply(this, arguments);
+		departamentos.ControleDepartamentosForm.superclass.constructor.apply(this, arguments);
+	},
+
+	listeners:{
+		beforerender:function(grid){
+			Application.AccessController.applyPermission({
+				defaultAction:'hide',
+				items:[{
+					objeto: 'comboBoxListUser_ControleDepartamentosForm',
+                                        acl: 3,
+                                        tipo: 'componente'
+				}]
+			});
+		}
 	},
 	initComponent: function() {
-		<?php if(DMG_Acl::canAccess(14)): ?>
-		this.accountD = new Ext.form.ComboBox({
-			store: new Ext.data.JsonStore({
-				url: '<?php echo $this->url(array('controller' => 'user', 'action' => 'accountsList'), null, true); ?>',
-				root: 'data',
-				autoLoad: true,
-				remoteSort: true,
-				sortInfo: {
-					field: 'name',
-					direction: 'ASC'
-				},
-				fields: [
-					{name: 'id', type: 'int'},
-					{name: 'name', type: 'string'}
-				]
-			}),
-			hiddenName: 'accountD',
-			allowBlank: 'false',
-			displayField: 'name',
-			valueField: 'id',
-			mode: 'local',
-			triggerAction: 'all',
-			emptyText: '<?php echo DMG_Translate::_('administration.user.form.account.helper'); ?>',
-			fieldLabel: '<?php echo DMG_Translate::_('administration.user.form.account.text'); ?>'
-		});
-		<?php endif; ?>
-		<?php if(DMG_Acl::canAccess(3)): ?>
+//		this.accountD = new Ext.form.ComboBox({
+//			id: 'selectBoxAccount_ControleDepartamentosForm',
+//			store: new Ext.data.JsonStore({
+//				url: 'user/accountsList',
+//				root: 'data',
+//				autoLoad: true,
+//				remoteSort: true,
+//				sortInfo: {
+//					field: 'name',
+//					direction: 'ASC'
+//				},
+//				fields: [
+//					{name: 'id', type: 'int'},
+//					{name: 'name', type: 'string'}
+//				]
+//			}),
+//			hiddenName: 'accountD',
+//			allowBlank: 'false',
+//			displayField: 'name',
+//			valueField: 'id',
+//			mode: 'local',
+//			triggerAction: 'all',
+//			emptyText: Application.app.language('administration.user.form.account.helper'),
+//			fieldLabel: Application.app.language('administration.user.form.account.text'),
+//		});
 		this.comboStore = new Ext.data.JsonStore({
-                                url: '<?php echo $this->url(array('controller' => 'departamentos', 'action' => 'listusers'), null, true); ?>',
-                                root: 'data',
-                                autoLoad: false,
-                                autoDestroy: false,
-                                remoteSort: true,
-                                sortInfo: {
-                                        field: 'name',
-                                        direction: 'ASC'
-                                },
-                                fields: [
-                                        {name: 'id', type: 'int'},
-                                        {name: 'name', type: 'string'}
-                                ],
+            url: 'departamentos/listusers',
+            root: 'data',
+            autoLoad: false,
+            autoDestroy: false,
+            remoteSort: true,
+            sortInfo: {
+                    field: 'name',
+                    direction: 'ASC'
+            },
+            fields: [
+                    {name: 'id', type: 'int'},
+                    {name: 'name', type: 'string'}
+            ]
 		});
+		this.comboStore.addListener('load', function (a, b, c) {
+	                if(this.iddpto){
+        	                Ext.Ajax.request({
+                	                scope: this,
+                        	        url: 'user/gerentesel',
+                                	params: {
+	                                        'id': this.iddpto
+        	                        },
+                	                success: function (a, b) {
+                        	                try {
+                                	                var c = Ext.decode(a.responseText);
+                                        	} catch (e) {
+							return;
+						};
+	                                        if (c.failure == true) {
+        	                                        this.listUser.setValue("");
+                	                                return;
+                        	                }
+						if (c.data == 0)
+							this.listUser.setValue("");
+						else
+	                                	        this.listUser.setValue(c.data);
+	                                }
+        	                });
+	                }
+		}, this);
 		this.listUser = new Ext.form.ComboBox({
+			id: 'comboBoxListUser_ControleDepartamentosForm',
 			scope: this,
 			store: this.comboStore,
 			hiddenName: 'listUser',
@@ -84,75 +119,79 @@ var ControleDepartamentosForm = Ext.extend(Ext.Window, {
 			valueField: 'id',
 			triggerAction: 'all',
 			mode: 'local',
-			fieldLabel: '<?php echo DMG_Translate::_('departamento.form.gerente.text'); ?>',
-			emptyText: '<?php echo DMG_Translate::_('departamento.form.gerente.helper'); ?>',
+			fieldLabel: Application.app.language('departamento.form.gerente.text'),
+			emptyText: Application.app.language('departamento.form.gerente.helper')
 		});
-		<?php endif; ?>
 		this.formUPanel = new Ext.form.FormPanel({
 			bodyStyle: 'padding:10px;',
 			border: false,
 			autoScroll: true,
 			defaultType: 'textfield',
 			defaults: {anchor: '-19'},
-			items:[
-				{fieldLabel: '<?php echo DMG_Translate::_('departamento.columns.nm_departamento.text'); ?>', name: 'name', allowBlank: false, maxLength: 255},
-				{fieldLabel: '<?php echo DMG_Translate::_('departamento.columns.cod.text'); ?>', name: 'cod', allowBlank: true, maxLength: 255},
-				<?php if(DMG_Acl::canAccess(3)): ?>
-				this.listUser,
-				<?php endif; ?>
-				<?php if(DMG_Acl::canAccess(14)): ?>
-				this.accountD,
-				<?php endif; ?>
+			items:[{
+				fieldLabel: Application.app.language('departamento.columns.nm_departamento.text'),
+				name: 'name',
+				id:'fieldName_ControleDepartamentosForm',
+				allowBlank: false,
+				maxLength: 255
+			},{
+				fieldLabel: Application.app.language('departamento.columns.cod.text'),
+				name: 'cod', 
+				allowBlank: true, 
+				maxLength: 255
+			},
+				this.listUser
+//				this.accountD
 			]
 		});
 		Ext.apply(this, {
 			items: this.formUPanel,
 			bbar: [
 				'->',
-				{text: '<?php echo DMG_Translate::_('grid.form.save'); ?>',iconCls: 'icon-save',scope: this,handler: this._onBtnSalvarClick},
-				<?php if (DMG_Acl::canAccess(16)): ?>
-				this.btnExcluir = new Ext.Button({text: '<?php echo DMG_Translate::_('grid.form.delete'); ?>', iconCls: 'silk-delete', scope: this, handler: this._onBtnDeleteClick}),
-				<?php endif; ?>
-				{text: '<?php echo DMG_Translate::_('grid.form.cancel'); ?>', iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
+				{text: Application.app.language('grid.form.save'),iconCls: 'icon-save',scope: this,handler: this._onBtnSalvarClick},
+				this.btnExcluir = new Ext.Button({text: Application.app.language('grid.form.delete'), iconCls: 'silk-delete', scope: this, handler: this._onBtnDeleteClick}),
+				{text: Application.app.language('grid.form.cancel'), iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
 			]
 		});
-		ControleDepartamentosForm.superclass.initComponent.call(this);
+		departamentos.ControleDepartamentosForm.superclass.initComponent.call(this);
 	},
 	show: function() {
 		this.formUPanel.getForm().reset();
-		ControleDepartamentosForm.superclass.show.apply(this, arguments);
+		departamentos.ControleDepartamentosForm.superclass.show.apply(this, arguments);
 		if(this.iddpto !== 0) {
-			<?php if (DMG_Acl::canAccess(16)): ?>
 			this.btnExcluir.show();
-			<?php endif; ?>
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.loading'); ?>');
-			<?php if(DMG_Acl::canAccess(16)): ?>
+			this.el.mask(Application.app.language('grid.form.loading'));
 			if( this.id != 0 )
 				this.comboStore.load({
-					url: '<?php echo $this->url(array('controller' => 'departamentos', 'action' => 'listusers'), null, true); ?>',
+					waitTitle: Application.app.language("auth.alert"),
+					waitMsg: Application.app.language("auth.loading"),
+					fail: Application.app.faiHandler,
+
+					url: 'departamentos/listusers',
 					params: {
 						id: this.iddpto
 					},
 					scope: this,
 					success: this.el.unmask(),
-					faliure: this.el.unmask(),
+					faliure: function(obj1, obj2){
+						this.el.unmask();
+						Application.app.failHandler(obj1, obj2);
+					}
 				});
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.loading'); ?>');
-			<?php endif; ?>
+			this.el.mask(Application.app.language('grid.form.loading'));
                         this.formUPanel.getForm().load({
-                                url: '<?php echo $this->url(array('controller' => 'departamentos', 'action' => 'get'), null, true); ?>',
+                                url: 'departamentos/get',
                                 params: {
                                         id: this.iddpto
                                 },
                                 scope: this,
                                 success: this.el.unmask(),
-				faliure: this.el.unmask(),
+				faliure: this.el.unmask()
                         });
 		} else {
-			<?php if (DMG_Acl::canAccess(16)): ?>
 			this.btnExcluir.hide();
-			<?php endif; ?>
 		}
+		Ext.getCmp('fieldName_ControleDepartamentosForm').focus(false, 500);
 	},
 	onDestroy: function() {
 //		DepartamentosForm.superclass.onDestroy.apply(this, arguments);
@@ -164,36 +203,34 @@ var ControleDepartamentosForm = Ext.extend(Ext.Window, {
 	_onBtnSalvarClick: function() {
 		var form = this.formUPanel.getForm();
 		if(!form.isValid()) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('grid.form.alert.invalid'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.invalid'); ?>'});
+			Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.invalid')});
 			return false;
 		}
-		this.el.mask('<?php echo DMG_Translate::_('grid.form.saving'); ?>');
 		form.submit({
-			url: '<?php echo $this->url(array('controller' => 'departamentos', 'action' => 'save'), null, true); ?>',
+			waitTitle: Application.app.language("auth.alert"),
+		    waitMsg: Application.app.language("auth.loading"),
+			url: 'departamentos/save',
 			params: {
 				id: this.iddpto
 			},
 			scope: this,
 			success: function() {
-				this.el.unmask();
 				this.hide();
 				this.fireEvent('salvar', this);
 			},
-			failure: function () {
-				this.el.unmask();
+			failure: function (obj1, obj2) {
+				Application.app.failHandler(obj1, obj2);
 			}
 		});
 	},
-	<?php if (DMG_Acl::canAccess(16)): ?>
 	_onBtnDeleteClick: function() {
-		uiHelper.confirm('<?php echo DMG_Translate::_('grid.form.confirm.title'); ?>', '<?php echo DMG_Translate::_('grid.form.confirm.delete'); ?>', function(opt) {
+		Application.app.confirm(Application.app.language('grid.form.confirm.title'), Application.app.language('grid.form.confirm.delete'), function(opt) {
 			if(opt === 'no') {
 				return;
 			}
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.deleting'); ?>');
+			this.el.mask(Application.app.language('grid.form.deleting'));
 			Ext.Ajax.request({
-				url: '<?php echo $this->url(array('controller' => 'departamentos', 'action' => 'delete'), null, true); ?>',
+				url: 'departamentos/delete',
 				params: {
 					id: this.iddpto
 				},
@@ -206,15 +243,8 @@ var ControleDepartamentosForm = Ext.extend(Ext.Window, {
 			});
 		}, this);
 	},
-	<?php endif; ?>
 	_onBtnCancelarClick: function() {
 		this.hide();
 	}
 });
-Ext.apply(Ext.form.VTypes, {
-	password: function(value, field) {
-		var pwd = Ext.getCmp(field.initialPassField);
-		this.passwordText = '<?php echo DMG_Translate::_('administration.user.form.password.error'); ?>';
-		return (value == pwd.getValue());
-	}
-});
+

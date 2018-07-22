@@ -1,13 +1,11 @@
 ScmModule:
   Module_1:
-    name: 'Administración'
+    name: 'Administração'
   Module_2:
-    name: 'Parque'
+    name: 'Postagens'
   Module_3:
-    name: 'Cierre'
+    name: 'Mensagens'
   Module_4:
-    name: 'Consultas y Listados'
+    name: 'Gerenciador de Arquivos'
   Module_5:
-    name: 'Portal'
-  Module_6:
-    name: 'Relatórios'
+    name: 'Painel de Controle'

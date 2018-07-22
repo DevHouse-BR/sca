@@ -1,20 +1,32 @@
-var AdministrationSettingsFilter = new Ext.ux.grid.GridFilters({
-	local: false,
-	filters: [{
-		type: 'string',
-		dataIndex: 'name',
-		phpMode: true
-	}]
-});
-var AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
+Ext.namespace('Settings');
+
+Settings.AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 	border: false,
 	stripeRows: true,
 	loadMask: true,
 	columnLines: true,
-	plugins: [AdministrationSettingsFilter],
+	id:'AdministrationSettings',
+	viewConfig: {
+		autoFill: true,
+		forceFit:true
+	},
+	autoExpandColumn: 'colDesc_AdministrationSettings',
+	listeners:{
+		beforerender:function(grid){
+			Application.AccessController.applyPermission({
+				defaultAction:'hide',
+				items:[{
+					objeto: grid,
+					acl: 2,
+					tipo: 'funcao',
+					funcao: '_onGridRowDblClick'
+				}]
+			});
+		}
+	},
 	initComponent: function () {
 		this.store = new Ext.data.JsonStore({
-			url: '<?php echo $this->url(array('controller' => 'settings', 'action' => 'list'), null, true); ?>',
+			url: 'settings/list',
 			root: 'data',
 			idProperty: 'id',
 			totalProperty: 'total',
@@ -37,52 +49,43 @@ var AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 		});
 		var paginator = new Ext.PagingToolbar({
 			store: this.store,
-			pageSize: 30,
-			plugins: [AdministrationSettingsFilter]
+			pageSize: 30
 		});
-		paginator.addSeparator();
-		var button = new Ext.Toolbar.Button();
-		button.text = '<?php echo DMG_Translate::_('grid.bbar.clearfilter'); ?>';
-		button.addListener('click', function(a, b) {
-			AdministrationSettingsFilter.clearFilters();
-		});
-		paginator.addButton(button);
 		Ext.apply(this, {
 			viewConfig: {
-				emptyText: '<?php echo DMG_Translate::_('grid.empty'); ?>',
+				emptyText: Application.app.language('grid.empty'),
 				deferEmptyText: false
 			},
 			bbar: paginator,
 			columns: [{
 				dataIndex: 'nome',
-				header: '<?php echo DMG_Translate::_('administration.setting.grid.name.text'); ?>',
+				header: Application.app.language('administration.setting.grid.name.text'),
 				width: 170,
-				sortable: true
+				sortable: false
 			}, {
 				dataIndex: 'parm',
-				header: '<?php echo DMG_Translate::_('administration.setting.grid.value.text'); ?>',
-				width: 100,
-				sortable: true
+				header: Application.app.language('administration.setting.grid.value.text'),
+				width: 170,
+				sortable: false
 			}, {
+				id:'colDesc_AdministrationSettings',
 				dataIndex: 'desc',
-				header: '<?php echo DMG_Translate::_('administration.setting.grid.help.text'); ?>',
+				header: Application.app.language('administration.setting.grid.help.text'),
 				width: 300,
-				sortable: true
+				sortable: false
 			}]
 		});
-		AdministrationSettings.superclass.initComponent.call(this);
+		Settings.AdministrationSettings.superclass.initComponent.call(this);
 	},
 	initEvents: function () {
-		AdministrationSettings.superclass.initEvents.call(this);
+		Settings.AdministrationSettings.superclass.initEvents.call(this);
 		this.on({
 			scope: this,
-<?php if (DMG_Acl::canAccess(2)): ?>
 			rowdblclick: this._onGridRowDblClick
-<?php endif; ?>
 		});
 	},
 	onDestroy: function () {
-		AdministrationSettings.superclass.onDestroy.apply(this, arguments);
+		Settings.AdministrationSettings.superclass.onDestroy.apply(this, arguments);
 		Ext.destroy(this.window);
 		this.window = null;
 	},
@@ -94,11 +97,10 @@ var AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 	_onBtnExcluirSelecionadosClick: function () {
 		var arrSelecionados = this.getSelectionModel().getSelections();
 		if (arrSelecionados.length === 0) {
-			//Ext.Msg.alert('<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>');
-			uiHelper.showMessageBox({title: '<?php echo DMG_Translate::_('grid.form.alert.title'); ?>', msg: '<?php echo DMG_Translate::_('grid.form.alert.select'); ?>'});
+			uiHelper.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.select')});
 			return false;
 		}
-		uiHelper.confirm('<?php echo DMG_Translate::_('grid.form.confirm.title'); ?>', '<?php echo DMG_Translate::_('grid.form.confirm.delete'); ?>', function (opt) {
+		uiHelper.confirm(Application.app.language('grid.form.confirm.title'), Application.app.language('grid.form.confirm.delete'), function (opt) {
 			if (opt === 'no') {
 				return;
 			}
@@ -106,9 +108,9 @@ var AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 			for (var i = 0; i < arrSelecionados.length; i++) {
 				id.push(arrSelecionados[i].get('id'));
 			}
-			this.el.mask('<?php echo DMG_Translate::_('grid.form.deleting'); ?>');
+			this.el.mask(Application.app.language('grid.form.deleting'));
 			Ext.Ajax.request({
-				url: '<?php echo $this->url(array('controller' => 'settings', 'action' => 'delete'), null, true); ?>',
+				url: 'settings/delete',
 				params: {
 					'id[]': id
 				},
@@ -121,20 +123,32 @@ var AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 		},
 		this);
 	},
-	<?php if (DMG_Acl::canAccess(2)): ?>
 	_onGridRowDblClick: function (grid, rowIndex, e) {
 		var record = grid.getStore().getAt(rowIndex);
 		var id = record.get('id');
-		this._newForm();
-		this.window.setid(id);
-		this.window.show();
+		if(id == 2){
+			this.newUpForm();
+			this.upWindow.show();
+		} else {
+			this._newForm();
+			this.window.setid(id);
+			this.window.show();
+		}
 	},
 	_onCadastroUsuarioSalvarExcluir: function () {
 		this.store.reload();
 	},
+	newUpForm: function () {
+		if(!this.upWindow) {
+			this.upWindow = new Settings.AdministrationSettingsUpForm({
+				renderTo: this.body
+			});
+		}
+		return this.upWindow;
+	},
 	_newForm: function () {
 		if (!this.window) {
-			this.window = new AdministrationSettingsForm({
+			this.window = new Settings.AdministrationSettingsForm({
 				renderTo: this.body,
 				listeners: {
 					scope: this,
@@ -144,6 +158,5 @@ var AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 		}
 		return this.window;
 	}
-<?php endif; ?>
 });
-Ext.reg('administration-settings', AdministrationSettings);
+Ext.reg('administration-settings', Settings.AdministrationSettings);

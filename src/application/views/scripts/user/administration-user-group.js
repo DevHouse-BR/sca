@@ -1,13 +1,14 @@
-var AdministrationUserGroup = Ext.extend(Ext.Window, {
+User.AdministrationUserGroup = Ext.extend(Ext.Window, {
 	user: 0,
 	toSave: [],
 	modal: true,
 	constrain: true,
 	maximizable: false,
+	iconCls:'silk-group',
 	resizable: false,
 	width: 600,
 	height: 350,
-	title: '<?php echo DMG_Translate::_('administration.user.group.title'); ?>',
+	title: Application.app.language('administration.user.group.title'),
 	layout: 'fit',
 	closeAction: 'hide',
 	setUser: function(user) {
@@ -15,7 +16,7 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 	},
 	constructor: function() {
 		this.addEvents({salvar: true, excluir: true});
-		AdministrationUserGroup.superclass.constructor.apply(this, arguments);
+		User.AdministrationUserGroup.superclass.constructor.apply(this, arguments);
 	},
 	initComponent: function() {
 		var tree6 = new Ext.tree.TreePanel({
@@ -28,7 +29,7 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 			enableDD: true,
 			overflow: 'scroll',
 			dragConfig: {
-				ddGroup: 'tree6',
+				ddGroup: 'tree6'
 			},
 			dropConfig: {
 				ddGroup: 'tree7',
@@ -39,15 +40,15 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 				}
 			},
 			loader: new Ext.tree.TreeLoader({
-				dataUrl: '<?php echo $this->url(array('controller' => 'user', 'action' => 'group'), null, true); ?>',
+				dataUrl: 'user/group',
 				baseParams: {
 					act: 'getUnassigned',
-					user: this.user,
+					user: this.user
 				}
 			}),
 			root: new Ext.tree.AsyncTreeNode({
 				nodeType: 'async',
-				text: '<?php echo DMG_Translate::_('administration.user.group.treeunassigned'); ?>',
+				text: Application.app.language('administration.user.group.treeunassigned'),
 				iconCls: 'folder',
 				draggable: false,
 				id: '0'
@@ -62,7 +63,7 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 			useArrows: true,
 			enableDD: true,
 			dragConfig: {
-				ddGroup: 'tree7',
+				ddGroup: 'tree7'
 			},
 			dropConfig: {
 				ddGroup: 'tree6',
@@ -73,15 +74,15 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 				}
 			},
 			loader: new Ext.tree.TreeLoader({
-				dataUrl: '<?php echo $this->url(array('controller' => 'user', 'action' => 'group'), null, true); ?>',
+				dataUrl: 'user/group',
 				baseParams: {
 					act: 'getAssigned',
-					user: this.user,
+					user: this.user
 				}
 			}),
 			root: new Ext.tree.AsyncTreeNode({
 				nodeType: 'async',
-				text: '<?php echo DMG_Translate::_('administration.user.group.treeassigned'); ?>',
+				text: Application.app.language('administration.user.group.treeassigned'),
 				iconCls: 'folder',
 				draggable: false,
 				id: '0'
@@ -106,12 +107,12 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 					columnWidth: .5,
 					autoHeight: true,
 					layout: 'form',
-					items: [tree6],
+					items: [tree6]
 				}, {
 					columnWidth: .5,
 					autoHeight: true,
 					layout: 'form',
-					items: [tree7],
+					items: [tree7]
 				}]
 			}]
 		});
@@ -119,11 +120,11 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 			items: this.formPanel,
 			bbar: [
 				'->',
-				{text: '<?php echo DMG_Translate::_('grid.form.save'); ?>', iconCls: 'icon-save', scope: this, handler: this._onBtnSalvarClick},
-				{text: '<?php echo DMG_Translate::_('grid.form.cancel'); ?>', iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
+				{text: Application.app.language('grid.form.save'), iconCls: 'icon-save', scope: this, handler: this._onBtnSalvarClick},
+				{text: Application.app.language('grid.form.cancel'), iconCls: 'silk-cross', scope: this, handler: this._onBtnCancelarClick}
 			]
 		});
-		AdministrationUserGroup.superclass.initComponent.call(this);
+		User.AdministrationUserGroup.superclass.initComponent.call(this);
 	},
 	show: function() {
 		this.formPanel.user = this.user;
@@ -133,10 +134,10 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 		tree7.loader.baseParams.user = this.user;
 		tree6.root.reload();
 		tree7.root.reload();
-		AdministrationUserGroup.superclass.show.apply(this, arguments);
+		User.AdministrationUserGroup.superclass.show.apply(this, arguments);
 	},
 	onDestroy: function() {
-		AdministrationUserGroup.superclass.onDestroy.apply(this, arguments);
+		User.AdministrationUserGroup.superclass.onDestroy.apply(this, arguments);
 		this.formPanel = null;
 	},
 	_onFormLoad: function(form, request) {
@@ -156,10 +157,10 @@ var AdministrationUserGroup = Ext.extend(Ext.Window, {
 		this.toSave = [];
 		this._checkChild(this.formPanel.items.items[0].items.items[1].items.items[0].root);
 		var dialog = this;
-		dialog.el.mask("<?php echo DMG_Translate::_('grid.form.saving'); ?>");
+		dialog.el.mask(Application.app.language('grid.form.saving'));
 		var con = new Ext.data.Connection();
 		con.request({
-			url: '<?php echo $this->url(array('controller' => 'user', 'action' => 'group'), null, true); ?>',
+			url: 'user/group',
 			method: 'post',
 			params: {
 				act: 'save',
