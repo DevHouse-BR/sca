@@ -1,5 +1,6 @@
 ScaAccount:
    Account_1:
       nome_account: 'Conta Padrão'
-      email_account: 'mail@mail.com'
+      email_account: 'leonardo@devhouse.com.br'
       fl_ativa: true
+

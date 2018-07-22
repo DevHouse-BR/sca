@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,7 +25,7 @@
  * @package     Doctrine
  * @subpackage  Task
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision: 2761 $
  * @author      Jonathan H. Wage <jwage@mac.com>
@@ -39,7 +39,7 @@ class Doctrine_Task_DumpData extends Doctrine_Task
 
     public function execute()
     {
-        $models = Doctrine_Core::loadModels($this->getArgument('models_path')); 
+        $models = Doctrine::loadModels($this->getArgument('models_path')); 
 
         if (empty($models)) { 
             throw new Doctrine_Task_Exception('No models were loaded'); 
@@ -52,7 +52,7 @@ class Doctrine_Task_DumpData extends Doctrine_Task
         }
 
         if ( ! empty($path)) {
-            Doctrine_Core::dumpData($path);
+            Doctrine::dumpData($path);
 
             $this->notify(sprintf('Dumped data successfully to: %s', $path));
         } else {

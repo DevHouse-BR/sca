@@ -75,7 +75,7 @@ if (Ext.util.Format) {
 }
 if(Ext.DatePicker) {
 	Ext.apply(Ext.DatePicker.prototype, {
-		todayText: "<?php echo DMG_Translate::_('i18n.datePicker.todayText'); ?>Hoje",
+		todayText: "<?php echo DMG_Translate::_('i18n.datePicker.todayText'); ?>",
 		minText: "<?php echo DMG_Translate::_('i18n.datePicker.minText'); ?>Esta data &eacute; anterior a menor data",
 		maxText: "<?php echo DMG_Translate::_('i18n.datePicker.maxText'); ?>Esta data &eacute; posterior a maior data",
 		disabledDaysText: "",

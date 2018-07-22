@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,87 +25,87 @@
  * @package     Doctrine
  * @subpackage  Hydrate
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision: 3192 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  */
 abstract class Doctrine_Hydrator_Abstract extends Doctrine_Locator_Injectable
 {
-    protected
-        $_queryComponents = array(),
-        $_tableAliases = array(),
-        $_priorRow,
-        $_hydrationMode;
-
-    public function __construct($queryComponents = null, $tableAliases = null, $hydrationMode = null)
-    {
-        $this->setQueryComponents($queryComponents);
-        $this->setTableAliases($tableAliases);
-        $this->setHydrationMode($hydrationMode);
-    }
-
     /**
-     * Set the query components (structure and query instructions)
+     * @var array $_aliasMap                    two dimensional array containing the map for query aliases
+     *      Main keys are component aliases
      *
-     * @param array $queryComponents
-     * @return void
+     *          table               table object associated with given alias
+     *
+     *          relation            the relation object owned by the parent
+     *
+     *          parent              the alias of the parent
+     *
+     *          agg                 the aggregates of this component
+     *
+     *          map                 the name of the column / aggregate value this
+     *                              component is mapped to a collection
      */
-    public function setQueryComponents($queryComponents)
-    {
-        $this->_queryComponents = $queryComponents;
-    }
+    protected $_queryComponents = array();
 
     /**
-     * Set the table aliases for this query
-     *
-     * @param array $tableAliases
-     * @return void
+     * The current hydration mode.
      */
-    public function setTableAliases($tableAliases)
-    {
-        $this->_tableAliases = $tableAliases;
-    }
+    protected $_hydrationMode = Doctrine::HYDRATE_RECORD;
 
     /**
-     * Set the hydration mode
+     * constructor
      *
-     * @param mixed $hydrationMode  One of the Doctrine_Core::HYDRATE_* constants or
-     *                              a string representing the name of the hydration mode or
-     *                              or an instance of the hydration class
-     * @return void
+     * @param Doctrine_Connection|null $connection
+     */
+    public function __construct() {}
+
+    /**
+     * Sets the fetchmode.
+     *
+     * @param integer $fetchmode  One of the Doctrine::HYDRATE_* constants.
      */
     public function setHydrationMode($hydrationMode)
     {
         $this->_hydrationMode = $hydrationMode;
     }
 
-    public function getRootComponent()
-    {
-        $queryComponents = array_values($this->_queryComponents);
-        return $queryComponents[0]['table'];
-    }
-
-    public function onDemandReset()
-    {
-        $this->_priorRow = null;
-    }
-
     /**
-     * Checks whether a name is ignored. Used during result set parsing to skip
-     * certain elements in the result set that do not have any meaning for the result.
-     * (I.e. ORACLE limit/offset emulation adds doctrine_rownum to the result set).
+     * Get the fetchmode
      *
-     * @param string $name
-     * @return boolean
+     * @return integer $fetchMode One of the Doctrine::HYDRATE_* constants
      */
-    protected function _isIgnoredName($name)
+    public function getHydrationMode()
     {
-        return $name == 'DOCTRINE_ROWNUM';
+        return $this->_hydrationMode;
     }
 
     /**
-     * hydrateResultSet
+     * setAliasMap
+     * sets the whole component alias map
+     *
+     * @param array $map            alias map
+     * @return Doctrine_Hydrate     this object
+     */
+    public function setQueryComponents(array $queryComponents)
+    {
+        $this->_queryComponents = $queryComponents;
+    }
+
+    /**
+     * getAliasMap
+     * returns the component alias map
+     *
+     * @return array    component alias map
+     */
+    public function getQueryComponents()
+    {
+        return $this->_queryComponents;
+    }
+
+    /**
+     * parseData
      * parses the data returned by statement object
      *
      * This is method defines the core of Doctrine object population algorithm
@@ -114,8 +114,11 @@ abstract class Doctrine_Hydrator_Abstract extends Doctrine_Locator_Injectable
      * The key idea is the loop over the rowset only once doing all the needed operations
      * within this massive loop.
      *
+     * @todo: Can we refactor this function so that it is not so long and 
+     * nested?
+     *
      * @param mixed $stmt
-     * @return mixed
+     * @return array
      */
-    abstract public function hydrateResultSet($stmt);
+    abstract public function hydrateResultSet($stmt, $tableAliases);
 }

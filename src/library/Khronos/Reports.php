@@ -1,5 +1,4 @@
 <?php
-
 class Khronos_Reports {
 	public static $xmlGrupos = '/../tomcat/Reports/report/grupos.xml';
 	public static $xmlRelatorios = '/../tomcat/Reports/report/xml/';

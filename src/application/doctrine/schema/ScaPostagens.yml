@@ -47,11 +47,11 @@ ScaPostagens:
       primary: false
     fl_publicado:
       type: boolean(1)
-      notnull: false
+      notnull: true
       primary: false
     fl_lida:
       type: boolean(1)
-      notnull: false
+      notnull: true
       primary: false
   relations:
     ScmUser:

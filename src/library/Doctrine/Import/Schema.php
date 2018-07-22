@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -26,7 +26,7 @@
  *
  * @package     Doctrine
  * @subpackage  Import
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @version     $Revision: 1838 $
  * @author      Nicolas Bérard-Nault <nicobn@gmail.com>
@@ -34,22 +34,6 @@
  */
 class Doctrine_Import_Schema
 {
-    /**
-     * Schema definition keys that can be applied at the global level.
-     *
-     * @var array
-     */
-    protected static $_globalDefinitionKeys = array(
-        'connection',
-        'attributes',
-        'templates',
-        'actAs',
-        'options',
-        'package',
-        'package_custom_path',
-        'inheritance',
-        'detect_relations');
-
     /**
      * _relations
      *
@@ -103,8 +87,7 @@ class Doctrine_Import_Schema
                                                           'inheritance',
                                                           'detect_relations',
                                                           'listeners',
-                                                          'checks',
-                                                          'comment'),
+                                                          'checks'),
 
                                    'column'     =>  array('name',
                                                           'format',
@@ -122,10 +105,7 @@ class Doctrine_Import_Schema
                                                           'protected',
                                                           'zerofill',
                                                           'owner',
-                                                          'extra',
-                                                          'comment',
-                                                          'charset',
-                                                          'collation'),
+                                                          'extra'),
 
                                    'relation'   =>  array('key',
                                                           'class',
@@ -143,24 +123,12 @@ class Doctrine_Import_Schema
                                                           'onUpdate',
                                                           'equal',
                                                           'owningSide',
-                                                          'refClassRelationAlias',
-                                                          'foreignKeyName',
-                                                          'orderBy'),
+                                                          'refClassRelationAlias'),
 
                                    'inheritance'=>  array('type',
                                                           'extends',
                                                           'keyField',
                                                           'keyValue'));
-
-    /**
-     * Returns an array of definition keys that can be applied at the global level.
-     * 
-     * @return array
-     */
-    public static function getGlobalDefinitionKeys()
-    {
-        return self::$_globalDefinitionKeys;
-    }
 
     /**
      * getOption
@@ -316,18 +284,33 @@ class Doctrine_Import_Schema
         
         $array = Doctrine_Parser::load($schema, $type);
 
-        // Loop over and build up all the global values and remove them from the array
+        // Go through the schema and look for global values so we can assign them to each table/class
         $globals = array();
+        $globalKeys = array('connection',
+                            'attributes',
+                            'templates',
+                            'actAs',
+                            'options',
+                            'package',
+                            'package_custom_path',
+                            'inheritance',
+                            'detect_relations');
+
+        // Loop over and build up all the global values and remove them from the array
         foreach ($array as $key => $value) {
-            if (in_array($key, self::$_globalDefinitionKeys)) {
+            if (in_array($key, $globalKeys)) {
                 unset($array[$key]);
                 $globals[$key] = $value;
             }
         }
 
-        // Merge the globals that aren't specifically set to each class
+        // Apply the globals to each table if it does not have a custom value set already
         foreach ($array as $className => $table) {
-            $array[$className] = Doctrine_Lib::arrayDeepMerge($globals, $array[$className]);
+            foreach ($globals as $key => $value) {
+                if (!isset($array[$className][$key])) {
+                    $array[$className][$key] = $value;
+                }
+            }
         }
 
         $build = array();
@@ -397,17 +380,7 @@ class Doctrine_Import_Schema
                     $colDesc['primary'] = isset($field['primary']) ? (bool) (isset($field['primary']) && $field['primary']):null;
                     $colDesc['default'] = isset($field['default']) ? $field['default']:null;
                     $colDesc['autoincrement'] = isset($field['autoincrement']) ? (bool) (isset($field['autoincrement']) && $field['autoincrement']):null;
-
-                    if (isset($field['sequence'])) {
-                        if (true === $field['sequence']) {
-                            $colDesc['sequence'] = $tableName;
-                        } else {
-                            $colDesc['sequence'] = (string) $field['sequence'];
-                        }
-                    } else {
-                        $colDesc['sequence'] = null;
-                    }
-
+                    $colDesc['sequence'] = isset($field['sequence']) ? (string) $field['sequence']:null;
                     $colDesc['values'] = isset($field['values']) ? (array) $field['values']:null;
 
                     // Include all the specified and valid validators in the colDesc
@@ -679,7 +652,7 @@ class Doctrine_Import_Schema
                     $newRelation['refClass'] = $relation['refClass'];
                     $newRelation['type'] = isset($relation['foreignType']) ? $relation['foreignType']:$relation['type'];
                 } else {                
-                    if (isset($relation['foreignType'])) {
+                    if(isset($relation['foreignType'])) {
                         $newRelation['type'] = $relation['foreignType'];
                     } else {
                         $newRelation['type'] = $relation['type'] === Doctrine_Relation::ONE ? Doctrine_Relation::MANY:Doctrine_Relation::ONE;

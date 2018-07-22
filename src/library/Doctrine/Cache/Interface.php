@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Interface.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Interface.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,25 +25,26 @@
  * @package     Doctrine
  * @subpackage  Cache
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 5798 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
- * @author      Jonathan H. Wage <jonwage@gmail.com>
  */
-interface Doctrine_Cache_Interface
+interface Doctrine_Cache_Interface 
 {
     /**
-     * Fetch a cache record from this cache driver instance
-     *
+     * Test if a cache is available for the given id and (if yes) return it (false else)
+     * 
+     * Note : return value is always "string" (unserialization is done by the core not by the backend)
+     * 
      * @param string $id cache id
      * @param boolean $testCacheValidity        if set to false, the cache validity won't be tested
-     * @return mixed  Returns either the cached data or false
+     * @return string cached datas (or false)
      */
     public function fetch($id, $testCacheValidity = true);
 
     /**
-     * Test if a cache record exists for the passed id
+     * Test if a cache is available or not (for the given id)
      *
      * @param string $id cache id
      * @return mixed false (a cache is not available) or "last modified" timestamp (int) of the available cache record
@@ -51,7 +52,9 @@ interface Doctrine_Cache_Interface
     public function contains($id);
 
     /**
-     * Save a cache record and add the key to the index of cached keys
+     * Save some string datas into a cache record
+     *
+     * Note : $data is always saved as a string
      *
      * @param string $id        cache id
      * @param string $data      data to cache
@@ -62,7 +65,7 @@ interface Doctrine_Cache_Interface
 
     /**
      * Remove a cache record
-     *
+     * 
      * @param string $id cache id
      * @return boolean true if no problem
      */

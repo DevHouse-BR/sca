@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -26,7 +26,7 @@
  * @subpackage  Data
  * @author      Jonathan H. Wage <jwage@mac.com>
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision: 2552 $
  */
@@ -59,7 +59,7 @@ class Doctrine_Data_Export extends Doctrine_Data
      */
     public function doExport()
     {
-        $models = Doctrine_Core::getLoadedModels();
+        $models = Doctrine::getLoadedModels();
         $specifiedModels = $this->getModels();
 
         $data = array();
@@ -69,13 +69,13 @@ class Doctrine_Data_Export extends Doctrine_Data
           $models = $specifiedModels;
         }
 
-        $models = Doctrine_Core::initializeModels($models);
+        $models = Doctrine::initializeModels($models);
 
         // temporarily disable indexBy query parts of selected and related tables
         $originalIndexBy = array();
         foreach ($models AS $name) {
-          $table = Doctrine_Core::getTable($name);
-          if ( !is_null($indexBy = $table->getBoundQueryPart('indexBy'))) {
+          $table = Doctrine::getTable($name);
+          if (!is_null($indexBy = $table->getBoundQueryPart('indexBy'))) {
             $originalIndexBy[$name] = $indexBy;
             $table->bindQueryPart('indexBy', null);
           }
@@ -86,7 +86,7 @@ class Doctrine_Data_Export extends Doctrine_Data
                 continue;
             }
 
-            $results = Doctrine_Core::getTable($name)->findAll();
+            $results = Doctrine::getTable($name)->findAll();
 
             if ($results->count() > 0) {
                 $data[$name] = $results;
@@ -95,7 +95,7 @@ class Doctrine_Data_Export extends Doctrine_Data
 
         // Restore the temporarily disabled indexBy query parts
         foreach($originalIndexBy AS $name => $indexBy) {
-            Doctrine_Core::getTable($name)->bindQueryPart('indexBy', $indexBy);
+            Doctrine::getTable($name)->bindQueryPart('indexBy', $indexBy);
         }
 
         $data = $this->prepareData($data);
@@ -153,7 +153,6 @@ class Doctrine_Data_Export extends Doctrine_Data
 
         foreach ($data AS $className => $classData) {
             $preparedData[$className] = array();
-            $keyType = $classData->getTable()->getIdentifierType();
             foreach ($classData as $record) {
                 $className = get_class($record);
                 $recordKey = $className . '_' . implode('_', $record->identifier());
@@ -169,8 +168,8 @@ class Doctrine_Data_Export extends Doctrine_Data
                       $keys = array($keys);
                     }
 
-                    if ($keyType !== Doctrine_Core::IDENTIFIER_NATURAL && count($keys) <= 1 && in_array($key, $keys)) {
-                        continue;
+                    if (count($keys) <= 1 && in_array($key, $keys)) {
+                     /*   continue; */
                     }
 
                     if (is_object($record[$key])) {

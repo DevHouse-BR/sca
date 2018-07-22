@@ -16,7 +16,7 @@ class Khronos_UxScript {
 	}
 
 	private static function recurciveListing($dir) {
-        if($dir == "") return "";
+	        if($dir == "") return "";
 	
 		{
 			$ultimoDirExp = explode('/', $dir);

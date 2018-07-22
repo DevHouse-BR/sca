@@ -15,21 +15,31 @@
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Index
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Writer.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Writer.php 16541 2009-07-07 06:59:03Z bkarwin $
  */
 
 
+/** Zend_Search_Lucene_Index_SegmentWriter_DocumentWriter */
+require_once 'Zend/Search/Lucene/Index/SegmentWriter/DocumentWriter.php';
+
+/** Zend_Search_Lucene_Index_SegmentInfo */
+require_once 'Zend/Search/Lucene/Index/SegmentInfo.php';
+
+/** Zend_Search_Lucene_Index_SegmentMerger */
+require_once 'Zend/Search/Lucene/Index/SegmentMerger.php';
+
 /** Zend_Search_Lucene_LockManager */
 require_once 'Zend/Search/Lucene/LockManager.php';
+
 
 
 /**
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Index
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene_Index_Writer
@@ -234,9 +244,6 @@ class Zend_Search_Lucene_Index_Writer
      */
     public function addDocument(Zend_Search_Lucene_Document $document)
     {
-        /** Zend_Search_Lucene_Index_SegmentWriter_DocumentWriter */
-        require_once 'Zend/Search/Lucene/Index/SegmentWriter/DocumentWriter.php';
-
         if ($this->_currentSegment === null) {
             $this->_currentSegment =
                 new Zend_Search_Lucene_Index_SegmentWriter_DocumentWriter($this->_directory, $this->_newSegmentName());
@@ -372,9 +379,6 @@ class Zend_Search_Lucene_Index_Writer
     private function _mergeSegments($segments)
     {
         $newName = $this->_newSegmentName();
-
-        /** Zend_Search_Lucene_Index_SegmentMerger */
-        require_once 'Zend/Search/Lucene/Index/SegmentMerger.php';
         $merger = new Zend_Search_Lucene_Index_SegmentMerger($this->_directory,
                                                              $newName);
         foreach ($segments as $segmentInfo) {
@@ -416,7 +420,7 @@ class Zend_Search_Lucene_Index_Writer
             if (strpos($e->getMessage(), 'is not readable') !== false) {
                 $genFile = $this->_directory->createFile('segments.gen');
             } else {
-                throw new Zend_Search_Lucene_Exception($e->getMessage(), $e->getCode(), $e);
+                throw $e;
             }
         }
 
@@ -517,8 +521,6 @@ class Zend_Search_Lucene_Index_Writer
                             $isCompound = true;
                         }
 
-                        /** Zend_Search_Lucene_Index_SegmentInfo */
-                        require_once 'Zend/Search/Lucene/Index/SegmentInfo.php';
                         $this->_segmentInfos[$segName] =
                                     new Zend_Search_Lucene_Index_SegmentInfo($this->_directory,
                                                                              $segName,
@@ -603,8 +605,7 @@ class Zend_Search_Lucene_Index_Writer
             Zend_Search_Lucene_LockManager::releaseWriteLock($this->_directory);
 
             // Throw the exception
-            require_once 'Zend/Search/Lucene/Exception.php';
-            throw new Zend_Search_Lucene_Exception($e->getMessage(), $e->getCode(), $e);
+            throw $e;
         }
 
         // Write generation (second copy)
@@ -717,7 +718,7 @@ class Zend_Search_Lucene_Index_Writer
                     if (strpos($e->getMessage(), 'Can\'t delete file') === false) {
                         // That's not "file is under processing or already deleted" exception
                         // Pass it through
-                        throw new Zend_Search_Lucene_Exception($e->getMessage(), $e->getCode(), $e);
+                        throw $e;
                     }
                 }
             }

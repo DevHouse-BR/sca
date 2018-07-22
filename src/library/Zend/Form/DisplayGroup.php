@@ -14,18 +14,18 @@
  *
  * @category   Zend
  * @package    Zend_Form
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
 /**
  * Zend_Form_DisplayGroup
- *
+ * 
  * @category   Zend
  * @package    Zend_Form
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: DisplayGroup.php 25093 2012-11-07 20:08:05Z rob $
+ * @version    $Id: DisplayGroup.php 16218 2009-06-21 19:44:04Z thomas $
  */
 class Zend_Form_DisplayGroup implements Iterator,Countable
 {
@@ -64,13 +64,6 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      * @var array
      */
     protected $_elements = array();
-
-    /**
-     * Form object to which the display group is currently registered
-     *
-     * @var Zend_Form
-     */
-    protected $_form;
 
     /**
      * Whether or not a new element has been added to the group
@@ -114,10 +107,10 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Constructor
-     *
-     * @param  string $name
-     * @param  Zend_Loader_PluginLoader $loader
-     * @param  array|Zend_Config $options
+     * 
+     * @param  string $name 
+     * @param  Zend_Loader_PluginLoader $loader 
+     * @param  array|Zend_Config $options 
      * @return void
      */
     public function __construct($name, Zend_Loader_PluginLoader $loader, $options = null)
@@ -140,7 +133,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Initialize object; used by extending classes
-     *
+     * 
      * @return void
      */
     public function init()
@@ -149,8 +142,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set options
-     *
-     * @param  array $options
+     * 
+     * @param  array $options 
      * @return Zend_Form_DisplayGroup
      */
     public function setOptions(array $options)
@@ -178,8 +171,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set options from config object
-     *
-     * @param  Zend_Config $config
+     * 
+     * @param  Zend_Config $config 
      * @return Zend_Form_DisplayGroup
      */
     public function setConfig(Zend_Config $config)
@@ -189,9 +182,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set group attribute
-     *
-     * @param  string $key
-     * @param  mixed $value
+     * 
+     * @param  string $key 
+     * @param  mixed $value 
      * @return Zend_Form_DisplayGroup
      */
     public function setAttrib($key, $value)
@@ -203,8 +196,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Add multiple form attributes at once
-     *
-     * @param  array $attribs
+     * 
+     * @param  array $attribs 
      * @return Zend_Form_DisplayGroup
      */
     public function addAttribs(array $attribs)
@@ -219,8 +212,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      * Set multiple form attributes at once
      *
      * Overwrites any previously set attributes.
-     *
-     * @param  array $attribs
+     * 
+     * @param  array $attribs 
      * @return Zend_Form_DisplayGroup
      */
     public function setAttribs(array $attribs)
@@ -231,8 +224,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve a single form attribute
-     *
-     * @param  string $key
+     * 
+     * @param  string $key 
      * @return mixed
      */
     public function getAttrib($key)
@@ -247,7 +240,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve all form attributes/metadata
-     *
+     * 
      * @return array
      */
     public function getAttribs()
@@ -257,8 +250,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Remove attribute
-     *
-     * @param  string $key
+     * 
+     * @param  string $key 
      * @return bool
      */
     public function removeAttrib($key)
@@ -273,7 +266,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Clear all form attributes
-     *
+     * 
      * @return Zend_Form
      */
     public function clearAttribs()
@@ -283,38 +276,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     }
 
     /**
-     * Set form object to which the display group is attached
-     *
-     * @param  Zend_Form $form
-     * @return Zend_Form_DisplayGroup
-     */
-    public function setForm(Zend_Form $form)
-    {
-        $this->_form = $form;
-
-        // Ensure any elements attached prior to setting the form are now
-        // removed from iteration by the form
-        foreach ($this->getElements() as $element) {
-            $form->removeFromIteration($element->getName());
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get form object to which the group is attached
-     *
-     * @return Zend_Form|null
-     */
-    public function getForm()
-    {
-        return $this->_form;
-    }
-
-    /**
      * Filter a name to only allow valid variable characters
-     *
-     * @param  string $value
+     * 
+     * @param  string $value 
      * @return string
      */
     public function filterName($value)
@@ -324,8 +288,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set group name
-     *
-     * @param  string $name
+     * 
+     * @param  string $name 
      * @return Zend_Form_DisplayGroup
      */
     public function setName($name)
@@ -342,7 +306,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve group name
-     *
+     * 
      * @return string
      */
     public function getName()
@@ -354,7 +318,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      * Get fully qualified name
      *
      * Places name as subitem of array and/or appends brackets.
-     *
+     * 
      * @return string
      */
     public function getFullyQualifiedName()
@@ -364,7 +328,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Get element id
-     *
+     * 
      * @return string
      */
     public function getId()
@@ -393,8 +357,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set group legend
-     *
-     * @param  string $legend
+     * 
+     * @param  string $legend 
      * @return Zend_Form_DisplayGroup
      */
     public function setLegend($legend)
@@ -404,7 +368,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve group legend
-     *
+     * 
      * @return string
      */
     public function getLegend()
@@ -414,8 +378,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set description
-     *
-     * @param  string $value
+     * 
+     * @param  string $value 
      * @return Zend_Form_DisplayGroup
      */
     public function setDescription($value)
@@ -426,7 +390,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Get description
-     *
+     * 
      * @return string
      */
     public function getDescription()
@@ -436,8 +400,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set group order
-     *
-     * @param  int $order
+     * 
+     * @param  int $order 
      * @return Zend_Form_Element
      */
     public function setOrder($order)
@@ -448,7 +412,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve group order
-     *
+     * 
      * @return int
      */
     public function getOrder()
@@ -460,27 +424,21 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Add element to stack
-     *
-     * @param  Zend_Form_Element $element
+     * 
+     * @param  Zend_Form_Element $element 
      * @return Zend_Form_DisplayGroup
      */
     public function addElement(Zend_Form_Element $element)
     {
         $this->_elements[$element->getName()] = $element;
         $this->_groupUpdated = true;
-
-        // Display group will now handle display of element
-        if (null !== ($form = $this->getForm())) {
-            $form->removeFromIteration($element->getName());
-        }
-
         return $this;
     }
 
     /**
      * Add multiple elements at once
-     *
-     * @param  array $elements
+     * 
+     * @param  array $elements 
      * @return Zend_Form_DisplayGroup
      * @throws Zend_Form_Exception if any element is not a Zend_Form_Element
      */
@@ -498,8 +456,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set multiple elements at once (overwrites)
-     *
-     * @param  array $elements
+     * 
+     * @param  array $elements 
      * @return Zend_Form_DisplayGroup
      */
     public function setElements(array $elements)
@@ -510,8 +468,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve element
-     *
-     * @param  string $name
+     * 
+     * @param  string $name 
      * @return Zend_Form_Element|null
      */
     public function getElement($name)
@@ -535,8 +493,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Remove a single element
-     *
-     * @param  string $name
+     * 
+     * @param  string $name 
      * @return boolean
      */
     public function removeElement($name)
@@ -553,7 +511,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Remove all elements
-     *
+     * 
      * @return Zend_Form_DisplayGroup
      */
     public function clearElements()
@@ -567,8 +525,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set plugin loader
-     *
-     * @param  Zend_Loader_PluginLoader $loader
+     * 
+     * @param  Zend_Loader_PluginLoader $loader 
      * @return Zend_Form_DisplayGroup
      */
     public function setPluginLoader(Zend_Loader_PluginLoader $loader)
@@ -579,7 +537,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve plugin loader
-     *
+     * 
      * @return Zend_Loader_PluginLoader
      */
     public function getPluginLoader()
@@ -589,9 +547,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Add a prefix path for the plugin loader
-     *
-     * @param  string $prefix
-     * @param  string $path
+     * 
+     * @param  string $prefix 
+     * @param  string $path 
      * @return Zend_Form_DisplayGroup
      */
     public function addPrefixPath($prefix, $path)
@@ -602,15 +560,15 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Add several prefix paths at once
-     *
-     * @param  array $spec
+     * 
+     * @param  array $spec 
      * @return Zend_Form_DisplayGroup
      */
     public function addPrefixPaths(array $spec)
     {
         if (isset($spec['prefix']) && isset($spec['path'])) {
             return $this->addPrefixPath($spec['prefix'], $spec['path']);
-        }
+        } 
         foreach ($spec as $prefix => $paths) {
             if (is_numeric($prefix) && is_array($paths)) {
                 $prefix = null;
@@ -634,8 +592,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set flag to disable loading default decorators
-     *
-     * @param  bool $flag
+     * 
+     * @param  bool $flag 
      * @return Zend_Form_Element
      */
     public function setDisableLoadDefaultDecorators($flag)
@@ -646,7 +604,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Should we load the default decorators?
-     *
+     * 
      * @return bool
      */
     public function loadDefaultDecoratorsIsDisabled()
@@ -656,13 +614,13 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Load default decorators
-     *
-     * @return Zend_Form_DisplayGroup
+     * 
+     * @return void
      */
     public function loadDefaultDecorators()
     {
         if ($this->loadDefaultDecoratorsIsDisabled()) {
-            return $this;
+            return;
         }
 
         $decorators = $this->getDecorators();
@@ -672,14 +630,13 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
                  ->addDecorator('Fieldset')
                  ->addDecorator('DtDdWrapper');
         }
-        return $this;
     }
 
     /**
      * Instantiate a decorator based on class name or class name fragment
-     *
-     * @param  string $name
-     * @param  null|array $options
+     * 
+     * @param  string $name 
+     * @param  null|array $options 
      * @return Zend_Form_Decorator_Interface
      */
     protected function _getDecorator($name, $options = null)
@@ -696,8 +653,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Add a decorator for rendering the group
-     *
-     * @param  string|Zend_Form_Decorator_Interface $decorator
+     * 
+     * @param  string|Zend_Form_Decorator_Interface $decorator 
      * @param  array|Zend_Config $options Options with which to initialize decorator
      * @return Zend_Form_DisplayGroup
      */
@@ -739,20 +696,17 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Add many decorators at once
-     *
-     * @param  array $decorators
+     * 
+     * @param  array $decorators 
      * @return Zend_Form_DisplayGroup
      */
     public function addDecorators(array $decorators)
     {
-        foreach ($decorators as $decoratorName => $decoratorInfo) {
-            if (is_string($decoratorInfo) ||
-                $decoratorInfo instanceof Zend_Form_Decorator_Interface) {
-                if (!is_numeric($decoratorName)) {
-                    $this->addDecorator(array($decoratorName => $decoratorInfo));
-                } else {
-                    $this->addDecorator($decoratorInfo);
-                }
+        foreach ($decorators as $decoratorInfo) {
+            if (is_string($decoratorInfo)) {
+                $this->addDecorator($decoratorInfo);
+            } elseif ($decoratorInfo instanceof Zend_Form_Decorator_Interface) {
+                $this->addDecorator($decoratorInfo);
             } elseif (is_array($decoratorInfo)) {
                 $argc    = count($decoratorInfo);
                 $options = array();
@@ -786,8 +740,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Overwrite all decorators
-     *
-     * @param  array $decorators
+     * 
+     * @param  array $decorators 
      * @return Zend_Form_DisplayGroup
      */
     public function setDecorators(array $decorators)
@@ -798,8 +752,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve a registered decorator
-     *
-     * @param  string $name
+     * 
+     * @param  string $name 
      * @return false|Zend_Form_Decorator_Abstract
      */
     public function getDecorator($name)
@@ -830,7 +784,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve all decorators
-     *
+     * 
      * @return array
      */
     public function getDecorators()
@@ -845,8 +799,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Remove a single decorator
-     *
-     * @param  string $name
+     * 
+     * @param  string $name 
      * @return bool
      */
     public function removeDecorator($name)
@@ -867,7 +821,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Clear all decorators
-     *
+     * 
      * @return Zend_Form_DisplayGroup
      */
     public function clearDecorators()
@@ -878,8 +832,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set view
-     *
-     * @param  Zend_View_Interface $view
+     * 
+     * @param  Zend_View_Interface $view 
      * @return Zend_Form_DisplayGroup
      */
     public function setView(Zend_View_Interface $view = null)
@@ -890,7 +844,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve view
-     *
+     * 
      * @return Zend_View_Interface
      */
     public function getView()
@@ -906,7 +860,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Render display group
-     *
+     * 
      * @return string
      */
     public function render(Zend_View_Interface $view = null)
@@ -924,7 +878,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * String representation of group
-     *
+     * 
      * @return string
      */
     public function __toString()
@@ -940,8 +894,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Set translator object
-     *
-     * @param  Zend_Translate|Zend_Translate_Adapter|null $translator
+     * 
+     * @param  Zend_Translate|Zend_Translate_Adapter|null $translator 
      * @return Zend_Form_DisplayGroup
      */
     public function setTranslator($translator = null)
@@ -959,7 +913,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Retrieve translator object
-     *
+     * 
      * @return Zend_Translate_Adapter|null
      */
     public function getTranslator()
@@ -977,19 +931,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     }
 
     /**
-     * Does this display group have its own specific translator?
-     *
-     * @return bool
-     */
-    public function hasTranslator()
-    {
-        return (bool) $this->getTranslator();
-    }
-
-    /**
      * Indicate whether or not translation should be disabled
-     *
-     * @param  bool $flag
+     * 
+     * @param  bool $flag 
      * @return Zend_Form_DisplayGroup
      */
     public function setDisableTranslator($flag)
@@ -1000,7 +944,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Is translation disabled?
-     *
+     * 
      * @return bool
      */
     public function translatorIsDisabled()
@@ -1012,9 +956,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      * Overloading: allow rendering specific decorators
      *
      * Call renderDecoratorName() to render a specific decorator.
-     *
-     * @param  string $method
-     * @param  array $args
+     * 
+     * @param  string $method 
+     * @param  array $args 
      * @return string
      * @throws Zend_Form_Exception for invalid decorator or invalid method call
      */
@@ -1043,7 +987,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Current element
-     *
+     * 
      * @return Zend_Form_Element
      */
     public function current()
@@ -1056,7 +1000,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Current element
-     *
+     * 
      * @return string
      */
     public function key()
@@ -1067,7 +1011,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Move pointer to next element
-     *
+     * 
      * @return void
      */
     public function next()
@@ -1078,7 +1022,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Move pointer to beginning of element loop
-     *
+     * 
      * @return void
      */
     public function rewind()
@@ -1089,7 +1033,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Determine if current element/subform/display group is valid
-     *
+     * 
      * @return bool
      */
     public function valid()
@@ -1100,7 +1044,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Count of elements/subforms that are iterable
-     *
+     * 
      * @return int
      */
     public function count()
@@ -1110,7 +1054,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Sort items according to their order
-     *
+     * 
      * @return void
      */
     protected function _sort()
@@ -1144,7 +1088,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
     /**
      * Lazy-load a decorator
-     *
+     * 
      * @param  array $decorator Decorator type and options
      * @param  mixed $name Decorator name or alias
      * @return Zend_Form_Decorator_Interface

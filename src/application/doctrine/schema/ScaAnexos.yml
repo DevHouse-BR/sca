@@ -26,6 +26,11 @@ ScaAnexos:
       fixed: false
       notnull: false
       primary: false
+    tamanho_anexo:
+      type: string(255)
+      fixed: false
+      notnull: false
+      primary: false
   relations:
     ScaPostagens:
       local: sca_postagens_id

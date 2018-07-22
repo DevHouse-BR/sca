@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Table
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 24831 2012-05-30 12:52:25Z rob $
+ * @version    $Id: Abstract.php 16971 2009-07-22 18:05:45Z mikaelkael $
  */
 
 /**
@@ -29,10 +29,10 @@ require_once 'Zend/Db.php';
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Table
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggregate
+abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess
 {
 
     /**
@@ -293,14 +293,13 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
      }
 
      /**
-      * Proxy to __unset
+      * Does nothing
       * Required by the ArrayAccess implementation
       *
       * @param string $offset
       */
      public function offsetUnset($offset)
      {
-         return $this->__unset($offset);
      }
 
     /**
@@ -473,9 +472,9 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
         if (is_array($primaryKey)) {
             $newPrimaryKey = $primaryKey;
         } else {
-            //ZF-6167 Use tempPrimaryKey temporary to avoid that zend encoding fails.
+        	//ZF-6167 Use tempPrimaryKey temporary to avoid that zend encoding fails.
             $tempPrimaryKey = (array) $this->_primary;
-            $newPrimaryKey = array(current($tempPrimaryKey) => $primaryKey);
+        	$newPrimaryKey = array(current($tempPrimaryKey) => $primaryKey);
         }
 
         /**
@@ -642,11 +641,6 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
         return $result;
     }
 
-    public function getIterator()
-    {
-        return new ArrayIterator((array) $this->_data);
-    }
-
     /**
      * Returns the column/value data as an array.
      *
@@ -722,17 +716,6 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
             throw new Zend_Db_Table_Row_Exception("The specified Table '$this->_tableClass' does not have the same primary key as the Row");
         }
         return $array;
-    }
-
-    /**
-     * Retrieves an associative array of primary keys.
-     *
-     * @param bool $useDirty
-     * @return array
-     */
-    public function getPrimaryKey($useDirty = true)
-    {
-        return $this->_getPrimaryKey($useDirty);
     }
 
     /**
@@ -882,7 +865,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
         if (is_string($dependentTable)) {
             $dependentTable = $this->_getTableFromString($dependentTable);
         }
-
+        
         if (!$dependentTable instanceof Zend_Db_Table_Abstract) {
             $type = gettype($dependentTable);
             if ($type == 'object') {
@@ -938,7 +921,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
         if (is_string($parentTable)) {
             $parentTable = $this->_getTableFromString($parentTable);
         }
-
+        
         if (!$parentTable instanceof Zend_Db_Table_Abstract) {
             $type = gettype($parentTable);
             if ($type == 'object') {
@@ -954,7 +937,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
             && ($parentTable->getDefinition() == null)) {
             $parentTable->setOptions(array(Zend_Db_Table_Abstract::DEFINITION => $tableDefinition));
         }
-
+        
         if ($select === null) {
             $select = $parentTable->select();
         } else {
@@ -972,7 +955,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
             $parentColumnName = $parentDb->foldCase($map[Zend_Db_Table_Abstract::REF_COLUMNS][$i]);
             $parentColumn = $parentDb->quoteIdentifier($parentColumnName, true);
             $parentInfo = $parentTable->info();
-
+            
             // determine where part
             $type     = $parentInfo[Zend_Db_Table_Abstract::METADATA][$parentColumnName]['DATA_TYPE'];
             $nullable = $parentInfo[Zend_Db_Table_Abstract::METADATA][$parentColumnName]['NULLABLE'];
@@ -983,7 +966,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
             } else {
                 $select->where("$parentColumn = ?", $value, $type);
             }
-
+            
         }
 
         return $parentTable->fetchRow($select);
@@ -1006,7 +989,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
         if (is_string($intersectionTable)) {
             $intersectionTable = $this->_getTableFromString($intersectionTable);
         }
-
+        
         if (!$intersectionTable instanceof Zend_Db_Table_Abstract) {
             $type = gettype($intersectionTable);
             if ($type == 'object') {
@@ -1022,11 +1005,11 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
             && ($intersectionTable->getDefinition() == null)) {
             $intersectionTable->setOptions(array(Zend_Db_Table_Abstract::DEFINITION => $tableDefinition));
         }
-
+        
         if (is_string($matchTable)) {
             $matchTable = $this->_getTableFromString($matchTable);
         }
-
+        
         if (! $matchTable instanceof Zend_Db_Table_Abstract) {
             $type = gettype($matchTable);
             if ($type == 'object') {
@@ -1042,7 +1025,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
             && ($matchTable->getDefinition() == null)) {
             $matchTable->setOptions(array(Zend_Db_Table_Abstract::DEFINITION => $tableDefinition));
         }
-
+        
         if ($select === null) {
             $select = $matchTable->select();
         } else {
@@ -1067,7 +1050,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
         }
         $joinCond = implode(' AND ', $joinCond);
 
-        $select->from(array('i' => $interName), array(), $interSchema)
+        $select->from(array('i' => $interName), Zend_Db_Select::SQL_WILDCARD, $interSchema)
                ->joinInner(array('m' => $matchName), $joinCond, Zend_Db_Select::SQL_WILDCARD, $matchSchema)
                ->setIntegrityCheck(false);
 
@@ -1100,7 +1083,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
                 Zend_Loader::loadClass($rowsetClass);
             } catch (Zend_Exception $e) {
                 require_once 'Zend/Db/Table/Row/Exception.php';
-                throw new Zend_Db_Table_Row_Exception($e->getMessage(), $e->getCode(), $e);
+                throw new Zend_Db_Table_Row_Exception($e->getMessage());
             }
         }
         $rowset = new $rowsetClass($config);
@@ -1178,7 +1161,37 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
      */
     protected function _getTableFromString($tableName)
     {
-        return Zend_Db_Table_Abstract::getTableFromString($tableName, $this->_table);
+
+        if ($this->_table instanceof Zend_Db_Table_Abstract) {
+            $tableDefinition = $this->_table->getDefinition();
+            
+            if ($tableDefinition !== null && $tableDefinition->hasTableConfig($tableName)) {
+                return new Zend_Db_Table($tableName, $tableDefinition);
+            } 
+        }
+                
+        // assume the tableName is the class name
+        if (!class_exists($tableName)) {
+            try {
+                require_once 'Zend/Loader.php';
+                Zend_Loader::loadClass($tableName);
+            } catch (Zend_Exception $e) {
+                require_once 'Zend/Db/Table/Row/Exception.php';
+                throw new Zend_Db_Table_Row_Exception($e->getMessage());
+            }
+        }
+
+        $options = array();
+        
+        if (($table = $this->_getTable())) {
+            $options['db'] = $table->getAdapter();
+        }
+        
+        if (isset($tableDefinition) && $tableDefinition !== null) {
+            $options[Zend_Db_Table_Abstract::DEFINITION] = $tableDefinition;
+        }
+
+        return new $tableName($options);
     }
 
 }

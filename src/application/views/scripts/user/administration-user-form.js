@@ -44,7 +44,6 @@ User.AdministrationUserForm = Ext.extend(Ext.Window, {
 			});
 		});
 		
-		
 		this.languages = new Ext.form.ComboBox({
 			scope: this,
             store: new Ext.data.SimpleStore({
@@ -70,6 +69,9 @@ User.AdministrationUserForm = Ext.extend(Ext.Window, {
 				autoLoad: true,
 				autoDestroy: true,
 				remoteSort: true,
+				listeners:{
+					exception: Application.app.failHandler
+				},
                 sortInfo: {
                         field: 'name',
     	                direction: 'ASC'
@@ -97,6 +99,9 @@ User.AdministrationUserForm = Ext.extend(Ext.Window, {
 				root: 'data',
 				autoLoad: true,
 				remoteSort: true,
+				listeners:{
+					exception: Application.app.failHandler
+				},
 				sortInfo: {
 					field: 'name',
 					direction: 'ASC'
@@ -236,8 +241,11 @@ User.AdministrationUserForm = Ext.extend(Ext.Window, {
 				Ext.getCmp('btnExcluir_AdministrationUserForm').show();
 			}
 			
+			this.formUPanel.findById('login_usuario_edit').disable();
+
 			this.departamentos.store.load();
 		} else {
+			this.formUPanel.findById('login_usuario_edit').enable();
 			this.formUPanel.findById("password").allowBlank = false;
 			this.formUPanel.findById("password2").allowBlank = false;
 			this.languages.setValue("");

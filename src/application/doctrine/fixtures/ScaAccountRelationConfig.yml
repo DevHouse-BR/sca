@@ -14,7 +14,7 @@ ScaAccountRelationConfig:
    AccountRelationConfig_4:
       sca_account_id: 1
       sca_account_config_id: 4
-      valor_parametro: 'Texto de boas vindas a ser exibido na tela inicial do Sistema'
+      valor_parametro: 'Bem vindo ao Sistema de Compartilhamento de Arquivos'
    AccountRelationConfig_5:
       sca_account_id: 1
       sca_account_config_id: 5
@@ -22,15 +22,15 @@ ScaAccountRelationConfig:
    AccountRelationConfig_6:
       sca_account_id: 1
       sca_account_config_id: 6
-      valor_parametro: 'Nome a ser exibido no topo do Portal e na Tela de Boas vindas'
+      valor_parametro: 'Portal do Cliente'
    AccountRelationConfig_7:
       sca_account_id: 1
       sca_account_config_id: 7
-      valor_parametro: 'Texto a ser exibido no rodapé do Portal'
+      valor_parametro: 'Para suporte, ligue: 0800 999 999'
    AccountRelationConfig_8:
       sca_account_id: 1
       sca_account_config_id: 8
-      valor_parametro: 'Texto de boas vindas a ser exibido na tela inicial do Portal'
+      valor_parametro: 'Bem vindo ao nosso Portal do Cliente'
    AccountRelationConfig_9:
       sca_account_id: 1
       sca_account_config_id: 9
@@ -58,4 +58,16 @@ ScaAccountRelationConfig:
    AccountRelationConfig_15:
       sca_account_id: 1
       sca_account_config_id: 15
-      valor_parametro: 'jpg,gif,png,svg,pdf,dwg,rar,zip'
+      valor_parametro: 'jpg,gif,png,svg,pdf,dwg,rar,zip,xls,doc'
+   AccountRelationConfig_16:
+      sca_account_id: 1
+      sca_account_config_id: 16
+      valor_parametro: 'NÃO'
+   AccountRelationConfig_17:
+      sca_account_id: 1
+      sca_account_config_id: 17
+      valor_parametro: 'ssl'
+   AccountRelationConfig_18:
+      sca_account_id: 1
+      sca_account_config_id: 18
+      valor_parametro: 'SIM'

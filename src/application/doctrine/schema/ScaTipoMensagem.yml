@@ -5,8 +5,14 @@ ScaTipoMensagem:
       type: integer(4)
       unsigned: false
       primary: true
-      autoincrement: true
+      autoincrement: false
+      unique: "true"
     nome_tipo_mensagem:
+      type: string(255)
+      fixed: false
+      notnull: true
+      primary: false
+    template_mensagem:
       type: string(255)
       fixed: false
       notnull: true

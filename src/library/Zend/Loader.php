@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Loader
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Loader.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Loader.php 16206 2009-06-21 19:15:37Z thomas $
  */
 
 /**
@@ -24,7 +24,7 @@
  *
  * @category   Zend
  * @package    Zend_Loader
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Loader
@@ -60,8 +60,8 @@ class Zend_Loader
             throw new Zend_Exception('Directory argument must be a string or an array');
         }
 
-        $file = self::standardiseFile($class);
-
+        // autodiscover the path from the class name
+        $file = str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
         if (!empty($dirs)) {
             // use the autodiscovered path
             $dirPath = dirname($file);
@@ -79,7 +79,8 @@ class Zend_Loader
             $file = basename($file);
             self::loadFile($file, $dirs, true);
         } else {
-            self::loadFile($file, null, true);
+            self::_securityCheck($file);
+            include $file;
         }
 
         if (!class_exists($class, false) && !interface_exists($class, false)) {
@@ -161,59 +162,11 @@ class Zend_Loader
      */
     public static function isReadable($filename)
     {
-        if (is_readable($filename)) {
-            // Return early if the filename is readable without needing the
-            // include_path
-            return true;
-        }
-
-        if (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN'
-            && preg_match('/^[a-z]:/i', $filename)
-        ) {
-            // If on windows, and path provided is clearly an absolute path,
-            // return false immediately
+        if (!$fh = @fopen($filename, 'r', true)) {
             return false;
         }
-
-        foreach (self::explodeIncludePath() as $path) {
-            if ($path == '.') {
-                if (is_readable($filename)) {
-                    return true;
-                }
-                continue;
-            }
-            $file = $path . '/' . $filename;
-            if (is_readable($file)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Explode an include path into an array
-     *
-     * If no path provided, uses current include_path. Works around issues that
-     * occur when the path includes stream schemas.
-     *
-     * @param  string|null $path
-     * @return array
-     */
-    public static function explodeIncludePath($path = null)
-    {
-        if (null === $path) {
-            $path = get_include_path();
-        }
-
-        if (PATH_SEPARATOR == ':') {
-            // On *nix systems, include_paths which include paths with a stream
-            // schema cannot be safely explode'd, so we have to be a bit more
-            // intelligent in the approach.
-            $paths = preg_split('#:(?!//)#', $path);
-        } else {
-            $paths = explode(PATH_SEPARATOR, $path);
-        }
-        return $paths;
+        @fclose($fh);
+        return true;
     }
 
     /**
@@ -313,31 +266,5 @@ class Zend_Loader
         } else {
             return include $filespec ;
         }
-    }
-
-    /**
-     * Standardise the filename.
-     *
-     * Convert the supplied filename into the namespace-aware standard,
-     * based on the Framework Interop Group reference implementation:
-     * http://groups.google.com/group/php-standards/web/psr-0-final-proposal
-     *
-     * The filename must be formatted as "$file.php".
-     *
-     * @param string $file - The file name to be loaded.
-     * @return string
-     */
-    public static function standardiseFile($file)
-    {
-        $fileName = ltrim($file, '\\');
-        $file      = '';
-        $namespace = '';
-        if ($lastNsPos = strripos($fileName, '\\')) {
-            $namespace = substr($fileName, 0, $lastNsPos);
-            $fileName = substr($fileName, $lastNsPos + 1);
-            $file      = str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
-        }
-        $file .= str_replace('_', DIRECTORY_SEPARATOR, $fileName) . '.php';
-        return $file;    
     }
 }

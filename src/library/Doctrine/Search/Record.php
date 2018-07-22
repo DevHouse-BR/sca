@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -27,7 +27,7 @@
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @version     $Revision$
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  */
 class Doctrine_Search_Record extends Doctrine_Template
@@ -40,7 +40,6 @@ class Doctrine_Search_Record extends Doctrine_Template
         // depending on the identifiers of the owner record this record 
         // has also one to many foreign key columns
     }
-
     public function setUp()
     {
         $this->hasOne('[Component]', array('onDelete' => 'CASCADE'));

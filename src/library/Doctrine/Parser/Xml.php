@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,7 +25,7 @@
  * @package     Doctrine
  * @subpackage  Parser
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision: 1080 $
  * @author      Jonathan H. Wage <jwage@mac.com>
@@ -39,13 +39,12 @@ class Doctrine_Parser_Xml extends Doctrine_Parser
      *
      * @param  string $array Array of data to convert to xml
      * @param  string $path  Path to write xml data to
-     * @param string $charset The charset of the data being dumped
      * @return string $xml
      * @return void
      */
-    public function dumpData($array, $path = null, $charset = null)
+    public function dumpData($array, $path = null)
     {
-        $data = self::arrayToXml($array, 'data', null, $charset);
+        $data = $this->arrayToXml($array);
         
         return $this->doDump($data, $path);
     }
@@ -58,7 +57,7 @@ class Doctrine_Parser_Xml extends Doctrine_Parser
      * @param  string $xml          SimpleXmlElement
      * @return string $asXml        String of xml built from array
      */
-    public static function arrayToXml($array, $rootNodeName = 'data', $xml = null, $charset = null)
+    public function arrayToXml($array, $rootNodeName = 'data', $xml = null)
     {
         if ($xml === null) {
             $xml = new SimpleXmlElement("<?xml version=\"1.0\" encoding=\"utf-8\"?><$rootNodeName/>");
@@ -66,27 +65,15 @@ class Doctrine_Parser_Xml extends Doctrine_Parser
 
         foreach($array as $key => $value)
         {
-            $key = preg_replace('/[^a-z]/i', '', $key);
-
-            if (is_array($value) && ! empty($value)) {
+            if (is_array($value)) {
                 $node = $xml->addChild($key);
 
-                foreach ($value as $k => $v) {
-                    if (is_numeric($v)) {
-                        unset($value[$k]);
-                        $node->addAttribute($k, $v);
-                    }
-                }
-
-                self::arrayToXml($value, $rootNodeName, $node, $charset);
+                $this->arrayToXml($value, $rootNodeName, $node);
             } else if (is_int($key)) {               
                 $xml->addChild($value, 'true');
             } else {
-                $charset = $charset ? $charset : 'utf-8';
-                if (strcasecmp($charset, 'utf-8') !== 0 && strcasecmp($charset, 'utf8') !== 0) {
-                    $value = iconv($charset, 'UTF-8', $value);
-                }
-                $value = htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
+                $value = htmlentities($value);
+
                 $xml->addChild($key, $value);
             }
         }

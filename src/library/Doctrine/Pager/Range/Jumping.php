@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -27,7 +27,7 @@
  * @subpackage  Pager
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @version     $Revision$
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       0.9
  */
 class Doctrine_Pager_Range_Jumping extends Doctrine_Pager_Range
@@ -36,6 +36,7 @@ class Doctrine_Pager_Range_Jumping extends Doctrine_Pager_Range
      * @var int $_chunkLength     Chunk length to be returned
      */
     private $_chunkLength;
+
 
     /**
      * _initialize
@@ -53,6 +54,7 @@ class Doctrine_Pager_Range_Jumping extends Doctrine_Pager_Range
         }
     }
 
+
     /**
      * getChunkLength
      *
@@ -64,6 +66,7 @@ class Doctrine_Pager_Range_Jumping extends Doctrine_Pager_Range
     {
         return $this->_chunkLength;
     }
+
 
     /**
      * _setChunkLength
@@ -77,6 +80,7 @@ class Doctrine_Pager_Range_Jumping extends Doctrine_Pager_Range
     {
         $this->_chunkLength = $chunkLength;
     }
+
 
     /**
      * rangeAroundPage

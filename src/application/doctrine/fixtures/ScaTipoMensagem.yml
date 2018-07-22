@@ -1,0 +1,10 @@
+ScaTipoMensagem:
+    TipoMensagem_1:
+        id: 1
+        nome_tipo_mensagem: "Nova Postagem"
+        template_mensagem: "novaPostagemTemplate.phtml"
+    TipoMensagem_2:
+        id: 2
+        nome_tipo_mensagem: "Leitura de Postagem"
+        template_mensagem: "leituraPostagemTemplate.phtml"
+

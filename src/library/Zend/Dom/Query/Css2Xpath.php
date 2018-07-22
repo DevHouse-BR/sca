@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Dom
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -23,9 +23,9 @@
  *
  * @package    Zend_Dom
  * @subpackage Query
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Css2Xpath.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Css2Xpath.php 17293 2009-07-30 02:34:37Z yoshida@zend.co.jp $
  */
 class Zend_Dom_Query_Css2Xpath
 {
@@ -33,7 +33,7 @@ class Zend_Dom_Query_Css2Xpath
      * Transform CSS expression to XPath
      *
      * @param  string $path
-     * @return string
+     * @return string|array
      */
     public static function transform($path)
     {
@@ -49,25 +49,24 @@ class Zend_Dom_Query_Css2Xpath
                     $expressions = array_merge($expressions, $xpath);
                 }
             }
-            return implode('|', $expressions);
+            return $expressions;
         }
 
         $paths    = array('//');
-        $path     = preg_replace('|\s+>\s+|', '>', $path);
         $segments = preg_split('/\s+/', $path);
         foreach ($segments as $key => $segment) {
             $pathSegment = self::_tokenize($segment);
             if (0 == $key) {
-                if (0 === strpos($pathSegment, '[contains(')) {
-                    $paths[0] .= '*' . ltrim($pathSegment, '*');
+                if (0 === strpos($pathSegment, '[contains(@class')) {
+                    $paths[0] .= '*' . $pathSegment;
                 } else {
                     $paths[0] .= $pathSegment;
                 }
                 continue;
             }
-            if (0 === strpos($pathSegment, '[contains(')) {
+            if (0 === strpos($pathSegment, '[contains(@class')) {
                 foreach ($paths as $key => $xpath) {
-                    $paths[$key] .= '//*' . ltrim($pathSegment, '*');
+                    $paths[$key] .= '//*' . $pathSegment;
                     $paths[]      = $xpath . $pathSegment;
                 }
             } else {
@@ -80,7 +79,7 @@ class Zend_Dom_Query_Css2Xpath
         if (1 == count($paths)) {
             return $paths[0];
         }
-        return implode('|', $paths);
+        return implode(' | ', $paths);
     }
 
     /**
@@ -99,71 +98,44 @@ class Zend_Dom_Query_Css2Xpath
         $expression = preg_replace('|(?<![a-z0-9_-])(\[@id=)|i', '*$1', $expression);
 
         // arbitrary attribute strict equality
-        $expression = preg_replace_callback(
-            '|\[([a-z0-9_-]+)=[\'"]([^\'"]+)[\'"]\]|i',
-            array(__CLASS__, '_createEqualityExpression'),
-            $expression
-        );
+        if (preg_match('|([a-z]+)\[([a-z0-9_-]+)=[\'"]([^\'"]+)[\'"]\]|i', $expression)) {
+            $expression = preg_replace_callback(
+                '|([a-z]+)\[([a-z0-9_-]+)=[\'"]([^\'"]+)[\'"]\]|i',
+                create_function(
+                    '$matches',
+                    'return $matches[1] . "[@" . strtolower($matches[2]) . "=\'" . $matches[3] . "\']";'
+                ),
+                $expression
+            );
+        }
 
         // arbitrary attribute contains full word
-        $expression = preg_replace_callback(
-            '|\[([a-z0-9_-]+)~=[\'"]([^\'"]+)[\'"]\]|i',
-            array(__CLASS__, '_normalizeSpaceAttribute'),
-            $expression
-        );
+        if (preg_match('|([a-z]+)\[([a-z0-9_-]+)~=[\'"]([^\'"]+)[\'"]\]|i', $expression)) {
+            $expression = preg_replace_callback(
+                '|([a-z]+)\[([a-z0-9_-]+)~=[\'"]([^\'"]+)[\'"]\]|i',
+                create_function(
+                    '$matches',
+                    'return $matches[1] . "[contains(@" . strtolower($matches[2]) . ", \' $matches[3] \')]";'
+                ),
+                $expression
+            );
+        }
 
         // arbitrary attribute contains specified content
-        $expression = preg_replace_callback(
-            '|\[([a-z0-9_-]+)\*=[\'"]([^\'"]+)[\'"]\]|i',
-            array(__CLASS__, '_createContainsExpression'),
-            $expression
-        );
+        if (preg_match('|([a-z]+)\[([a-z0-9_-]+)\*=[\'"]([^\'"]+)[\'"]\]|i', $expression)) {
+            $expression = preg_replace_callback(
+                '|([a-z]+)\[([a-z0-9_-]+)\*=[\'"]([^\'"]+)[\'"]\]|i',
+                create_function(
+                    '$matches',
+                    'return $matches[1] . "[contains(@" . strtolower($matches[2]) . ", \'" . $matches[3] . "\')]";'
+                ),
+                $expression
+            );
+        }
 
         // Classes
-        $expression = preg_replace(
-            '|\.([a-z][a-z0-9_-]*)|i',
-            "[contains(concat(' ', normalize-space(@class), ' '), ' \$1 ')]",
-            $expression
-        );
-
-        /** ZF-9764 -- remove double asterix */
-        $expression = str_replace('**', '*', $expression);
+        $expression = preg_replace('|\.([a-z][a-z0-9_-]*)|i', "[contains(@class, ' \$1 ')]", $expression);
 
         return $expression;
-    }
-
-    /**
-     * Callback for creating equality expressions
-     *
-     * @param  array $matches
-     * @return string
-     */
-    protected static function _createEqualityExpression($matches)
-    {
-        return '[@' . strtolower($matches[1]) . "='" . $matches[2] . "']";
-    }
-
-    /**
-     * Callback for creating expressions to match one or more attribute values
-     *
-     * @param  array $matches
-     * @return string
-     */
-    protected static function _normalizeSpaceAttribute($matches)
-    {
-        return "[contains(concat(' ', normalize-space(@" . strtolower($matches[1]) . "), ' '), ' "
-             . $matches[2] . " ')]";
-    }
-
-    /**
-     * Callback for creating a strict "contains" expression
-     *
-     * @param  array $matches
-     * @return string
-     */
-    protected static function _createContainsExpression($matches)
-    {
-        return "[contains(@" . strtolower($matches[1]) . ", '"
-             . $matches[2] . "')]";
     }
 }

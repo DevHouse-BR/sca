@@ -13,6 +13,8 @@ departamentos.ControleDepartamentosForm = Ext.extend(Ext.Window, {
 	forceReload: function(id) {
 		this.iddpto = id;
                 this.comboStore.load({
+			waitTitle: Application.app.language("auth.alert"),
+			waitMsg: Application.app.language("auth.loading"),
 	                url: 'departamentos/listusers',
                         params: {
           	              id: this.iddpto
@@ -43,37 +45,15 @@ departamentos.ControleDepartamentosForm = Ext.extend(Ext.Window, {
 		}
 	},
 	initComponent: function() {
-//		this.accountD = new Ext.form.ComboBox({
-//			id: 'selectBoxAccount_ControleDepartamentosForm',
-//			store: new Ext.data.JsonStore({
-//				url: 'user/accountsList',
-//				root: 'data',
-//				autoLoad: true,
-//				remoteSort: true,
-//				sortInfo: {
-//					field: 'name',
-//					direction: 'ASC'
-//				},
-//				fields: [
-//					{name: 'id', type: 'int'},
-//					{name: 'name', type: 'string'}
-//				]
-//			}),
-//			hiddenName: 'accountD',
-//			allowBlank: 'false',
-//			displayField: 'name',
-//			valueField: 'id',
-//			mode: 'local',
-//			triggerAction: 'all',
-//			emptyText: Application.app.language('administration.user.form.account.helper'),
-//			fieldLabel: Application.app.language('administration.user.form.account.text'),
-//		});
-		this.comboStore = new Ext.data.JsonStore({
+	this.comboStore = new Ext.data.JsonStore({
             url: 'departamentos/listusers',
             root: 'data',
             autoLoad: false,
             autoDestroy: false,
             remoteSort: true,
+			listeners:{
+				exception: Application.app.failHandler
+			},
             sortInfo: {
                     field: 'name',
                     direction: 'ASC'
@@ -155,12 +135,21 @@ departamentos.ControleDepartamentosForm = Ext.extend(Ext.Window, {
 		});
 		departamentos.ControleDepartamentosForm.superclass.initComponent.call(this);
 	},
+	MaskRequests: 0,
+	_doMask: function(value) {
+		this.MaskRequests = this.MaskRequests + value;
+
+		if(this.MaskRequests == 0){
+			this.el.unmask();
+		}
+	},
 	show: function() {
 		this.formUPanel.getForm().reset();
 		departamentos.ControleDepartamentosForm.superclass.show.apply(this, arguments);
 		if(this.iddpto !== 0) {
 			this.btnExcluir.show();
 			this.el.mask(Application.app.language('grid.form.loading'));
+			this._doMask(3); //seta para esperar por 3
 			if( this.id != 0 )
 				this.comboStore.load({
 					waitTitle: Application.app.language("auth.alert"),
@@ -172,21 +161,23 @@ departamentos.ControleDepartamentosForm = Ext.extend(Ext.Window, {
 						id: this.iddpto
 					},
 					scope: this,
-					success: this.el.unmask(),
+					success: this._doMask(-1),
 					faliure: function(obj1, obj2){
-						this.el.unmask();
+						this._doMask(-1);
 						Application.app.failHandler(obj1, obj2);
 					}
 				});
 			this.el.mask(Application.app.language('grid.form.loading'));
                         this.formUPanel.getForm().load({
+				waitTitle: Application.app.language("auth.alert"),
+				waitMsg: Application.app.language("auth.loading"),
                                 url: 'departamentos/get',
                                 params: {
                                         id: this.iddpto
                                 },
                                 scope: this,
-                                success: this.el.unmask(),
-				faliure: this.el.unmask()
+                                success: this._doMask(-1),
+				faliure: this._doMask(-1)
                         });
 		} else {
 			this.btnExcluir.hide();

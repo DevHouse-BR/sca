@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: HeadStyle.php 24593 2012-01-05 20:35:02Z matthew $
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: HeadStyle.php 18572 2009-10-16 13:37:08Z sgehrig $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -29,7 +29,7 @@ require_once 'Zend/View/Helper/Placeholder/Container/Standalone.php';
  * @uses       Zend_View_Helper_Placeholder_Container_Standalone
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_Standalone
@@ -147,9 +147,7 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
 
             if (1 > $argc) {
                 require_once 'Zend/View/Exception.php';
-                $e = new Zend_View_Exception(sprintf('Method "%s" requires minimally content for the stylesheet', $method));
-                $e->setView($this->view);
-                throw $e;
+                throw new Zend_View_Exception(sprintf('Method "%s" requires minimally content for the stylesheet', $method));
             }
 
             $content = $args[0];
@@ -201,9 +199,7 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('Invalid value passed to append; please use appendStyle()');
-            $e->setView($this->view);
-            throw $e;
+            throw new Zend_View_Exception('Invalid value passed to append; please use appendStyle()');
         }
 
         return $this->getContainer()->append($value);
@@ -220,9 +216,7 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('Invalid value passed to offsetSet; please use offsetSetStyle()');
-            $e->setView($this->view);
-            throw $e;
+            throw new Zend_View_Exception('Invalid value passed to offsetSet; please use offsetSetStyle()');
         }
 
         return $this->getContainer()->offsetSet($index, $value);
@@ -238,9 +232,7 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('Invalid value passed to prepend; please use prependStyle()');
-            $e->setView($this->view);
-            throw $e;
+            throw new Zend_View_Exception('Invalid value passed to prepend; please use prependStyle()');
         }
 
         return $this->getContainer()->prepend($value);
@@ -256,9 +248,7 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('Invalid value passed to set; please use setStyle()');
-            $e->setView($this->view);
-            throw $e;
+            throw new Zend_View_Exception('Invalid value passed to set; please use setStyle()');
         }
 
         return $this->getContainer()->set($value);
@@ -275,9 +265,7 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
     {
         if ($this->_captureLock) {
             require_once 'Zend/View/Helper/Placeholder/Container/Exception.php';
-            $e = new Zend_View_Helper_Placeholder_Container_Exception('Cannot nest headStyle captures');
-            $e->setView($this->view);
-            throw $e;
+            throw new Zend_View_Helper_Placeholder_Container_Exception('Cannot nest headStyle captures');
         }
 
         $this->_captureLock        = true;
@@ -323,12 +311,6 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
     {
         $attrString = '';
         if (!empty($item->attributes)) {
-            $enc = 'UTF-8';
-            if ($this->view instanceof Zend_View_Interface
-                && method_exists($this->view, 'getEncoding')
-            ) {
-                $enc = $this->view->getEncoding();
-            }
             foreach ($item->attributes as $key => $value) {
                 if (!in_array($key, $this->_optionalAttributes)) {
                     continue;
@@ -351,25 +333,18 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
                         $value = substr($value, 0, -1);
                     }
                 }
-                $attrString .= sprintf(' %s="%s"', $key, htmlspecialchars($value, ENT_COMPAT, $enc));
+                $attrString .= sprintf(' %s="%s"', $key, htmlspecialchars($value));
             }
         }
 
-        $escapeStart = $indent . '<!--'. PHP_EOL;
-        $escapeEnd = $indent . '-->'. PHP_EOL;
-        if (isset($item->attributes['conditional'])
-            && !empty($item->attributes['conditional'])
-            && is_string($item->attributes['conditional'])
-        ) {
-            $escapeStart = null;
-            $escapeEnd = null;
-        }
-
         $html = '<style type="text/css"' . $attrString . '>' . PHP_EOL
-              . $escapeStart . $indent . $item->content . PHP_EOL . $escapeEnd
+              . $indent . '<!--' . PHP_EOL . $indent . $item->content . PHP_EOL . $indent . '-->' . PHP_EOL
               . '</style>';
 
-        if (null == $escapeStart && null == $escapeEnd) {
+        if (isset($item->attributes['conditional'])
+            && !empty($item->attributes['conditional'])
+            && is_string($item->attributes['conditional']))
+        {
             $html = '<!--[if ' . $item->attributes['conditional'] . ']> ' . $html . '<![endif]-->';
         }
 

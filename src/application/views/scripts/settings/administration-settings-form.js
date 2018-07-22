@@ -24,10 +24,18 @@ Settings.AdministrationSettingsForm = Ext.extend(Ext.Window, {
 			autoScroll: true,
 			defaultType: 'textfield',
 			defaults: {anchor: '-19'},
-			items:[
-				{fieldLabel: Application.app.language('administration.config.form.name.text'), disabled: 'disabled', name: 'name', allowBlank: false, maxLength: 255},
-				{fieldLabel: Application.app.language('administration.config.form.value.text'), name: 'value', allowBlank: false, maxLength: 255}
-			]
+			items:[{
+				fieldLabel: Application.app.language('administration.config.form.name.text'),
+				disabled: true,
+				name: 'name',
+				allowBlank: false,
+				maxLength: 255
+			},{
+				fieldLabel: Application.app.language('administration.config.form.value.text'),
+				name: 'value',
+				allowBlank: false,
+				maxLength: 255
+			}			]
 		});
 		Ext.apply(this, {
 			items: this.formSettings,

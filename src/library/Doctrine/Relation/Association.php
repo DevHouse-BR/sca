@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Association.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Association.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -28,9 +28,9 @@
  * @package     Doctrine
  * @subpackage  Relation
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 5798 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  */
 class Doctrine_Relation_Association extends Doctrine_Relation
@@ -42,7 +42,6 @@ class Doctrine_Relation_Association extends Doctrine_Relation
     {
         return $this->definition['refTable'];
     }
-
     public function getAssociationTable()
     {
         return $this->definition['refTable'];
@@ -66,13 +65,11 @@ class Doctrine_Relation_Association extends Doctrine_Relation
                 $dql .= '.' . $component;
                 $dql .= ' WHERE ' . $this->getTable()->getComponentName()
                 . '.' . $component . '.' . $this->getLocalRefColumnName() . ' IN (' . $sub . ')';
-                $dql .= $this->getOrderBy($this->getTable()->getComponentName(), false);
                 break;
             case "collection":
                 $sub  = substr(str_repeat("?, ", $count),0,-2);
                 $dql  = 'FROM ' . $component . '.' . $this->getTable()->getComponentName();
                 $dql .= ' WHERE ' . $component . '.' . $this->getLocalRefColumnName() . ' IN (' . $sub . ')';
-                $dql .= $this->getOrderBy($component, false);
                 break;
         }
 
@@ -126,8 +123,8 @@ class Doctrine_Relation_Association extends Doctrine_Relation
     public function fetchRelatedFor(Doctrine_Record $record)
     {
         $id = $record->getIncremented();
-        if (empty($id) || ! $this->definition['table']->getAttribute(Doctrine_Core::ATTR_LOAD_REFERENCES)) {
-            $coll = Doctrine_Collection::create($this->getTable());
+        if (empty($id) || ! $this->definition['table']->getAttribute(Doctrine::ATTR_LOAD_REFERENCES)) {
+            $coll = new Doctrine_Collection($this->getTable());
         } else {
             $coll = $this->getTable()->getConnection()->query($this->getRelationDql(1), array($id));
         }

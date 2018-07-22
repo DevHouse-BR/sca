@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Exception.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Exception.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,12 +25,12 @@
  * @package     Doctrine
  * @subpackage  Connection
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  * @author      Paul Cooper <pgc@ucecom.com> (PEAR MDB2 Pgsql driver)
  * @author      Lukas Smith <smith@pooteeweet.org> (PEAR MDB2 library)
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 5798 $
  */
 class Doctrine_Connection_Pgsql_Exception extends Doctrine_Connection_Exception
 {
@@ -40,45 +40,45 @@ class Doctrine_Connection_Pgsql_Exception extends Doctrine_Connection_Exception
      */
     protected static $errorRegexps = array(
                                     '/parser: parse error at or near/i'
-                                        => Doctrine_Core::ERR_SYNTAX,
+                                        => Doctrine::ERR_SYNTAX,
                                     '/syntax error at/'
-                                        => Doctrine_Core::ERR_SYNTAX,
+                                        => Doctrine::ERR_SYNTAX,
                                     '/column reference .* is ambiguous/i'
-                                        => Doctrine_Core::ERR_SYNTAX,
+                                        => Doctrine::ERR_SYNTAX,
                                     '/column .* (of relation .*)?does not exist/i'
-                                        => Doctrine_Core::ERR_NOSUCHFIELD,
+                                        => Doctrine::ERR_NOSUCHFIELD,
                                     '/attribute .* not found|relation .* does not have attribute/i'
-                                        => Doctrine_Core::ERR_NOSUCHFIELD,
+                                        => Doctrine::ERR_NOSUCHFIELD,
                                     '/column .* specified in USING clause does not exist in (left|right) table/i'
-                                        => Doctrine_Core::ERR_NOSUCHFIELD,
+                                        => Doctrine::ERR_NOSUCHFIELD,
                                     '/(relation|sequence|table).*does not exist|class .* not found/i'
-                                        => Doctrine_Core::ERR_NOSUCHTABLE,
+                                        => Doctrine::ERR_NOSUCHTABLE,
                                     '/index .* does not exist/'
-                                        => Doctrine_Core::ERR_NOT_FOUND,
+                                        => Doctrine::ERR_NOT_FOUND,
                                     '/relation .* already exists/i'
-                                        => Doctrine_Core::ERR_ALREADY_EXISTS,
+                                        => Doctrine::ERR_ALREADY_EXISTS,
                                     '/(divide|division) by zero$/i'
-                                        => Doctrine_Core::ERR_DIVZERO,
+                                        => Doctrine::ERR_DIVZERO,
                                     '/pg_atoi: error in .*: can\'t parse /i'
-                                        => Doctrine_Core::ERR_INVALID_NUMBER,
+                                        => Doctrine::ERR_INVALID_NUMBER,
                                     '/invalid input syntax for( type)? (integer|numeric)/i'
-                                        => Doctrine_Core::ERR_INVALID_NUMBER,
+                                        => Doctrine::ERR_INVALID_NUMBER,
                                     '/value .* is out of range for type \w*int/i'
-                                        => Doctrine_Core::ERR_INVALID_NUMBER,
+                                        => Doctrine::ERR_INVALID_NUMBER,
                                     '/integer out of range/i'
-                                        => Doctrine_Core::ERR_INVALID_NUMBER,
+                                        => Doctrine::ERR_INVALID_NUMBER,
                                     '/value too long for type character/i'
-                                        => Doctrine_Core::ERR_INVALID,
+                                        => Doctrine::ERR_INVALID,
                                     '/permission denied/'
-                                        => Doctrine_Core::ERR_ACCESS_VIOLATION,
+                                        => Doctrine::ERR_ACCESS_VIOLATION,
                                     '/violates [\w ]+ constraint/'
-                                        => Doctrine_Core::ERR_CONSTRAINT,
+                                        => Doctrine::ERR_CONSTRAINT,
                                     '/referential integrity violation/'
-                                        => Doctrine_Core::ERR_CONSTRAINT,
+                                        => Doctrine::ERR_CONSTRAINT,
                                     '/violates not-null constraint/'
-                                        => Doctrine_Core::ERR_CONSTRAINT_NOT_NULL,
+                                        => Doctrine::ERR_CONSTRAINT_NOT_NULL,
                                     '/more expressions than target columns/i'
-                                        => Doctrine_Core::ERR_VALUE_COUNT_ON_ROW,
+                                        => Doctrine::ERR_VALUE_COUNT_ON_ROW,
                                 );
 
     /**
@@ -90,7 +90,7 @@ class Doctrine_Connection_Pgsql_Exception extends Doctrine_Connection_Exception
      *
      * @param array $errorInfo      error info array
      * @since 1.0
-     * @see Doctrine_Core::ERR_* constants
+     * @see Doctrine::ERR_* constants
      * @see Doctrine_Connection::$portableCode
      * @return boolean              whether or not the error info processing was successfull
      *                              (the process is successfull if portable error code was found)

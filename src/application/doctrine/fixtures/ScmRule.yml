@@ -21,7 +21,7 @@ ScmRule:
     ScmModule: Module_1
   Rule_6:
     id: 6
-    name: 'Deletar usuários'
+    name: 'Remover usuários'
     ScmModule: Module_1
   Rule_7:
     id: 7
@@ -37,7 +37,7 @@ ScmRule:
     ScmModule: Module_1
   Rule_10:
     id: 10
-    name: 'Deletar grupos'
+    name: 'Remover grupos'
     ScmModule: Module_1
   Rule_11:
     id: 11
@@ -50,36 +50,57 @@ ScmRule:
   Rule_13:
     id: 13
     name: 'Listar Departamentos'
-    ScmModule: Module_1
+    ScmModule: Module_2
   Rule_15:
     id: 15
     name: 'Visualizar Deparatamentos'
-    ScmModule: Module_1
+    ScmModule: Module_2
   Rule_16:
     id: 16
     name: 'Gerir Departamentos'
-    ScmModule: Module_1
+    ScmModule: Module_2
   Rule_17:
     id: 17
     name: 'Visualizar Clientes'
-    ScmModule: Module_1
+    ScmModule: Module_2
   Rule_18:
    id: 18
    name: 'Gerir Clientes'
-   ScmModule: Module_1
+   ScmModule: Module_2
   Rule_19:
    id: 19
    name: 'Visualizar usuarios de clientes'
-   ScmModule: Module_1
+   ScmModule: Module_2
   Rule_20:
    id: 20
    name: 'Gerenciar usuarios de clientes'
-   ScmModule: Module_1
+   ScmModule: Module_2
   Rule_21:
    id: 21
    name: 'Visualizar Postagens'
-   ScmModule: Module_1
+   ScmModule: Module_2
   Rule_22:
    id: 22
    name: 'Gerir Postagens'
+   ScmModule: Module_2
+  Rule_23:
+   id: 23
+   name: 'Acesso Total a Postagens'
+   ScmModule: Module_2
+  Rule_24:
+   id: 24
+   name: 'Visualizar Mensagens'
+   ScmModule: Module_3
+  Rule_25:
+   id: 25
+   name: 'Acesso total a Mensagens'
+   ScmModule: Module_3
+  Rule_26:
+   id: 26
+   name: 'Acesso aos Logs das mensagens'
+   ScmModule: Module_3
+  Rule_27:
+   id: 27
+   name: 'Acessar Repositório'
    ScmModule: Module_1
+

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Dynamic.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Dynamic.php 17517 2009-08-10 13:52:31Z ralph $
  */
 
 /**
@@ -26,91 +26,46 @@
 require_once 'Zend/Tool/Framework/Metadata/Interface.php';
 
 /**
- * @see Zend_Tool_Framework_Metadata_Attributable
- */
-require_once 'Zend/Tool/Framework/Metadata/Attributable.php';
-
-/**
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Tool_Framework_Metadata_Dynamic
-    implements Zend_Tool_Framework_Metadata_Interface, Zend_Tool_Framework_Metadata_Attributable
+class Zend_Tool_Framework_Metadata_Dynamic implements Zend_Tool_Framework_Metadata_Interface
 {
-
+    
     /**
      * @var string
      */
     protected $_type = 'Dynamic';
-
+    
     /**
      * @var string
      */
     protected $_name = null;
-
+    
     /**
      * @var string
      */
     protected $_value = null;
-
+    
     /**
      * @var array
      */
     protected $_dynamicAttributes = array();
-
-    public function __construct($options = array())
-    {
-        if ($options) {
-            $this->setOptions($options);
-        }
-    }
-
-    public function setOptions(Array $options = array())
-    {
-        foreach ($options as $optName => $optValue) {
-            $methodName = 'set' . $optName;
-            $this->{$methodName}($optValue);
-        }
-    }
-
-    /**
-     * setType()
-     *
-     * @param string $type
-     * @return Zend_Tool_Framework_Metadata_Dynamic
-     */
-    public function setType($type)
-    {
-        $this->_type = $type;
-        return $this;
-    }
-
+    
     /**
      * getType()
-     *
+     * 
      * The type of metadata this describes
-     *
+     * 
      * @return string
      */
     public function getType()
     {
         return $this->_type;
     }
-
-    /**
-     * setName()
-     *
-     * @param string $name
-     * @return Zend_Tool_Framework_Metadata_Dynamic
-     */
-    public function setName($name)
-    {
-        $this->_name = $name;
-        return $this;
-    }
-
+    
     /**
      * getName()
      *
@@ -122,22 +77,10 @@ class Zend_Tool_Framework_Metadata_Dynamic
     {
         return $this->_name;
     }
-
-    /**
-     * setValue()
-     *
-     * @param mixed $value
-     * @return Zend_Tool_Framework_Metadata_Dynamic
-     */
-    public function setValue($value)
-    {
-        $this->_value = $value;
-        return $this;
-    }
-
+    
     /**
      * getValue()
-     *
+     * 
      * Metadata Value
      *
      * @return string
@@ -146,15 +89,11 @@ class Zend_Tool_Framework_Metadata_Dynamic
     {
         return $this->_value;
     }
-
-    public function getAttributes()
-    {
-        return $this->_dynamicAttributes;
-    }
-
+    
+    
     /**
      * __isset()
-     *
+     * 
      * Check if an attrbute is set
      *
      * @param string $name
@@ -164,7 +103,7 @@ class Zend_Tool_Framework_Metadata_Dynamic
     {
         return isset($this->_dynamicAttributes[$name]);
     }
-
+    
     /**
      * __unset()
      *
@@ -176,7 +115,7 @@ class Zend_Tool_Framework_Metadata_Dynamic
         unset($this->_dynamicAttributes[$name]);
         return;
     }
-
+    
     /**
      * __get() - Get a property via property call $metadata->foo
      *
@@ -188,13 +127,13 @@ class Zend_Tool_Framework_Metadata_Dynamic
         if (method_exists($this, 'get' . $name)) {
             return $this->{'get' . $name}();
         } elseif (array_key_exists($name, $this->_dynamicAttributes)) {
-            return $this->_dynamicAttributes[$name];
+            return ;
         } else {
             require_once 'Zend/Tool/Framework/Registry/Exception.php';
             throw new Zend_Tool_Framework_Registry_Exception('Property ' . $name . ' was not located in this metadata.');
         }
     }
-
+    
     /**
      * __set() - Set a property via the magic set $metadata->foo = 'foo'
      *
@@ -205,15 +144,11 @@ class Zend_Tool_Framework_Metadata_Dynamic
     {
         if (method_exists($this, 'set' . $name)) {
             $this->{'set' . $name}($value);
-            return $this;
+            return;
         } else {
-            $this->_dynamicAttributes[$name] = $value;
-            return $this;
+            require_once 'Zend/Tool/Framework/Registry/Exception.php';
+            throw new Zend_Tool_Framework_Registry_Exception('Property ' . $name . ' was not located in this registry.');            
         }
-//        {
-//            require_once 'Zend/Tool/Framework/Registry/Exception.php';
-//            throw new Zend_Tool_Framework_Registry_Exception('Property ' . $name . ' was not located in this registry.');
-//        }
     }
-
+    
 }

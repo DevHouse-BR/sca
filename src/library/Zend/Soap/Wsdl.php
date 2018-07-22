@@ -14,19 +14,12 @@
  *
  * @category   Zend
  * @package    Zend_Soap
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Wsdl.php 25033 2012-08-17 19:50:08Z matthew $
+ * @version    $Id: Wsdl.php 16210 2009-06-21 19:22:17Z thomas $
  */
 
-/**
- * @see Zend_Soap_Wsdl_Strategy_Interface
- */
 require_once "Zend/Soap/Wsdl/Strategy/Interface.php";
-
-/**
- * @see Zend_Soap_Wsdl_Strategy_Abstract
- */
 require_once "Zend/Soap/Wsdl/Strategy/Abstract.php";
 
 /**
@@ -96,23 +89,13 @@ class Zend_Soap_Wsdl
                     xmlns:xsd='http://www.w3.org/2001/XMLSchema'
                     xmlns:soap-enc='http://schemas.xmlsoap.org/soap/encoding/'
                     xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'></definitions>";
-        libxml_disable_entity_loader(true);
         $this->_dom = new DOMDocument();
         if (!$this->_dom->loadXML($wsdl)) {
             require_once 'Zend/Server/Exception.php';
             throw new Zend_Server_Exception('Unable to create DomDocument');
         } else {
-            foreach ($this->_dom->childNodes as $child) {
-                if ($child->nodeType === XML_DOCUMENT_TYPE_NODE) {
-                    require_once 'Zend/Server/Exception.php';
-                    throw new Zend_Server_Exception(
-                        'Invalid XML: Detected use of illegal DOCTYPE'
-                    );
-                }
-            }
             $this->_wsdl = $this->_dom->documentElement;
         }
-        libxml_disable_entity_loader(false);
 
         $this->setComplexTypeStrategy($strategy);
     }
@@ -135,10 +118,8 @@ class Zend_Soap_Wsdl
             // @todo: This is the worst hack ever, but its needed due to design and non BC issues of WSDL generation
             $xml = $this->_dom->saveXML();
             $xml = str_replace($oldUri, $uri, $xml);
-            libxml_disable_entity_loader(true);
             $this->_dom = new DOMDocument();
             $this->_dom->loadXML($xml);
-            libxml_disable_entity_loader(false);
         }
 
         return $this;
@@ -329,17 +310,11 @@ class Zend_Soap_Wsdl
 
         if (is_array($fault)) {
             $node = $this->_dom->createElement('fault');
-            /**
-             * Note. Do we really need name attribute to be also set at wsdl:fault node???
-             * W3C standard doesn't mention it (http://www.w3.org/TR/wsdl#_soap:fault)
-             * But some real world WSDLs use it, so it may be required for compatibility reasons.
-             */
             if (isset($fault['name'])) {
                 $node->setAttribute('name', $fault['name']);
             }
-
-            $soap_node = $this->_dom->createElement('soap:fault');
-            foreach ($fault as $name => $value) {
+            $soap_node = $this->_dom->createElement('soap:body');
+            foreach ($output as $name => $value) {
                 $soap_node->setAttribute($name, $value);
             }
             $node->appendChild($soap_node);
@@ -442,7 +417,7 @@ class Zend_Soap_Wsdl
         }
 
         $doc = $this->_dom->createElement('documentation');
-        $doc_cdata = $this->_dom->createTextNode(str_replace(array("\r\n", "\r"), "\n", $documentation));
+        $doc_cdata = $this->_dom->createTextNode($documentation);
         $doc->appendChild($doc_cdata);
 
         if($node->hasChildNodes()) {
@@ -555,24 +530,28 @@ class Zend_Soap_Wsdl
             case 'string':
             case 'str':
                 return 'xsd:string';
-            case 'long':
-                return 'xsd:long';
+                break;
             case 'int':
             case 'integer':
                 return 'xsd:int';
+                break;
             case 'float':
-                return 'xsd:float';
             case 'double':
-                return 'xsd:double';
+                return 'xsd:float';
+                break;
             case 'boolean':
             case 'bool':
                 return 'xsd:boolean';
+                break;
             case 'array':
                 return 'soap-enc:Array';
+                break;
             case 'object':
                 return 'xsd:struct';
+                break;
             case 'mixed':
                 return 'xsd:anyType';
+                break;
             case 'void':
                 return '';
             default:
@@ -616,10 +595,10 @@ class Zend_Soap_Wsdl
         // delegates the detection of a complex type to the current strategy
         return $strategy->addComplexType($type);
     }
-
+    
     /**
      * Parse an xsd:element represented as an array into a DOMElement.
-     *
+     * 
      * @param array $element an xsd:element represented as an array
      * @return DOMElement parsed element
      */
@@ -629,7 +608,7 @@ class Zend_Soap_Wsdl
             require_once "Zend/Soap/Wsdl/Exception.php";
             throw new Zend_Soap_Wsdl_Exception("The 'element' parameter needs to be an associative array.");
         }
-
+        
         $elementXml = $this->_dom->createElement('xsd:element');
         foreach ($element as $key => $value) {
             if (in_array($key, array('sequence', 'all', 'choice'))) {
@@ -651,10 +630,10 @@ class Zend_Soap_Wsdl
         }
         return $elementXml;
     }
-
+    
     /**
      * Add an xsd:element represented as an array to the schema.
-     *
+     * 
      * Array keys represent attribute names and values their respective value.
      * The 'sequence', 'all' and 'choice' keys must have an array of elements as their value,
      * to add them to a nested complexType.
@@ -666,7 +645,7 @@ class Zend_Soap_Wsdl
      *                  <xsd:element name="myString" type="string"/>
      *                  <xsd:element name="myInteger" type="int"/>
      *                </xsd:sequence></xsd:complexType></xsd:element>
-     *
+     * 
      * @param array $element an xsd:element represented as an array
      * @return string xsd:element for the given element array
      */

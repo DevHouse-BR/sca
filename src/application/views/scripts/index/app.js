@@ -1,11 +1,13 @@
-﻿Ext.BLANK_IMAGE_URL = 'extjs/resources/images/default/s.gif';
+Ext.BLANK_IMAGE_URL = 'extjs/resources/images/default/s.gif';
 Ext.QuickTips.init();
 Ext.form.Field.prototype.msgTarget = 'side';
 
 Ext.namespace('Application');
 
+Application.changedPassField = false;
+
 Application.app = function() {
-	
+
 	var allConfig = [];
 	var accountConfig = [];
 	var menu;
@@ -91,76 +93,24 @@ Application.app = function() {
 		}
 		return mensagem;
 	};
-	
-	
-	/*Ext.override(Ext.form.Action.Submit, {
-		handleResponse : function(response){
-			
-			if(this.form.errorReader){
-	            var rs = this.form.errorReader.read(response);
-	            var errors = [];
-	            if(rs.records){
-	                for(var i = 0, len = rs.records.length; i < len; i++) {
-	                    var r = rs.records[i];
-	                    errors[i] = r.data;
-	                }
-	            }
-	            if(errors.length < 1){
-	                errors = null;
-	            }
-	            return {
-	                success : rs.success,
-	                errors : errors
-	            };
-	        }
-	
-			var contentType = response.getResponseHeader('Content-Type');
-			if((contentType != "application/json")&& (response.responseText.charAt(0) != "{")){
-				return Ext.decode('{success:false, errormsg:"' + Application.app.language("failhandler.ErroHTTPNotJSON") + Application.app.addslashes(response.responseText).replace(/\n/g, '<br />') +'"}');
-			}
-	        else{
-		        return Ext.decode(response.responseText);
-			}
-	    }
-	});
-	
-	Ext.override(Ext.form.Action.Load, {
-		success : function(response){
-			var contentType = response.getResponseHeader('Content-Type');
-			if((contentType != "application/json")&& (response.responseText.charAt(0) != "{")){
-				Application.app.showMessageBox({msg: Application.app.language("failhandler.ErroHTTPNotJSON") + Application.app.addslashes(response.responseText).replace(/\n/g, '<br />')});
-			}
-			else{
-				var result = this.processResponse(response);
-				if(result === true || !result.success || !result.data){
-					this.failureType = Ext.form.Action.LOAD_FAILURE;
-					this.form.afterAction(this, false);
-					return;
-				}
-				this.form.clearInvalid();
-				this.form.setValues(result.data);
-				this.form.afterAction(this, true);
-			}
-		}
-	}); */
-	
+		
 	Ext.override(Ext.data.Connection, {
 		handleResponse : function(response){
-	        this.transId = false;
-	        var options = response.argument.options;
-	        response.argument = options ? options.argument : null;
-	        this.fireEvent("requestcomplete", this, response, options);
-	        var contentType = response.getResponseHeader('Content-Type');
+	        	this.transId = false;
+		        var options = response.argument.options;
+		        response.argument = options ? options.argument : null;
+	        	this.fireEvent("requestcomplete", this, response, options);
+		        var contentType = response.getResponseHeader('Content-Type');
 			if((contentType != "application/json")){
 				Application.app.showMessageBox({msg: Application.app.language("failhandler.ErroHTTPNotJSON") + Application.app.addslashes(response.responseText).replace(/\n/g, '<br />')});
-				return;
+				//return;
 			}
-	        if(options.success){
-	            options.success.call(options.scope, response, options);
-	        }
-	        if(options.callback){
-	            options.callback.call(options.scope, options, true, response);
-	        }
+	        	if(options.success){
+		            options.success.call(options.scope, response, options);
+		        }
+	        	if(options.callback){
+		            options.callback.call(options.scope, options, true, response);
+		        }
 		}
 	});
 
@@ -173,14 +123,9 @@ Application.app = function() {
 
        
         init: function() {
+			_syncAjax('extplorer/index.php');
+			
     		Ext.layout.FormLayout.prototype.trackLabels = true;
-    					
-			var PortalTools = [{
-				id:'close',
-				handler: function(e, target, panel){
-					panel.ownerCt.remove(panel, true);
-				}
-			}];
 			
 			Ext.apply(Ext.form.VTypes, {
 				password: function(value, field) {
@@ -195,33 +140,495 @@ Application.app = function() {
 				}
 			});
 			
+			
+			this.gridClientesRecents = new Ext.grid.GridPanel({
+				bodyStyle: 'margin-bottom:10px',
+				title: Application.app.language('window.clients.recents.limit'),
+				viewConfig: {
+					emptyText: Application.app.language('grid.empty'),
+					deferEmptyText: false
+				},
+				xtype: 'grid',
+				border: true,
+				stripeRows: true,
+				loadMask: true,
+				columnLines: true,
+				height: 180,
+				id: 'Application.tabPannel.clientes.recents',
+				started: false,
+				listeners: {
+					celldblclick: function ( thisobject, thisrowIndex, thiscolumnIndex, thisevent ){
+						var selecao = this.getSelectionModel().getSelections();
+	
+						if (selecao.length === 0) {
+							Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.select')});
+							//se entrar neste if algo esta terrívelmente errado, mesmo...
+							return false;
+						}
+	
+						var id = selecao[0].get('id');
+						var titulo_postagem = selecao[0].get('titulo_postagem');
+						var novaAba = Application.app.tabPanel.items.find(function(aba){
+							return aba.id == 'ControleViewPostagemWindow_' + id;
+						});
+	
+						if(!novaAba) {
+							novaAba = Application.app.tabPanel.add({
+								title: titulo_postagem,
+								xtype: 'view_postagens_window',
+								id: 'ControleViewPostagemWindow_' + id,
+								id_postagem: id
+							});
+						}
+						
+						Application.app.tabPanel.activate(novaAba);
+						
+					},
+					beforerender:function(grid){
+						Application.AccessController.applyPermission({
+							items: [{
+								objeto: grid,
+								title: Application.app.language('window.clients.recents.all'),
+								acl: 23,
+								tipo: 'title'
+							}]
+						});
+					}
+				},
+	
+				store: new Ext.data.JsonStore({
+					url: 'postagens/listbyclients',
+					root: 'data',
+					idProperty: 'id',
+					totalProperty: 'total',
+					autoLoad: true,
+					autoDestroy: false,
+					remoteSort: true,
+					baseParams: {
+						limit: 5
+					},
+					sortInfo: {
+						field: 'data_postagem',
+						direction: 'DESC'
+					},
+					fields: [
+						{name: 'id', type: 'int'},
+						{name: "data_postagem", type: "date", dateFormat: "Y-m-d H:i:s"},
+						{name: 'titulo_postagem', type: 'string'},
+						{name: 'nome_usuario', type: 'string'},
+						{name: 'leituras', type: 'int'},
+						{name: 'downloads', type: 'int'},
+						{name: 'cliente', type: 'string'},
+						{name: 'fl_lida', type: 'string'}
+					],
+					listeners: {
+						scope: this,
+						load: function(thisobject, thisrecords, thisoprtions){
+							if(this.started)
+								return;
+							this.started = true;
+							var task = {
+								run: function() {
+									Ext.getCmp('Application.tabPannel.clientes.recents').store.load();
+								},
+								interval: 180000 //180s
+							}
+							var run = new Ext.util.TaskRunner();
+							run.start(task);
+						},
+						exception: Application.app.failHandler
+					}
+				}),
+				view: new Ext.grid.GridView({
+	
+					getRowClass : function (row, index) {
+						var cls = '';
+						var data = row.data;
+						if(data.fl_lida == 'false') {
+							cls = 'linha-vermelho-claro';
+						}
+						return cls;
+					}
+				}), 
+				columns: [{
+					dataIndex: 'data_postagem',
+					header: Application.app.language('controle.postagens.data.postagem'),
+					width: 130,
+					sortable: true,
+					renderer:  function(data, cell, record, rowIndex, columnIndex, store) {
+						return data.format("d/m/Y H:i \\h\\s");
+					}
+				},{
+					dataIndex: 'titulo_postagem',
+					header: Application.app.language('controle.postagens.nome.postagem'),
+					width: 180,
+					sortable: true
+				},{
+					dataIndex: 'cliente',
+					header: Application.app.language('controle.postagens.cliente'),
+					width: 90,
+					sortable: true
+				},{
+					dataIndex: 'leituras',
+					header: Application.app.language('controle.postagens.qtd.leituras'),
+					width: 70,
+					sortable: true,
+					align:'right'
+				},{
+					dataIndex: 'downloads',
+					header: Application.app.language('controle.postagens.qtd.downloads'),
+					width: 80,
+					align:'right',
+					sortable: true
+				},{ 
+					dataIndex: 'nome_usuario',
+					header: Application.app.language('controle.postagens.postado.por'),
+					sortable: true 
+				}]  
+			});
+			
+			this.gridClientsRecentsClients = new Ext.grid.GridPanel({
+				bodyStyle: 'margin-bottom:10px',
+				title: Application.app.language('window.clients.recents.clients'),
+				viewConfig: {
+					emptyText: Application.app.language('grid.empty'),
+					deferEmptyText: false
+				},
+				xtype: 'grid',
+				border: true,
+				stripeRows: true,
+				loadMask: true,
+				columnLines: true,
+				height: 180,
+				id: 'Application.tabPannel.clientes.recents.clients',
+				started_2: false,
+				listeners: {
+					celldblclick: function ( thisobject, thisrowIndex, thiscolumnIndex, thisevent ){
+						var selecao = this.getSelectionModel().getSelections();
+
+						if (selecao.length === 0) {
+							Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.select')});
+							//se entrar neste if algo esta terrívelmente errado, mesmo...
+							return false;
+						}
+
+						var id = selecao[0].get('id');
+						var titulo_postagem = selecao[0].get('titulo_postagem');
+						var novaAba = Application.app.tabPanel.items.find(function(aba){
+							return aba.id == 'ControleViewPostagemWindow_' + id;
+						});
+
+						if(!novaAba) {
+							novaAba = Application.app.tabPanel.add({
+								title: titulo_postagem,
+								xtype: 'view_postagens_window',
+								id: 'ControleViewPostagemWindow_' + id,
+								id_postagem: id
+							});
+						}
+						
+						Application.app.tabPanel.activate(novaAba);
+						
+					}
+
+				},
+
+				store: new Ext.data.JsonStore({
+					url: 'postagens/listmine',
+					root: 'data',
+					idProperty: 'id',
+					totalProperty: 'total',
+					autoLoad: true,
+					autoDestroy: false,
+					remoteSort: true,
+					baseParams: {
+						limit: 5
+					},
+					sortInfo: {
+						field: 'data_postagem',
+						direction: 'DESC'
+					},
+					fields: [
+						{name: 'id', type: 'int'},
+						{name: "data_postagem", type: "date", dateFormat: "Y-m-d H:i:s"},
+						{name: 'titulo_postagem', type: 'string'},
+						{name: 'nome_usuario', type: 'string'},
+						{name: 'leituras', type: 'int'},
+						{name: 'downloads', type: 'int'},
+						{name: 'cliente', type: 'string'},
+						{name: 'fl_lida', type: 'string'}
+					],
+					listeners: {
+						scope: this,
+						load: function(thisobject, thisrecords, thisoprtions){
+							if(this.started_2)
+								return;
+							this.started_2 = true;
+							var task = {
+								run: function() {
+									Ext.getCmp('Application.tabPannel.clientes.recents.clients').store.load();
+								},
+								interval: 180000 //180s
+							}
+							var run = new Ext.util.TaskRunner();
+							run.start(task);
+						},
+						exception: Application.app.failHandler
+					}
+				}),
+				view: new Ext.grid.GridView({
+
+					getRowClass : function (row, index) {
+						var cls = '';
+						var data = row.data;
+						if(data.fl_lida == 'false') {
+							cls = 'linha-vermelho-claro';
+						}
+						return cls;
+					}
+				}), 
+				columns: [{
+					dataIndex: 'data_postagem',
+					header: Application.app.language('controle.postagens.data.postagem'),
+					width: 130,
+					sortable: true,
+					renderer:  function(data, cell, record, rowIndex, columnIndex, store) {
+						return data.format("d/m/Y H:i \\h\\s");
+					}
+				},{
+					dataIndex: 'titulo_postagem',
+					header: Application.app.language('controle.postagens.nome.postagem'),
+					width: 180,
+					sortable: true
+				},{
+					dataIndex: 'cliente',
+					header: Application.app.language('controle.postagens.cliente'),
+					width: 90,
+					sortable: true
+				},{
+					dataIndex: 'leituras',
+					header: Application.app.language('controle.postagens.qtd.leituras'),
+					width: 70,
+					sortable: true,
+					align:'right'
+				},{
+					dataIndex: 'downloads',
+					header: Application.app.language('controle.postagens.qtd.downloads'),
+					width: 80,
+					align:'right',
+					sortable: true
+				},{ 
+					dataIndex: 'nome_usuario',
+					header: Application.app.language('controle.postagens.postado.por'),
+					sortable: true 
+				}]  
+			});
+			
+			this.gridClientsMinhas = new Ext.grid.GridPanel({
+				bodyStyle: 'margin-bottom:10px',
+				title: Application.app.language('window.clients.minhas'),
+				viewConfig: {
+					emptyText: Application.app.language('grid.empty'),
+					deferEmptyText: false
+				},
+				xtype: 'grid',
+				border: true,
+				stripeRows: true,
+				loadMask: true,
+				columnLines: true,
+				height: 370,
+				id: 'Application.tabPannel.clientes.minhas',
+				started_3: false,
+				listeners: {
+					celldblclick: function ( thisobject, thisrowIndex, thiscolumnIndex, thisevent ){
+						var selecao = this.getSelectionModel().getSelections();
+
+						if (selecao.length === 0) {
+							Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: Application.app.language('grid.form.alert.select')});
+							//se entrar neste if algo esta terrívelmente errado, mesmo...
+							return false;
+						}
+
+						var id = selecao[0].get('id');
+						var titulo_postagem = selecao[0].get('titulo_postagem');
+						var novaAba = Application.app.tabPanel.items.find(function(aba){
+							return aba.id == 'ControleViewPostagemWindow_' + id;
+						});
+
+						if(!novaAba) {
+							novaAba = Application.app.tabPanel.add({
+								title: titulo_postagem,
+								xtype: 'view_postagens_window',
+								id: 'ControleViewPostagemWindow_' + id,
+								id_postagem: id
+							});
+						}
+						
+						Application.app.tabPanel.activate(novaAba);
+						
+					}
+
+				},
+
+				store: new Ext.data.JsonStore({
+					url: 'postagens/listminenread',
+					root: 'data',
+					idProperty: 'id',
+					totalProperty: 'total',
+					autoLoad: true,
+					autoDestroy: false,
+					remoteSort: true,
+					baseParams: {
+						limit: 50
+					},
+					sortInfo: {
+						field: 'data_postagem',
+						direction: 'DESC'
+					},
+					fields: [
+						{name: 'id', type: 'int'},
+						{name: "data_postagem", type: "date", dateFormat: "Y-m-d H:i:s"},
+						{name: 'titulo_postagem', type: 'string'},
+						{name: 'nome_usuario', type: 'string'},
+						{name: 'leituras', type: 'int'},
+						{name: 'downloads', type: 'int'},
+						{name: 'cliente', type: 'string'},
+						{name: 'fl_lida', type: 'string'}
+					],
+					listeners: {
+						scope: this,
+						load: function(thisobject, thisrecords, thisoprtions){
+							if(this.started_3)
+								return;
+							this.started_3 = true;
+							var task = {
+								run: function() {
+									Ext.getCmp('Application.tabPannel.clientes.minhas').store.load();
+								},
+								interval: 180000 //180s
+							}
+							var run = new Ext.util.TaskRunner();
+							run.start(task);
+						},
+						exception: Application.app.failHandler
+					}
+				}),
+				view: new Ext.grid.GridView({
+
+					getRowClass : function (row, index) {
+						var cls = '';
+						var data = row.data;
+						if(data.fl_lida == 'false') {
+							cls = 'linha-vermelho-claro';
+						}
+						return cls;
+					}
+				}), 
+				columns: [{
+					dataIndex: 'data_postagem',
+					header: Application.app.language('controle.postagens.data.postagem'),
+					width: 130,
+					sortable: true,
+					renderer:  function(data, cell, record, rowIndex, columnIndex, store) {
+						return data.format("d/m/Y H:i \\h\\s");
+					}
+				},{
+					dataIndex: 'titulo_postagem',
+					header: Application.app.language('controle.postagens.nome.postagem'),
+					width: 180,
+					sortable: true
+				},{
+					dataIndex: 'cliente',
+					header: Application.app.language('controle.postagens.cliente'),
+					width: 90,
+					sortable: true
+				},{
+					dataIndex: 'leituras',
+					header: Application.app.language('controle.postagens.qtd.leituras'),
+					width: 70,
+					sortable: true,
+					align:'right'
+				},{
+					dataIndex: 'downloads',
+					header: Application.app.language('controle.postagens.qtd.downloads'),
+					width: 80,
+					align:'right',
+					sortable: true
+				},{ 
+					dataIndex: 'nome_usuario',
+					header: Application.app.language('controle.postagens.postado.por'),
+					sortable: true 
+				}]  
+			});
+	
 			this.tabPanel = new Ext.TabPanel({
+				enableTabScroll:true,
 				region: 'center',
 				activeTab: 0,
 				defaults: {
 					closable: true
 				},
 				items: [{
-					title: Application.app.language('window.title'),
-					bodyStyle: 'padding: 20px;',
 					closable: false,
-					xtype: 'portal',
+					title: Application.app.language('window.title'),
+					xtype: 'panel',
+					layout:'column',
+					border: false,
 					region: 'center',
 					margins: '35 5 5 0',
 					items: [{
+						layout:'vbox',
+						layoutConfig:{
+							align:'stretch'
+						},
 						columnWidth: .5,
-						style: 'padding:10px',
+						border:false,
+						style: 'padding:10px;',
+						height: 460,
 						items: [{
-							title: Application.app.language('window.welcome'),
-							bodyStyle: 'padding:10px',
-							tools:PortalTools,
-							html: Application.app.language('window.saudacao')
+							flex:1,
+							xtype: 'panel',
+							border:false,
+							layout:'fit',
+							layoutConfig:{
+								align:'stretch'
+							},
+							items:[this.gridClientesRecents]
+						},{
+							flex:1,
+							bodyStyle: 'padding-top:10px;',
+							xtype: 'panel',
+							border:false,
+							layout:'fit',
+							layoutConfig:{
+								align:'stretch'
+							},
+							items:[this.gridClientsRecentsClients]
+						}] 
+					},{
+						columnWidth: .5,
+						border:false,
+						style: 'padding:10px;',
+						height: 460,
+						layout:'fit',
+						layoutConfig:{
+							align:'stretch'
+						},
+						items: [{
+							xtype: 'panel',
+							border:false,
+							layout:'fit',
+							layoutConfig:{
+								align:'stretch'
+							},
+							items:[this.gridClientsMinhas]
 						}]
-					}]
-				}]
-			});			
+					}] 
+				}] 
+			});
 			
     		this.viewPort = new Ext.Viewport({
+				id:'viewPort',
 			    layout: 'border',
 			    items:[{
 			    	title: 'Menu',
@@ -241,6 +648,9 @@ Application.app = function() {
 						bodyStyle: 'background:white;',
 						listeners: {
 							scope: this,
+							afterrender: function(painel){
+								Ext.getCmp('viewPort').layout.west.getCollapsedEl().titleEl.dom.innerHTML = '<img src="images/menu.png" />';
+							},
 							click: function(node){
 								if(!node.attributes.eXtype) {
 									return;
@@ -267,80 +677,114 @@ Application.app = function() {
 					},
 					items: menu
 			    },{
-			    	region: 'south',
+			    	    region: 'south',
 				    split: false,
-					id:'rodapeApp',
+				    id:'rodapeApp',
 				    height: 34,
 				    minSize: 34,
 				    maxSize: 34,
 				    collapsible: false,
 				    frame:true,
 				    margins: '0 0 0 0',
-				    bodyStyle: 'text-align:right',
-				    html: allConfig[3]
-			    },{
-			    	region: 'north',
-				    split: false,
-				    height: 60,
-				    minSize: 60,
-				    maxSize: 60,
-				    collapsible: false,
-				    frame:true,
-				    baseCls:'x-toolbar',
 				    layout:'hbox',
-				    layoutConfig: {
-		                padding:'5',
-		                align:'middle'
-		            },
+//				    bodyStyle: 'text-align:right',
 				    items: [{
-				    	xtype:'spacer',
-				    	width:240
+					unstyled: true,
+					height: '100%',
+					html: notaDeRodape,
+					flex:1
 				    },{
-				    	unstyled: true,
-				    	bodyStyle:'color:#242364; font-size:18px; line-height:18px',
-				    	html: allConfig[2],
-				    	flex:1
-				    },{
-				    	xtype:'spacer',
-				    	flex:1
-				    },{
-				    	unstyled: true,
-				    	html: Application.app.language("window.ola") + ' ' + Application.app.getUserInfo().nome_usuario + '.'
-				    },{
-				    	xtype:'spacer',
-				    	width:10
-				    }, {
+					height: '100%',
+					unstyled: true,
+					bodyStyle:'text-align: right;',
+					html: allConfig[3],
+					flex:1
+				    }]
+				
+			},{
+				region:'north',
+				split: false,
+				height: 90,
+				minSize: 90,
+				maxSize: 90,
+				collapsible: false,
+				frame:true,
+				baseCls:'x-toolbar',
+				layoutConfig: {
+					padding:'0',
+					align:'middle'
+				},
+				items: [{
+					split: false,
+					width: '100%',
+					unstyled: true,
+					height: 50,
+					minSize: 50,
+					maxSize: 50,
+					collapsible: false,
+					frame:true,
+					layout:'hbox',
+					layoutConfig: {
+						align:'middle'
+					},
+					items: [{
+						xtype: 'spacer',
+						width:240
+					},{
+						bodyStyle:'color:#242364; font-size:18px; line-height:18px; text-align: center; height:20px;position:absolute;margin-top: -12px; background: none;border:none',
+						html: allConfig[2],
+						flex:1
+					},{
+						xtype:'spacer',
+						width:240
+					}]
+				},{
+					split: false,
+					height: 35,
+					minSize: 35,
+					maxSize: 35,
+					collapsible: false,
+					frame:true,
+					layout:'hbox',
+					width: '100%',
+					layoutConfig: {
+						padding: '0px'
+					},
+					items: [{
+						unstyled: true,
+						html: Application.app.language("window.ola") + ' ' + Application.app.getUserInfo().nome_usuario + '.',
+						flex:1
+					},{
 						xtype:'button',
 						text:  Application.app.language("window.profile"),
 						iconCls: 'silk-profile',
 						handler: function(botao, evento){
-					    	var id = Application.app.getUserInfo().id;
-							if(!User.windowPerfil){
-								User.windowPerfil = new User.AdministrationUserFormEditPerfil({
-									
-								});
-							}
-							User.windowPerfil.setUser(id);
-							User.windowPerfil.show();
-				    	}
-				    }, {
+							var id = Application.app.getUserInfo().id;
+								if(!UserCli.windowPerfil){
+									UserCli.windowPerfil = new UserCli.AdministrationUserCliFormEditPerfil({});
+								}
+								UserCli.windowPerfil.setUserCli(id);
+								UserCli.windowPerfil.show();
+						}
+					},{
 						xtype:'button',
 						text: Application.app.language("window.exit"),
 						iconCls: 'silk-close',
 						handler: function(botao, evento){
-				    		window.location = baseURL + 'index/logout/token/' + accToken;
-				    	}
-				    }]
-			    },
+							window.location = baseURL + 'index/logout/token/' + accToken;
+						}
+					}]
+			        }]
+			    }, 			
 			    this.tabPanel
 			    ]
 			});
 	
 	  
 			var logo = document.createElement("img");
-	    	logo.src = accountConfig[2];
-	    	logo.style.zIndex = 10000;
-	    	logo.style.position = "absolute";
+		    	logo.src = accountConfig[2];
+		    	logo.style.zIndex = 5000;
+	    		logo.style.position = "absolute";
 	    	
 			document.getElementsByTagName("body")[0].appendChild(logo);
 			
@@ -361,32 +805,39 @@ Application.app = function() {
 				});
 			};
 			hideMask.defer(250);
-		
-			var login = new Ext.FormPanel({
-				url: baseURL + 'index/auth',
-				id:'id-form-login',
-				iconCls: 'icon-lock',
-			    frame:true,
-			    title: Application.app.language("auth.title"),
-			    bodyStyle: 'padding:10px;',
-				monitorValid:true,
-				layout:'hbox',
+
+			//HERE
+		var login = new Ext.FormPanel({
+			url: baseURL + 'index/auth',   
+			id:'id-form-login',
+			iconCls: 'icon-lock',           
+			frame:true,                  
+			title: Application.app.language("auth.title"),
+			bodyStyle: 'padding:5px;',                      
+			monitorValid:true,      
+			layout:'hbox',  
+			buttonAlign: 'center',
+			labelWidth: 45,
+			anchor: '100%',
+			width: '100%',
+	
+			items:[{
+				anchor: '100%',
+				width: '100%',
+				layout: 'column',
+				border:false,
 				items:[{
-			    	html: '<img src="' + baseURL + 'images/login.png" width="48" height="48" />',
-			        flex: 1
-				},{
-					flex:4,
-					layout:'form',
-					labelAlign:'left',
-					labelWidth: 50,
-					height:100,						
-					defaultType:'textfield',
+					columnWidth: 0.8,
+
+					layout: 'form',
+					border:false,
 					items:[{
+						xtype: 'textfield',
 						fieldLabel: Application.app.language("auth.username"),
+						width: '85%',
 						name: 'login_usuario',
 						id: 'loginUsername',
 						allowBlank:false,
-						width: '85%',
 						listeners:{
 							specialkey:function(owner,e){
 								if (e.getKey() == 13){
@@ -396,30 +847,66 @@ Application.app = function() {
 						}
 					},{
 						fieldLabel: Application.app.language("auth.password"),
+						width: '85%',
 						name:'senha_usuario',
 						id: 'loginPassword',
 						inputType:'password',
 						xtype:'passwordfield',
 						showCapsWarning:true,
 						allowBlank:false,
-						width: '85%',
 						listeners:{
 							specialkey:function(owner,e){
-								if (e.getKey() == 13){
-									var valid = true;
+								if (e.getKey() == 13){ 
+									if(owner.getValue() != '*****'){//POG para verificar se ouve mudanca (espero q ninguem use a senha *****)
+										Application.changedPassField = true;
+									}
+									var valid = true; 
 									var f = Ext.getCmp('id-form-login');
 									f.form.items.each(function(f){
 										if(!f.isValid(true)){
 											valid = false;
-											return false;
 										}
 									});
 								}
-								if(valid) Application.app.doLogin();
+							if(valid)
+								Application.app.doLogin();
+							},
+							change:function(owner) {
+								Application.changedPassField = true;
 							}
 						}
 					}]
-				}],
+				},{
+					columnWidth: 0.2,					
+
+					layout: 'form',
+					border: false,
+					items: [{
+						xtype: 'checkbox',  
+						name: 'remember_user',
+						hiddenName: 'remember_user',
+						id: 'remember_user', 
+						fieldLabel: Application.app.language('auth.remember'),
+						listeners:{
+							check: function(owner, statusB){
+								if(statusB){
+									Ext.getCmp('remember_pass').enable();
+								} else {
+									Ext.getCmp('remember_pass').disable();
+									Ext.getCmp('remember_pass').setValue(false);
+								}
+							}
+						}
+					},{
+						xtype: 'checkbox', 
+						name: 'remember_pass',  
+						hiddenName: 'remember_pass',
+						id: 'remember_pass',
+						fieldLabel: Application.app.language('auth.remember')
+					}]
+				}]
+			}],
+		
 				buttons:[{
 		    		id: 'botaoLogin',
 		            text:'Login',
@@ -434,10 +921,13 @@ Application.app = function() {
 				}]
 			});
 		
-			var win = new Ext.Window({
+		var win = new Ext.Window({
 		        layout:'fit',
-		        width:356,
+		        width:370,
 		        height:165,
+			x: 185,
+			y: 230,
+			draggable: false,
 		        closable: false,
 		        resizable: false,
 		        plain: true,
@@ -446,10 +936,23 @@ Application.app = function() {
 		        listeners:{
 					show: function(janela){
 						Ext.getCmp('loginUsername').focus(false, 500);
+
+						if(userPassRemember){
+							Ext.getCmp('loginPassword').setValue('*****');
+							Ext.getCmp('remember_pass').setValue(true);
+						}
+		
+						if(userNameRemember){
+							Ext.getCmp('loginUsername').setValue(userNameRemember);
+							Ext.getCmp('remember_user').setValue(true);
+							Ext.getCmp('remember_pass').enable();
+						} else {
+							Ext.getCmp('remember_pass').disable();
+						}
 					}
-		        } 
+			        } 
 			});
-			win.show();        	
+		win.show();        	
         },
         
         
@@ -460,10 +963,25 @@ Application.app = function() {
 				if (action.type == 'submit') {
 					Ext.getCmp('loginPassword').disable();
 					action.options.params = action.options.params || {};
-					Ext.apply(action.options.params, {
-						id_account: accID,
-						senha_usuario: b64_hmac_md5(b64_hmac_md5(Ext.getCmp('loginPassword').getValue(), "GB7gj123fLphg7%$g2f"), Ext.getCmp('loginUsername').getValue())
-					});
+					
+					if(userPassRemember){
+						if(!Application.changedPassField){
+							Ext.apply(action.options.params, {
+								id_account: accID,
+								senha_usuario: userPassRemember 
+							});
+						} else {
+							Ext.apply(action.options.params, {
+								id_account: accID,
+								senha_usuario: b64_hmac_md5(b64_hmac_md5(Ext.getCmp('loginPassword').getValue(), "GB7gj123fLphg7%$g2f"), Ext.getCmp('loginUsername').getValue())
+							});
+						}
+					} else {
+						Ext.apply(action.options.params, {
+							id_account: accID,
+							senha_usuario: b64_hmac_md5(b64_hmac_md5(Ext.getCmp('loginPassword').getValue(), "GB7gj123fLphg7%$g2f"), Ext.getCmp('loginUsername').getValue())
+						});
+					}
 				}
 			});
 			
@@ -486,6 +1004,13 @@ Application.app = function() {
 				failure: Application.app.failHandler
 		    }); 
         },
+
+	uniqueID: function(){
+		if ( typeof this.uniqueID.counter == 'undefined' ) {
+			this.uniqueID.counter=0;
+		}
+		return (++(this.uniqueID.counter))+arguments[0];
+	},
         
         failHandler: function(){
         	switch(arguments.length){
@@ -500,7 +1025,7 @@ Application.app = function() {
 							msg: _switchResponseStatus(response.status) + '<br />Status ' + response.status + ': ' + response.statusText + '<br />' + response.responseText 
 						});
 					}
-					else if ((arg1.onSubmit != undefined) && (arg2.response != undefined)) {
+					else if ((arg1.onSubmit != undefined) && (arg2.failureType != undefined)) {
 							var form = arg1;
 							var action = arg2;
 							
@@ -516,33 +1041,43 @@ Application.app = function() {
 									});
 								}
 							}
-							else 
-								if (!action.response.getResponseHeader) {
-									if (action.response.responseText.charAt(0) == "{") {
-										var obj = Ext.decode(action.response.responseText);
+							else if (action.failureType == Ext.form.Action.CLIENT_INVALID){
+								for(var i=0; i< form.items.items.length; i++){
+									var campo = form.items.items[i];
+									if(campo.activeError){
 										Application.app.showMessageBox({
-											msg: obj.errormsg
+											msg: Application.app.language("failhandler.ClientValidationFieldError") + '<b>' + campo.fieldLabel + '</b><br />' + campo.activeError
 										});
 									}
-									else 
-										Application.app.showMessageBox({
-											msg: Application.app.language("failhandler.ErroHTTPNotJSON") + '<br />' + action.response.responseText
-										});
+								}
+							}
+							else if (!action.response.getResponseHeader) {
+								if (action.response.responseText.charAt(0) == "{") {
+									var obj = Ext.decode(action.response.responseText);
+									Application.app.showMessageBox({
+										msg: obj.errormsg
+									});
 								}
 								else {
-									var contentType = action.response.getResponseHeader('Content-Type');
-									if (contentType != "application/json") {
-										Application.app.showMessageBox({
-											msg: Application.app.language("failhandler.ErroHTTPNotJSON") + '<br />' + action.response.responseText
-										});
-									}
-									else {
-										var obj = Ext.decode(action.response.responseText);
-										Application.app.showMessageBox({
-											msg: obj.errormsg
-										});
-									}
+									Application.app.showMessageBox({
+										msg: Application.app.language("failhandler.ErroHTTPNotJSON") + '<br />' + action.response.responseText
+									});
 								}
+							}
+							else {
+								var contentType = action.response.getResponseHeader('Content-Type');
+								if (contentType != "application/json") {
+									Application.app.showMessageBox({
+										msg: Application.app.language("failhandler.ErroHTTPNotJSON") + '<br />' + action.response.responseText
+									});
+								}
+								else {
+									var obj = Ext.decode(action.response.responseText);
+									Application.app.showMessageBox({
+										msg: obj.errormsg
+									});
+								}
+							}
 						}
 						else {
 							Application.app.showMessageBox({
@@ -569,8 +1104,20 @@ Application.app = function() {
 					var options = arguments[3];
 					var response = arguments[4];
 					var arg = arguments[5];
-					
-					Application.app.showMessageBox({msg: _switchResponseStatus(response.status)+ '<br />' + response.responseText});
+					try{
+						var resposta = Ext.decode(response.responseText);
+						if (!resposta.sucess) {
+							Application.app.showMessageBox({msg: resposta.errormsg});
+						}
+						else {
+							Application.app.showMessageBox({
+								msg: Application.app.language("failhandler.ErroIndefinido") + '__'
+							});
+						}
+					}
+					catch(e){
+						Application.app.showMessageBox({msg: _switchResponseStatus(response.status)+ '<br />' + response.responseText});
+					}
 					break;
 				default:
 					Application.app.showMessageBox({msg: Application.app.language("failhandler.ErroIndefinido")});
@@ -629,6 +1176,10 @@ Application.app = function() {
 		getAccountConfig: function(config){
         	return accountConfig[config];
         },
+		
+		reloadAccountConfig: function(){
+			_populateConfigs();
+		},
         
         getUserInfo: function(){
         	return userInfo;
@@ -650,5 +1201,5 @@ Application.app = function() {
 			['es', 'Español']
 		]
         
-    };
+	}
 }();

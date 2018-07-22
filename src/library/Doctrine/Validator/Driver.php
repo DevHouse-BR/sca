@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,7 +25,7 @@
  * @package     Doctrine
  * @subpackage  Validator
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision: 1080 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
@@ -35,9 +35,7 @@ class Doctrine_Validator_Driver
     /**
      * @var array $_args     an array of plugin specific args
      */
-    public $args;
-    public $invoker;
-    public $field;
+    protected $_args = array();
 
     /**
      * __get
@@ -47,8 +45,8 @@ class Doctrine_Validator_Driver
      */
     public function __get($arg)
     {
-        if (isset($this->args[$arg])) {
-            return $this->args[$arg];
+        if (isset($this->_args[$arg])) {
+            return $this->_args[$arg];
         }
         return null;
     }
@@ -60,7 +58,7 @@ class Doctrine_Validator_Driver
      */
     public function __isset($arg)
     {
-        return isset($this->args[$arg]);
+        return isset($this->_args[$arg]);
     }
 
     /**
@@ -72,7 +70,7 @@ class Doctrine_Validator_Driver
      */
     public function __set($arg, $value)
     {
-        $this->args[$arg] = $value;
+        $this->_args[$arg] = $value;
         
         return $this;
     }
@@ -85,11 +83,11 @@ class Doctrine_Validator_Driver
      */
     public function getArg($arg)
     {
-        if ( ! isset($this->args[$arg])) {
+        if ( ! isset($this->_args[$arg])) {
             throw new Doctrine_Validator_Exception('Unknown option ' . $arg);
         }
         
-        return $this->args[$arg];
+        return $this->_args[$arg];
     }
 
     /**
@@ -101,7 +99,7 @@ class Doctrine_Validator_Driver
      */
     public function setArg($arg, $value)
     {
-        $this->args[$arg] = $value;
+        $this->_args[$arg] = $value;
         
         return $this;
     }
@@ -113,16 +111,6 @@ class Doctrine_Validator_Driver
      */
     public function getArgs()
     {
-        return $this->args;
-    }
-
-    public function __toString()
-    {
-        $className = get_class($this);
-        if (strpos($className, 'Doctrine_Validator_') === 0) { 
-            return strtolower(substr($className, 19));
-        } else {
-            return $className;
-        }
+        return $this->_args;
     }
 }

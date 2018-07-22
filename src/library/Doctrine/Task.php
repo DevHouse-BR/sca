@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -27,7 +27,7 @@
  * @package     Doctrine
  * @subpackage  Task
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision: 2761 $
  * @author      Jonathan H. Wage <jwage@mac.com>
@@ -35,7 +35,7 @@
 abstract class Doctrine_Task
 {
     public $dispatcher           =   null,
-           $taskName             =   null,  /*Treat as protected*/
+           $taskName             =   null,
            $description          =   null,
            $arguments            =   array(),
            $requiredArguments    =   array(),
@@ -52,43 +52,8 @@ abstract class Doctrine_Task
     public function __construct($dispatcher = null)
     {
         $this->dispatcher = $dispatcher;
-
-        $taskName = $this->getTaskName();
-
-        //Derive the task name only if it wasn't entered at design-time
-        if (! strlen($taskName)) {
-            $taskName = self::deriveTaskName(get_class($this));
-        }
-
-        /*
-         * All task names must be passed through Doctrine_Task::setTaskName() to make sure they're valid.  We're most
-         * interested in validating manually-entered task names, which are as good as arguments.
-         */
-        $this->setTaskName($taskName);
-    }
-
-    /**
-     * Returns the name of the task the specified class _would_ implement
-     * 
-     * N.B. This method does not check if the specified class is actually a Doctrine Task
-     * 
-     * This is public so we can easily test its reactions to fully-qualified class names, without having to add
-     * PHP 5.3-specific test code
-     * 
-     * @param string $className
-     * @return string|bool
-     */
-    public static function deriveTaskName($className)
-    {
-        $nameParts = explode('\\', $className);
-
-        foreach ($nameParts as &$namePart) {
-            $prefix = __CLASS__ . '_';
-            $baseName = strpos($namePart, $prefix) === 0 ? substr($namePart, strlen($prefix)) : $namePart;
-            $namePart = str_replace('_', '-', Doctrine_Inflector::tableize($baseName));
-        }
-
-        return implode('-', $nameParts);
+        
+        $this->taskName = str_replace('_', '-', Doctrine_Inflector::tableize(str_replace('Doctrine_Task_', '', get_class($this))));
     }
 
     /**
@@ -203,38 +168,6 @@ abstract class Doctrine_Task
     public function setArguments(array $args)
     {
         $this->arguments = $args;
-    }
-
-    /**
-     * Returns TRUE if the specified task name is valid, or FALSE otherwise
-     * 
-     * @param string $taskName
-     * @return bool
-     */
-    protected static function validateTaskName($taskName)
-    {
-        /*
-         * This follows the _apparent_ naming convention.  The key thing is to prevent the use of characters that would
-         * break a command string - we definitely can't allow spaces, for example.
-         */
-        return (bool) preg_match('/^[a-z0-9][a-z0-9\-]*$/', $taskName);
-    }
-
-    /**
-     * Sets the name of the task, the name that's used to invoke it through a CLI
-     *
-     * @param string $taskName
-     * @throws InvalidArgumentException If the task name is invalid
-     */
-    protected function setTaskName($taskName)
-    {
-        if (! self::validateTaskName($taskName)) {
-            throw new InvalidArgumentException(
-                sprintf('The task name "%s", in %s, is invalid', $taskName, get_class($this))
-            );
-        }
-
-        $this->taskName = $taskName;
     }
 
     /**

@@ -21,7 +21,15 @@ class ClientesController extends Zend_Controller_Action {
                 }       
 	}
 	public function listAction () {
-		if (DMG_Acl::canAccess(17)) {
+		$permitido = false;
+
+		if(DMG_Acl::canAccess(17)){
+			$permitido = true;
+		} else if( Zend_Auth::getInstance()->getIdentity()->tipo_usuario == 'P' ){
+			$permitido = true;
+		}
+
+		if ($permitido) {
 			$order = $this->getRequest()->getParam('sort');
 			$dir = $this->getRequest()->getParam('dir');
 			$filtro = $this->getRequest()->getParam('query');
@@ -31,7 +39,7 @@ class ClientesController extends Zend_Controller_Action {
 				->addSelect('sd.cod_cliente as cod_cliente')
 				->addSelect('sd.nome_cliente')
 				->addSelect('sd.fl_acesso_portal')
-				->addSelect('sd.dt_cadastro as data_criacao')
+				->addSelect("to_char(sd.dt_cadastro, 'YYYY-MM-DD HH:MI:SS') as dt_cadastro")
 				->addSelect('(SELECT u1.nome_usuario FROM ScmUser u1 WHERE u1.id = sd.id) AS nm_criador')
 				->addSelect('(SELECT u2.nome_usuario FROM ScmUser u2 WHERE u2.id = sd.id) AS responsavel')
 			;
@@ -49,7 +57,7 @@ class ClientesController extends Zend_Controller_Action {
 
 			$query = $query->execute();
 	
-			$answer;
+			$answer = array();
 			$pos=0;			
 
 			foreach($query as $k){
@@ -57,14 +65,15 @@ class ClientesController extends Zend_Controller_Action {
 				$answer[$pos]['cod_cliente'] = $k->cod_cliente;
 				$answer[$pos]['nome_cliente'] = $k->nome_cliente;
 				$answer[$pos]['fl_acesso_portal'] = $k->fl_acesso_portal;
-                                $answer[$pos]['data_criacao'] = $k->dt_cadastro;
-                               
-                                try {
-                                        $place = Doctrine::getTable('ScmUser')->findById($k->id_criador);
-                                        $answer[$pos]['nm_criador'] = $place[0]->nome_usuario;
-                                } catch (exception $e) {
-                                        $answer[$pos]['nm_criador'] = "";
-                                }
+				$answer[$pos]['dt_cadastro'] = $k->dt_cadastro;
+                
+				try {
+					$place = Doctrine::getTable('ScmUser')->findById($k->id_criador);
+					$answer[$pos]['nm_criador'] = $place[0]->nome_usuario;
+				}
+				catch (exception $e) {
+					$answer[$pos]['nm_criador'] = "";
+				}
 
 
 				if(DMG_Acl::canAccess(14)){
@@ -91,6 +100,9 @@ class ClientesController extends Zend_Controller_Action {
 		}
 	}
 	public function getAction () {
+		$imgSession = new Zend_Session_Namespace("imgTempUpload");
+		$imgSession->img = false; 
+			
 		if (DMG_Acl::canAccess(17)) {
 			$id = (int) $this->getRequest()->getParam('id');
 			$obj = Doctrine::getTable('ScaClientes')->find($id);
@@ -110,6 +122,99 @@ class ClientesController extends Zend_Controller_Action {
 			$this->_helper->json(array('success' => true, 'data' => $return));
 		}
 	}
+
+	public function imguploadAction() {
+		if (!DMG_Acl::canAccess(18))
+			return;
+	
+		try {
+			$upload = new Zend_File_Transfer_Adapter_Http();
+			$info = @$upload->getFileInfo();
+
+			$usemime = DMG_Config::getAccountCfg(16);
+
+			if(strlen($info['logo']['name'])>0){
+				$filename = 'files/' . Zend_Auth::getInstance()->getIdentity()->sca_account_id . "/client_logo_" . rand() . Zend_Auth::getInstance()->getIdentity()->id;
+
+				@$upload->addFilter('Rename', array(
+						'target'=> $filename,
+						'overwrite' => true
+					),'logo');
+
+				if($usemime == "SIM"){
+					$upload->addValidator('IsImage', false, array('image/jpeg', 'image/gif', 'image/png'));
+				} else {
+					$upload->addValidator('Extension', false, array('jpeg', 'jpg', 'gif', 'png'));
+				}
+
+				if (!$upload->isValid()) {
+					throw new Exception(DMG_Translate::_('administration.setting.form.upload.notimage'));
+				}
+
+				$upload->addValidator('ImageSize', false, array(
+					'minwidth' => 220,
+					'maxwidth' => 220,
+					'minheight' => 52,
+					'maxheight' => 52
+				));
+				
+				if (!$upload->isValid()) {
+					throw new Exception(DMG_Translate::_('administration.setting.form.upload.imagesizeinvalid'));
+				}
+	
+				if(!$upload->receive()){
+					$erros = implode("<br />", $upload->getMessages());
+					echo Zend_Json::encode(array('success' => false, 'errormsg'=>$erros));
+				}
+
+				if($imageStream = fopen($filename, 'r')){
+					$imgSession = new Zend_Session_Namespace("imgTempUpload");
+					$imgSession->img = fread($imageStream, filesize($filename));
+				} else {
+					throw new Exception(DMG_Translate::_('administration.setting.form.upload.cantDo'));
+				}
+
+				fclose($imageStream);
+
+				unlink($filename);
+			}
+		} catch (exception $e) {
+			echo Zend_Json::encode(array('success' => false, 'errormsg' => $e->getMessage()));
+			return;
+		} 
+
+		echo Zend_Json::encode(array('success' => true));
+	}
+
+	public function imgshowAction() {
+		header('Content-Description: File Transfer');
+		header('Content-Transfer-Encoding: binary');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Pragma: public');
+		ob_clean();
+		flush();
+
+		$imgSession = new Zend_Session_Namespace("imgTempUpload");
+
+		if($imgSession->img != false){
+			if($this->getRequest()->getParam('d')) {
+				echo $imgSession->img;
+				return;
+			}
+		} 
+
+		$imgSession->img = false;
+				
+		$file = 'files/' . Zend_Auth::getInstance()->getIdentity()->sca_account_id . "/client_logo_" . $this->getRequest()->getParam('id');
+		$stream = fopen($file, 'r');
+
+		if($stream){
+			echo fread($stream, filesize($file));
+			fclose($stream);
+		}
+	}
+
 	public function saveAction () {
 		if (DMG_Acl::canAccess(18)) {
 			$id = (int) $this->getRequest()->getParam('id');
@@ -156,50 +261,20 @@ class ClientesController extends Zend_Controller_Action {
 
 			$cliente->nome_cliente = $nome;
 			$cliente->cod_cliente = $codigo;
-			if($responsavel) $cliente->id_responsavel = $responsavel;
+			if($responsavel) $cliente->id_responsavel = $responsavel; else $cliente->id_responsavel = null;
 			$cliente->fl_acesso_portal = (bool)$isAtivo;
 
 			try {
 				$cliente->save();
+				
+				$imgSession = new Zend_Session_Namespace("imgTempUpload");
 
-				/*
-				 * UPLOAD DA LOGOMARCA
-				 */
-
-				$upload = new Zend_File_Transfer_Adapter_Http();
-				
-				$info = @$upload->getFileInfo();
-				
-				$filename = 'files/' . Zend_Auth::getInstance()->getIdentity()->sca_account_id . "/client_logo_" . $cliente->id;
-							
-				@$upload->addFilter('Rename', array(
-					'target'=> $filename,
-					'overwrite' => true
-				),'logo');
-				
-				$upload->addValidator('IsImage', false, array('image/jpeg', 'image/gif', 'image/png'));
-				
-				if (!$upload->isValid()) {
-					throw new Exception(DMG_Translate::_('administration.setting.form.upload.notimage'));
+				if($imgSession->img !== false){
+					$file = 'files/' . Zend_Auth::getInstance()->getIdentity()->sca_account_id . "/client_logo_" . $cliente->id;
+					$stream = fopen($file, 'w');
+					fwrite($stream, $imgSession->img);
+					fclose($stream);
 				}
-				
-				$upload->addValidator('ImageSize', false, array(
-					'minwidth' => 1,
-					'maxwidth' => 220,
-					'minheight' => 1,
-					'maxheight' => 52
-				));
-				
-				if (!$upload->isValid()) {
-					throw new Exception(DMG_Translate::_('administration.setting.form.upload.imagesizeinvalid'));
-				}
-				
-				if(!$upload->receive()){
-				    $erros = implode("<br />", $upload->getMessages());
-					echo Zend_Json::encode(array('success' => false, 'errormsg'=>$erros));
-				}
-				
-				
 			} catch (exception $e) {
 				echo Zend_Json::encode(array('success' => false, 'errormsg' => $e->getMessage()));
 				return;

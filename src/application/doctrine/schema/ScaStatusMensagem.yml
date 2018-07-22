@@ -5,7 +5,8 @@ ScaStatusMensagem:
       type: integer(4)
       unsigned: false
       primary: true
-      autoincrement: true
+      autoincrement: false
+      unique: true
     nome_status:
       type: string(255)
       fixed: false

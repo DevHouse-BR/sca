@@ -1,5 +1,37 @@
 /*#loading { position: absolute; background: transparent url(../images/loading.gif) no-repeat scroll left top; display: block; top: 50%; left: 50%; margin-left: -70px; width: 140px; padding: 0 0 0 30px; height: 30px; margin-top: 0px; color:#006699; font-size: 22px; }*/
 
+.plain-text-field{
+	background:none;
+	border:none;
+	color:black;
+}
+
+.floatfiltro{
+	top:0px;
+	left:0px;
+	position:absolute;
+	background-color:#d4e1f2;
+	border-right: 1px solid #99bbe8;
+	border-bottom: 1px solid #99bbe8;
+	
+	-moz-box-shadow: 5px 5px 5px #777777;
+	-webkit-box-shadow: 5px 5px 5px #777777;
+	box-shadow: 5px 5px 5px #777777;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#777777')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#777777');
+}
+.floatfiltro-column{
+	background-color:#d4e1f2;
+}
+
+.linha-cinza-claro{
+	background-color:#eaeaea;
+}
+.linha-vermelho-claro{
+	background-color:#ffe6e6;
+}
 
 .controle-postagens-status{
 	text-align: center;
@@ -17,6 +49,10 @@
 
 .x-collapsed-title{color:#15428b;font:11px/15px tahoma,arial,verdana,sans-serif;padding:2px 5px;}
 .upload-icon { background: url('../images/icons/image_add.png') no-repeat 0 0 !important;}
+.icon-explorer { background: url('../images/icons/explorer.png') no-repeat 0 0 !important;}
+.icon-addfilter { background: url('../images/icons/addfilter.png') no-repeat 0 0 !important;}
+.icon-filtered { background: url('../images/icons/filtered.png') no-repeat 0 0 !important;}
+.icon-removefilter { background: url('../images/icons/removefilter.png') no-repeat 0 0 !important;}
 .icon-upload { background: url('../images/icons/upload.png') no-repeat 0 0 !important;}
 .icon-ok{ background-image: url(../images/icons/tick.png) !important; background-repeat: no-repeat; }
 .icon-alerta{ background-image: url(../images/icons/error.png) !important; background-repeat: no-repeat; }
@@ -28,6 +64,7 @@
 .icon-config { background-image: url(../images/icons/config.png) !important; background-repeat: no-repeat; }
 .icon-departamento { background-image: url(../images/icons/departamento.png) !important; background-repeat: no-repeat; }
 .icon-cliente { background-image: url(../images/icons/cliente.png) !important; background-repeat: no-repeat; }
+.icon-mensagens { background-image: url(../images/icons/lida.png) !important; background-repeat: no-repeat; }
 
 .icon-direita_um { background-image: url(../images/icons/um_direita.png) !important; background-repeat: no-repeat; }
 .icon-direita_todos { background-image: url(../images/icons/todos_direita.png) !important; background-repeat: no-repeat; }
@@ -70,6 +107,7 @@
 .ux-filtered-column.sort-asc .x-grid3-sort-icon { background-image: url(../images/icons/sort_filtered_asc.png) !important; }
 .ux-filtered-column.sort-desc .x-grid3-sort-icon { background-image: url(../images/icons/sort_filtered_desc.png) !important; }
 .ux-gridfilter-text-icon { background-image: url(../images/icons/find.png) !important; }
+.ux-gridfilter-text-icon-ok { background-image: url(../images/icons/findok.png) !important; }
 .x-menu-list-item-indent .x-menu-item-icon { position: relative; top: 3px; left: 3px; margin-right: 10px; }
 li.x-menu-list-item-indent { padding-left:0px; }
 li.x-menu-list-item div { display: inline; }

@@ -15,36 +15,33 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Repository.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Repository.php 16971 2009-07-22 18:05:45Z mikaelkael $
  */
 
-/**
- * @see Zend_Tool_Framework_Registry_EnabledInterface
- */
 require_once 'Zend/Tool/Framework/Registry/EnabledInterface.php';
 
 /**
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Tool_Framework_Action_Repository
+class Zend_Tool_Framework_Action_Repository 
     implements Zend_Tool_Framework_Registry_EnabledInterface, IteratorAggregate, Countable
 {
-
+    
     /**
      * @var Zend_Tool_Framework_Registry_Interface
      */
     protected $_registry = null;
-
+    
     /**
      * @var array
      */
     protected $_actions = array();
-
+    
     /**
      * setRegistry()
      *
@@ -54,7 +51,7 @@ class Zend_Tool_Framework_Action_Repository
     {
         $this->_registry = $registry;
     }
-
+    
     /**
      * addAction()
      *
@@ -69,10 +66,10 @@ class Zend_Tool_Framework_Action_Repository
             require_once 'Zend/Tool/Framework/Action/Exception.php';
             throw new Zend_Tool_Framework_Action_Exception('An action name for the provided action could not be determined.');
         }
-
+        
         if (!$overrideExistingAction && array_key_exists(strtolower($actionName), $this->_actions)) {
             require_once 'Zend/Tool/Framework/Action/Exception.php';
-            throw new Zend_Tool_Framework_Action_Exception('An action by the name ' . $actionName
+            throw new Zend_Tool_Framework_Action_Exception('An action by the name ' . $actionName 
                 . ' is already registered and $overrideExistingAction is set to false.');
         }
 
@@ -89,7 +86,7 @@ class Zend_Tool_Framework_Action_Repository
     {
         return null;
     }
-
+    
     /**
      * getActions() - get all actions in the repository
      *
@@ -114,7 +111,7 @@ class Zend_Tool_Framework_Action_Repository
 
         return $this->_actions[strtolower($actionName)];
     }
-
+    
     /**
      * count() required by the Countable interface
      *
@@ -124,7 +121,7 @@ class Zend_Tool_Framework_Action_Repository
     {
         return count($this->_actions);
     }
-
+    
     /**
      * getIterator() - get all actions, this supports the IteratorAggregate interface
      *

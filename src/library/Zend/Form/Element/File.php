@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Form
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -27,14 +27,14 @@ require_once 'Zend/Form/Element/Xhtml.php';
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Element
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: File.php 25225 2013-01-17 15:59:16Z frosch $
+ * @version    $Id: File.php 16218 2009-06-21 19:44:04Z thomas $
  */
 class Zend_Form_Element_File extends Zend_Form_Element_Xhtml
 {
     /**
-     * Plugin loader type
+     * @const string Plugin loader type
      */
     const TRANSFER_ADAPTER = 'TRANSFER_ADAPTER';
 
@@ -71,23 +71,22 @@ class Zend_Form_Element_File extends Zend_Form_Element_Xhtml
     /**
      * Load default decorators
      *
-     * @return Zend_Form_Element_File
+     * @return void
      */
     public function loadDefaultDecorators()
     {
         if ($this->loadDefaultDecoratorsIsDisabled()) {
-            return $this;
+            return;
         }
 
         $decorators = $this->getDecorators();
         if (empty($decorators)) {
             $this->addDecorator('File')
                  ->addDecorator('Errors')
-                 ->addDecorator('Description', array('tag' => 'p', 'class' => 'description'))
+                 ->addDecorator('Description')
                  ->addDecorator('HtmlTag', array('tag' => 'dd'))
                  ->addDecorator('Label', array('tag' => 'dt'));
         }
-        return $this;
     }
 
     /**
@@ -150,8 +149,7 @@ class Zend_Form_Element_File extends Zend_Form_Element_Xhtml
         }
 
         if (empty($type)) {
-            $nsSeparator = (false !== strpos($prefix, '\\'))?'\\':'_';
-            $pluginPrefix = rtrim($prefix, $nsSeparator) . $nsSeparator . 'Transfer' . $nsSeparator . 'Adapter';
+            $pluginPrefix = rtrim($prefix, '_') . '_Transfer_Adapter';
             $pluginPath   = rtrim($path, DIRECTORY_SEPARATOR) . '/Transfer/Adapter/';
             $loader       = $this->getPluginLoader(self::TRANSFER_ADAPTER);
             $loader->addPrefixPath($pluginPrefix, $pluginPath);
@@ -430,8 +428,13 @@ class Zend_Form_Element_File extends Zend_Form_Element_Xhtml
             $adapter->setOptions(array('ignoreNoFile' => true), $this->getName());
         } else {
             $adapter->setOptions(array('ignoreNoFile' => false), $this->getName());
-            if ($this->autoInsertNotEmptyValidator() && !$this->getValidator('NotEmpty')) {
-                $this->addValidator('NotEmpty', true);
+            if ($this->autoInsertNotEmptyValidator() and
+                   !$this->getValidator('NotEmpty'))
+            {
+                $validators = $this->getValidators();
+                $notEmpty   = array('validator' => 'NotEmpty', 'breakChainOnFailure' => true);
+                array_unshift($validators, $notEmpty);
+                $this->setValidators($validators);
             }
         }
 
@@ -744,17 +747,8 @@ class Zend_Form_Element_File extends Zend_Form_Element_Xhtml
      */
     public function getTranslator()
     {
-        if ($this->translatorIsDisabled()) {
-            return null;
-        }
-
-        $translator = $this->getTransferAdapter()->getTranslator();
-        if (null === $translator) {
-            require_once 'Zend/Form.php';
-            return Zend_Form::getDefaultTranslator();
-        }
-
-        return $translator;
+        $adapter = $this->getTransferAdapter();
+        return $adapter->getTranslator();
     }
 
     /**

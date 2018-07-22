@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,7 +25,7 @@
  * @package     Doctrine
  * @subpackage  IntegrityMapper
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision$
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
@@ -44,6 +44,7 @@ class Doctrine_IntegrityMapper
         
         $this->invokeIntegrityActions($record);
     }
+
 
     /**
      * invokeIntegrityActions 
@@ -87,7 +88,7 @@ class Doctrine_IntegrityMapper
      */
     public function buildIntegrityRelationQuery(Doctrine_Record $record)
     {
-        $q = $record->getTable()->createQuery();
+        $q = new Doctrine_Query();
         
         $aliases = array();
         $indexes = array();

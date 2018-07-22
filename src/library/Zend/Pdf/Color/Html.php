@@ -14,14 +14,19 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Html.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Html.php 16978 2009-07-22 19:59:40Z alexander $
  */
 
 /** Zend_Pdf_Color */
 require_once 'Zend/Pdf/Color.php';
 
+/** Zend_Pdf_Color_Rgb */
+require_once 'Zend/Pdf/Color/Rgb.php';
+
+/** Zend_Pdf_GrayScale */
+require_once 'Zend/Pdf/Color/GrayScale.php';
 
 /**
  * HTML color implementation
@@ -31,7 +36,7 @@ require_once 'Zend/Pdf/Color.php';
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_Color_Html extends Zend_Pdf_Color
@@ -94,10 +99,8 @@ class Zend_Pdf_Color_Html extends Zend_Pdf_Color
             $g = round((hexdec($matches[2]) / 255), 3);
             $b = round((hexdec($matches[3]) / 255), 3);
             if (($r == $g) && ($g == $b)) {
-                require_once 'Zend/Pdf/Color/GrayScale.php';
                 return new Zend_Pdf_Color_GrayScale($r);
             } else {
-                require_once 'Zend/Pdf/Color/Rgb.php';
                 return new Zend_Pdf_Color_Rgb($r, $g, $b);
             }
         } else {
@@ -402,11 +405,10 @@ class Zend_Pdf_Color_Html extends Zend_Pdf_Color
                 throw new Zend_Pdf_Exception('Unknown color name: ' . $color);
         }
         if (($r == $g) && ($g == $b)) {
-            require_once 'Zend/Pdf/Color/GrayScale.php';
             return new Zend_Pdf_Color_GrayScale($r);
         } else {
-            require_once 'Zend/Pdf/Color/Rgb.php';
             return new Zend_Pdf_Color_Rgb($r, $g, $b);
         }
     }
 }
+

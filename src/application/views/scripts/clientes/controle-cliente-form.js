@@ -1,5 +1,6 @@
 Clientes.ControleClientesForm = Ext.extend(Ext.Window, {
 	group: 0,
+	id: 'ControleClientesFormwindow',
 	modal: true,
 	constrain: true,
 	maximizable: false,
@@ -51,6 +52,9 @@ Clientes.ControleClientesForm = Ext.extend(Ext.Window, {
                                 root: 'data',
                                 autoLoad: true,
                                 remoteSort: true,
+								listeners:{
+									exception: Application.app.failHandler
+								},
                                 sortInfo: {
                                         field: 'name',
                                         direction: 'ASC'
@@ -76,6 +80,9 @@ Clientes.ControleClientesForm = Ext.extend(Ext.Window, {
                     autoLoad: false,
                     autoDestroy: false,
                     remoteSort: true,
+					listeners:{
+						exception: Application.app.failHandler
+					},
                     sortInfo: {
                             field: 'name',
                             direction: 'ASC'
@@ -178,22 +185,27 @@ Clientes.ControleClientesForm = Ext.extend(Ext.Window, {
 						columnWidth:.6,
 						layout: 'form',
 						items: [{
+							id: 'client_form_upload_image_baseForm',
 							border:false,
 							bodyStyle:'width:220px;height:52px;',
-							html:'<img src="files/' + accID + '/client_logo_' + this.group + '?' + new Date().getTime() + '" />'
+							html:'<img src="clientes/imgshow?id='+this.group+'&x='+new Date()+'" id="client_form_upload_image" />'
 						}]
 					},{
 						columnWidth:.4,
 						layout: 'form',
 						labelAlign:'top',
+						id: 'client_form_upload_select_field',
 						items: [{
 							xtype:'fileuploadfield',
 							fieldLabel: Application.app.language('administration.setting.form.upload.file'),
 							name: 'logo',
-							allowBlank:false,
 							buttonText: '',
 							buttonCfg: {
 								iconCls: 'upload-icon'
+							},
+							listeners: {
+								fileselected: function(owner, what) {
+									Ext.getCmp('ControleClientesFormwindow')._forceReload();																	}
 							}
 						}]
 					}]
@@ -229,6 +241,33 @@ Clientes.ControleClientesForm = Ext.extend(Ext.Window, {
 			items: this.formPanel
 		});
 		Clientes.ControleClientesForm.superclass.initComponent.call(this);
+	},
+	_forceReload: function(){
+		var form = this.formPanel.getForm();
+
+		Ext.getCmp('fieldNomeCliente_ControleClientesForm').allowBlank = true;
+
+		form.submit({
+			waitTitle: Application.app.language("auth.alert"),
+			waitMsg: Application.app.language("auth.loading"),
+			url: 'clientes/imgupload',
+			scope:this,
+			success: function(form, action) {
+				var response = Ext.decode(action.response.responseText);
+				if(!response.success){
+					Ext.getCmp('fieldNomeCliente_ControleClientesForm').allowBlank = false;
+					Application.app.showMessageBox({msg:response.errormsg})
+				} else {
+					Ext.getCmp('fieldNomeCliente_ControleClientesForm').allowBlank = false;
+					Ext.getDom('client_form_upload_image').src = 'clientes/imgshow?id='+this.group+'&d=' + new Date();
+				}
+			},
+			failure: function () {
+				Ext.getCmp('fieldNomeCliente_ControleClientesForm').allowBlank = false;
+				Application.app.failHandler(arguments[0], arguments[1]);
+			}
+		});
+
 	},
 	show: function() {
 		//this.formPanel.getForm().reset();
@@ -286,8 +325,8 @@ Clientes.ControleClientesForm = Ext.extend(Ext.Window, {
 				}
 				catch(e){}
 				//this.hide();
-				this.close();
 				this.fireEvent('salvar', this);
+				this.close();
 			},
 			failure: Application.app.failHandler
 		});
@@ -314,8 +353,8 @@ Clientes.ControleClientesForm = Ext.extend(Ext.Window, {
 					catch(e){}
 					this.el.unmask();
 					//this.hide();
-					this.close();
 					this.fireEvent('excluir', this);
+					this.close();
 				},
 				failure: function(a,b){
 					this.el.unmask();

@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Element
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -24,13 +24,13 @@ require_once 'Zend/Form/Element/Xhtml.php';
 
 /**
  * Image form element
- *
+ * 
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Element
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Image.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Image.php 16218 2009-06-21 19:44:04Z thomas $
  */
 class Zend_Form_Element_Image extends Zend_Form_Element_Xhtml
 {
@@ -54,13 +54,13 @@ class Zend_Form_Element_Image extends Zend_Form_Element_Xhtml
 
     /**
      * Load default decorators
-     *
-     * @return Zend_Form_Element_Image
+     * 
+     * @return void
      */
     public function loadDefaultDecorators()
     {
         if ($this->loadDefaultDecoratorsIsDisabled()) {
-            return $this;
+            return;
         }
 
         $decorators = $this->getDecorators();
@@ -71,13 +71,12 @@ class Zend_Form_Element_Image extends Zend_Form_Element_Xhtml
                  ->addDecorator('HtmlTag', array('tag' => 'dd'))
                  ->addDecorator('Label', array('tag' => 'dt'));
         }
-        return $this;
     }
 
     /**
      * Set image path
-     *
-     * @param  string $path
+     * 
+     * @param  string $path 
      * @return Zend_Form_Element_Image
      */
     public function setImage($path)
@@ -88,7 +87,7 @@ class Zend_Form_Element_Image extends Zend_Form_Element_Xhtml
 
     /**
      * Get image path
-     *
+     * 
      * @return string
      */
     public function getImage()
@@ -98,8 +97,8 @@ class Zend_Form_Element_Image extends Zend_Form_Element_Xhtml
 
     /**
      * Set image value to use when submitted
-     *
-     * @param  mixed $value
+     * 
+     * @param  mixed $value 
      * @return Zend_Form_Element_Image
      */
     public function setImageValue($value)
@@ -110,7 +109,7 @@ class Zend_Form_Element_Image extends Zend_Form_Element_Xhtml
 
     /**
      * Get image value to use when submitted
-     *
+     * 
      * @return mixed
      */
     public function getImageValue()
@@ -120,7 +119,7 @@ class Zend_Form_Element_Image extends Zend_Form_Element_Xhtml
 
     /**
      * Was this element used to submit the form?
-     *
+     * 
      * @return bool
      */
     public function isChecked()
@@ -128,5 +127,5 @@ class Zend_Form_Element_Image extends Zend_Form_Element_Xhtml
         $imageValue = $this->getImageValue();
         return ((null !== $imageValue) && ($this->getValue() == $imageValue));
     }
-
+    
 }

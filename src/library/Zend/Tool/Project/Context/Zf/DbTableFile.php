@@ -15,29 +15,30 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: DbTableFile.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: DbTableFile.php 16971 2009-07-22 18:05:45Z mikaelkael $
  */
+
+/**
+ * @see Zend_Tool_Project_Context_Filesystem_File
+ */
+require_once 'Zend/Tool/Project/Context/Filesystem/File.php';
 
 /**
  * This class is the front most class for utilizing Zend_Tool_Project
  *
  * A profile is a hierarchical set of resources that keep track of
  * items within a specific project.
- *
+ * 
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Tool_Project_Context_Zf_DbTableFile extends Zend_Tool_Project_Context_Zf_AbstractClassFile
+class Zend_Tool_Project_Context_Zf_DbTableFile extends Zend_Tool_Project_Context_Filesystem_File
 {
-
-    protected $_dbTableName = null;
-
-    protected $_actualTableName = null;
-
+    
     /**
      * getName()
      *
@@ -47,46 +48,25 @@ class Zend_Tool_Project_Context_Zf_DbTableFile extends Zend_Tool_Project_Context
     {
         return 'DbTableFile';
     }
-
-    /**
-     * init()
-     *
-     */
-    public function init()
-    {
-        $this->_dbTableName = $this->_resource->getAttribute('dbTableName');
-        $this->_actualTableName = $this->_resource->getAttribute('actualTableName');
-        $this->_filesystemName = ucfirst($this->_dbTableName) . '.php';
-        parent::init();
-    }
+    
+    /*
+    protected $_dbTableName;
 
     public function getPersistentAttributes()
     {
         return array('dbTableName' => $this->_dbTableName);
     }
 
-    public function getContents()
+    public function setDbTableName($dbTableName)
     {
-        $className = $this->getFullClassName($this->_dbTableName, 'Model_DbTable');
-
-        $codeGenFile = new Zend_CodeGenerator_Php_File(array(
-            'fileName' => $this->getPath(),
-            'classes' => array(
-                new Zend_CodeGenerator_Php_Class(array(
-                    'name' => $className,
-                    'extendedClass' => 'Zend_Db_Table_Abstract',
-                    'properties' => array(
-                        new Zend_CodeGenerator_Php_Property(array(
-                            'name' => '_name',
-                            'visibility' => Zend_CodeGenerator_Php_Property::VISIBILITY_PROTECTED,
-                            'defaultValue' => $this->_actualTableName
-                            ))
-                        ),
-
-                    ))
-                )
-            ));
-        return $codeGenFile->generate();
+        $this->_dbTableName = $dbTableName;
+        $this->_filesystemName = $dbTableName . '.php';
     }
 
+    public function getDbTableName()
+    {
+        return $this->_dbTableName;
+    }
+    */
+    
 }

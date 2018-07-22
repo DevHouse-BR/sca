@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,7 +25,7 @@
  * @package     Doctrine
  * @subpackage  Parser
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision: 1080 $
  * @author      Jonathan H. Wage <jwage@mac.com>
@@ -50,11 +50,10 @@ abstract class Doctrine_Parser
      *
      * @param string $array 
      * @param string $path 
-     * @param string $charset The charset of the data being dumped
      * @return void
      * @author Jonathan H. Wage
      */
-    abstract public function dumpData($array, $path = null, $charset = null);
+    abstract public function dumpData($array, $path = null);
 
     /**
      * getParser
@@ -97,15 +96,14 @@ abstract class Doctrine_Parser
      * @param string $array 
      * @param string $path 
      * @param string $type 
-     * @param string $charset The charset of the data being dumped
      * @return void
      * @author Jonathan H. Wage
      */
-    static public function dump($array, $type = 'xml', $path = null, $charset = null)
+    static public function dump($array, $type = 'xml', $path = null)
     {
         $parser = self::getParser($type);
 
-        return $parser->dumpData($array, $path, $charset);
+        return $parser->dumpData($array, $path);
     }
 
     /**

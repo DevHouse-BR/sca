@@ -15,16 +15,10 @@
  * @category   Zend
  * @package    Zend_Application
  * @subpackage Resource
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: View.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: View.php 16200 2009-06-21 18:50:06Z thomas $
  */
-
-/**
- * @see Zend_Application_Resource_ResourceAbstract
- */
-require_once 'Zend/Application/Resource/ResourceAbstract.php';
-
 
 /**
  * Resource for settings view options
@@ -33,7 +27,7 @@ require_once 'Zend/Application/Resource/ResourceAbstract.php';
  * @category   Zend
  * @package    Zend_Application
  * @subpackage Resource
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Application_Resource_View extends Zend_Application_Resource_ResourceAbstract
@@ -52,34 +46,21 @@ class Zend_Application_Resource_View extends Zend_Application_Resource_ResourceA
     {
         $view = $this->getView();
 
-        $viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+        $viewRenderer = new Zend_Controller_Action_Helper_ViewRenderer();
         $viewRenderer->setView($view);
+        Zend_Controller_Action_HelperBroker::addHelper($viewRenderer);
         return $view;
     }
 
     /**
      * Retrieve view object
-     *
+     * 
      * @return Zend_View
      */
     public function getView()
     {
         if (null === $this->_view) {
-            $options = $this->getOptions();
-            $this->_view = new Zend_View($options);
-
-            if (isset($options['doctype'])) {
-                $this->_view->doctype()->setDoctype(strtoupper($options['doctype']));
-                if (isset($options['charset']) && $this->_view->doctype()->isHtml5()) {
-                    $this->_view->headMeta()->setCharset($options['charset']);
-                }
-            }
-            if (isset($options['contentType'])) {
-                $this->_view->headMeta()->appendHttpEquiv('Content-Type', $options['contentType']);
-            }
-            if (isset($options['assign']) && is_array($options['assign'])) {
-                $this->_view->assign($options['assign']);
-            }
+            $this->_view = new Zend_View($this->getOptions());
         }
         return $this->_view;
     }

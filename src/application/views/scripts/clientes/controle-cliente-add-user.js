@@ -48,6 +48,7 @@ Clientes.ControleClienteUserTab = Ext.extend(Ext.grid.GridPanel, {
 			},
 			listeners:{
 				scope:this,
+				exception: Application.app.failHandler,
 				beforeload: function(store, options){
 					store.baseParams.id = this.clienteId;
 				}
@@ -189,18 +190,23 @@ Clientes.ControleClienteUserTab = Ext.extend(Ext.grid.GridPanel, {
 			});
 		}, this);	
 	},
-	
+
+	_onUserCliSaveForm: function(){
+		Ext.getCmp('btnNovoUsuario_ControleClienteUserTab' + this.clienteId).enable();
+		Ext.getCmp('btnExcluirUsuario_ControleClienteUserTab' + this.clienteId).enable();
+	},	
 	_newAddForm: function () {
-		//if(!this.window){
-			this.window = new User.AdministrationUserForm({
-				renderTo: this.body,
-				listeners: {
-					scope: this,
-					salvar: this._forceReload,
-					excluir: this._forceReload
-				}
-			});
-		//}
+		Ext.getCmp('btnExcluirUsuario_ControleClienteUserTab' + this.clienteId).disable();
+		Ext.getCmp('btnNovoUsuario_ControleClienteUserTab' + this.clienteId).disable();
+		this.window = new User.AdministrationUserForm({
+			renderTo: this.body,
+			listeners: {
+				scope: this,
+				salvar: this._forceReload,
+				excluir: this._forceReload,
+				beforeclose: this._onUserCliSaveForm
+			}
+		});
 		return this.window;
 	},
 	

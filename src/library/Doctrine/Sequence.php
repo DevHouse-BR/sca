@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Sequence.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Sequence.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -27,9 +27,9 @@
  * @subpackage  Sequence
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 5798 $
  */
 class Doctrine_Sequence extends Doctrine_Connection_Module
 {
@@ -40,7 +40,6 @@ class Doctrine_Sequence extends Doctrine_Connection_Module
      * @param bool              when true missing sequences are automatic created
      *
      * @return integer          next id in the given sequence
-     * @throws Doctrine_Sequence_Exception
      */
     public function nextId($seqName, $ondemand = true)
     {

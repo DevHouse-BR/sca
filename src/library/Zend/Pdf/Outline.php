@@ -15,10 +15,13 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Actions
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Outline.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id$
  */
+
+/** Zend_Pdf_ElementFactory */
+require_once 'Zend/Pdf/ElementFactory.php';
 
 
 /**
@@ -28,7 +31,7 @@
  *
  * @package    Zend_Pdf
  * @subpackage Outlines
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
@@ -167,7 +170,7 @@ abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
      * Set outline options
      *
      * @param array $options
-     * @return Zend_Pdf_Action
+     * @return Zend_Pdf_Actions
      * @throws Zend_Pdf_Exception
      */
     public function setOptions(array $options)
@@ -229,13 +232,13 @@ abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
      */
     public static function create($param1, $param2 = null)
     {
-        require_once 'Zend/Pdf/Outline/Created.php';
         if (is_string($param1)) {
             if ($param2 !== null  &&  !($param2 instanceof Zend_Pdf_Target  ||  is_string($param2))) {
                 require_once 'Zend/Pdf/Exception.php';
                 throw new Zend_Pdf_Exception('Outline create method takes $title (string) and $target (Zend_Pdf_Target or string) or an array as an input');
             }
 
+            require_once 'Zend/Pdf/Outline/Created.php';
             return new Zend_Pdf_Outline_Created(array('title'  => $param1,
                                                       'target' => $param2));
         } else {

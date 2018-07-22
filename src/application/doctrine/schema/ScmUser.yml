@@ -84,3 +84,11 @@ ScmUser:
       local: id
       foreign: user_id
       type: many
+    ScaLogleituras:
+      local: id
+      foreign: id_usuario
+      type: many
+    ScaLogdownloads:
+      local: id
+      foreign: id_usuario
+      type: many

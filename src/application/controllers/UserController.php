@@ -112,24 +112,21 @@ class UserController extends Zend_Controller_Action {
 	}
 	
 	public function accountslistAction () {
+		$blah = array();
 		if (DMG_Acl::canAccess(14)){
 			$obj = Doctrine::getTable('ScaAccount');
 			if($obj){
 				$obj = $obj->findAll();
 				$place =0;
-				$blah = array();
 				foreach($obj as $k){
 					$blah[$place]['name'] = $k['nome_account'];
 					$blah[$place]['id'] = $k['id'];
 					$place++;
 				}
 				$this->_helper->json(array('success' => true, 'data' => $blah));
-			} else {
-				$this->_helper->json(array('success' => false));
-			}
-		} else {
-			$this->_helper->json(array('success' => false));
+			} 
 		}
+		$this->_helper->json(array('success' => true, 'data' => $blah));
 	}
 	
 	public function departamentoslistAction () {
@@ -211,7 +208,10 @@ class UserController extends Zend_Controller_Action {
 			}
 			
 			$obj->nome_usuario = $nome_usuario;
-			$obj->login_usuario = $login_usuario;
+			
+			if($id == 0){
+				$obj->login_usuario = $login_usuario;
+			}
 			$obj->email = $email;
 			$obj->fl_status = $fl_status;
 			$obj->senha_usuario = $senha_usuario;
@@ -220,8 +220,8 @@ class UserController extends Zend_Controller_Action {
 			$obj->tipo_usuario = $tipo_usuario;
 			$obj->recebe_mensagem = $recebe_mensagem;
 			
-			if(strlen($sca_departamentos_id)>0)	$obj->sca_departamentos_id = $sca_departamentos_id;
-			if(strlen($idioma_usuario)>0) $obj->idioma_usuario = $idioma_usuario;
+			if(strlen($sca_departamentos_id)>0) $obj->sca_departamentos_id = $sca_departamentos_id; else $obj->sca_departamentos_id = null;
+			if(strlen($idioma_usuario)>0) $obj->idioma_usuario = $idioma_usuario; else $obj->idioma_usuario = "";
 			if($id_cliente) $obj->sca_clientes_id = $id_cliente;
 			
 			$obj->save();

@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -28,7 +28,7 @@
  * @subpackage  Record
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision$
  */
@@ -74,16 +74,6 @@ class Doctrine_Record_Listener_Chain extends Doctrine_Access implements Doctrine
         } 
 
         return null; 
-    }
-
-    /**
-     * Get array of configured options
-     *
-     * @return array $options
-     */
-    public function getOptions()
-    {
-        return $this->_options;
     }
 
     /**

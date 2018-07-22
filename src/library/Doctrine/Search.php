@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -27,7 +27,7 @@
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @version     $Revision$
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  */
 class Doctrine_Search extends Doctrine_Record_Generator
@@ -47,9 +47,7 @@ class Doctrine_Search extends Doctrine_Record_Generator
                                 'pluginTable'      => false,
                                 'fields'           => array(),
                                 'connection'       => null,
-                                'children'         => array(),
-                                'cascadeDelete'    => true,
-                                'appLevelDelete'   => false);
+                                'children'         => array());
     /**
      * __construct 
      * 
@@ -69,19 +67,10 @@ class Doctrine_Search extends Doctrine_Record_Generator
         }
 
         $this->_options['analyzer'] = new $this->_options['analyzer']($this->_options['analyzer_options']);
-    }
-
-    public function buildTable()
-    {
-        $result = parent::buildTable();
 
         if ( ! isset($this->_options['connection'])) {
-            $manager = Doctrine_Manager::getInstance();
-            $this->_options['connection'] = $manager->getConnectionForComponent($this->_options['table']->getComponentName());
-            $manager->bindComponent($this->_options['className'], $this->_options['connection']->getName());
+            $this->_options['connection'] = Doctrine_Manager::connection();
         }
-
-        return $result;
     }
 
     /**
@@ -99,17 +88,14 @@ class Doctrine_Search extends Doctrine_Record_Generator
             $q->query($string, false);
 
             $newQuery = $query->copy();
-            $query->getSqlQuery();
+            $query->getSql();
             $key = (array) $this->getOption('table')->getIdentifier();
-            $newQuery->addWhere($query->getRootAlias() . '.'.current($key).' IN (SQL:' . $q->getSqlQuery() . ')', $q->getParams());
+            $newQuery->addWhere($query->getRootAlias() . '.'.current($key).' IN (SQL:' . $q->getSql() . ')', $q->getParams());
 
             return $newQuery;
         } else {
-            if ( ! isset($this->_options['connection'])) {
-                $this->_options['connection'] = $this->_table->getConnection();
-            }
             $q->query($string);
-            return $this->_options['connection']->fetchAll($q->getSqlQuery(), $q->getParams());
+            return $this->_options['connection']->fetchAll($q->getSql(), $q->getParams());
         }
     }
     
@@ -142,9 +128,8 @@ class Doctrine_Search extends Doctrine_Record_Generator
         $conn   = $this->getOption('table')->getConnection();
         $identifier = $this->_options['table']->getIdentifier();
 
-        $q = Doctrine_Core::getTable($class)
-            ->createQuery()
-            ->delete();
+        $q = Doctrine_Query::create()->delete()
+                                     ->from($class);
         foreach ((array) $identifier as $id) {
             $q->addWhere($id . ' = ?', array($data[$id]));
         }
@@ -224,11 +209,11 @@ class Doctrine_Search extends Doctrine_Record_Generator
 
         $this->initialize($table);
 
-        $id        = $table->getIdentifierColumnNames();
+        $id        = current($table->getIdentifierColumnNames());
         $class     = $this->_options['className'];
         $fields    = $this->_options['fields'];
-        $conn      = $this->_options['table']->getConnection();
-        
+        $conn      = $this->_options['connection'];
+
         for ($i = 0; $i < count($fields); $i++) {
             $fields[$i] = $table->getColumnName($fields[$i], $fields[$i]);
         }
@@ -237,30 +222,17 @@ class Doctrine_Search extends Doctrine_Record_Generator
 
         $ids = array();
         foreach ($rows as $row) {
-            foreach ($id as $idcol) {
-                $ids[] = $row[$idcol];
-            }
+           $ids[] = $row[$id];
         }
 
         if (count($ids) > 0)
         {
-            $sql = 'DELETE FROM ' . $conn->quoteIdentifier($this->_table->getTableName());
+            $placeholders = str_repeat('?, ', count($ids));
+            $placeholders = substr($placeholders, 0, strlen($placeholders) - 2);
 
-            if (count($id) == 1) {
-                $placeholders = str_repeat('?, ', count($ids));
-                $placeholders = substr($placeholders, 0, strlen($placeholders) - 2);
-                $sql .= ' WHERE ' . $conn->quoteIdentifier($table->getIdentifier()) . ' IN (' . substr($placeholders, 0) . ')';
-            } else {
-                // composite primary key
-                $placeholders = '';
-                foreach ($table->getIdentifier() as $id) {
-                    $placeholders .= $conn->quoteIdentifier($id) . ' = ? AND ';
-                }
-                $placeholders = '(' . substr($placeholders, 0, strlen($placeholders) - 5) . ') OR ';
-                $placeholders = str_repeat($placeholders, count($rows));
-                $placeholders = substr($placeholders, 0, strlen($placeholders) - 4);
-                $sql .= ' WHERE ' . $placeholders;
-            }
+            $sql = 'DELETE FROM ' 
+                 . $conn->quoteIdentifier($this->_table->getTableName())
+                 . ' WHERE ' . $conn->quoteIdentifier($table->getIdentifier()) . ' IN (' . substr($placeholders, 0) . ')';
 
             $conn->exec($sql, $ids);
         }
@@ -316,14 +288,6 @@ class Doctrine_Search extends Doctrine_Record_Generator
             return false;
         }
 
-        // move any columns currently in the primary key to the end
-        // So that 'keyword' is the first field in the table
-        $previousIdentifier = array();
-        foreach ($this->_table->getIdentifier() as $name) {
-            $previousIdentifier[$name] = $this->_table->getColumnDefinition($name);
-            $this->_table->removeColumn($name);
-        }
-
         $columns = array('keyword'  => array('type'    => 'string',
                                              'length'  => 200,
                                              'primary' => true,
@@ -337,6 +301,5 @@ class Doctrine_Search extends Doctrine_Record_Generator
                                              ));
 
         $this->hasColumns($columns);
-        $this->hasColumns($previousIdentifier);
     }
 }

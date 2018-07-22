@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -26,7 +26,7 @@
  * @subpackage  Record
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision$
  */
@@ -41,11 +41,11 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
     {
 
     }
-
     public function setUp()
     {
     	
     }	
+
 
     /**
      * getTable
@@ -114,32 +114,33 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
     }
 
     /**
-     * Defines a n-uple of fields that must be unique for every record. 
+     * Specify an array of fields that are unique and will be validated as such
      *
-     * This method Will automatically add UNIQUE index definition 
-     * and validate the values on save. The UNIQUE index is not created in the
-     * database until you use @see export().
-     *
-     * @param array $fields     values are fieldnames
-     * @param array $options    array of options for unique validator
-     * @param bool $createUniqueIndex  Whether or not to create a unique index in the database
      * @return void
      */
-    public function unique($fields, $options = array(), $createUniqueIndex = true)
+    public function unique()
     {
-        return $this->_table->unique($fields, $options, $createUniqueIndex);
+        $args = func_get_args();
+
+        if (count($args) == 1) {
+            $fields = (array) $args[0];
+        } else if (count($args) > 1) {
+            $fields = $args;
+        } else {
+            throw new Doctrine_Record_Exception('You must specify the fields to make a unique constraint on.');
+        }
+
+        return $this->_table->unique($fields);
     }
 
     public function setAttribute($attr, $value)
     {
         $this->_table->setAttribute($attr, $value);
     }
-
     public function setTableName($tableName)
     {
         $this->_table->setTableName($tableName);
     }
-
     public function setInheritanceMap($map)
     {
         $this->_table->setOption('inheritanceMap', $map);
@@ -147,11 +148,9 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
 
     public function setSubclasses($map)
     {
-        $class = get_class($this);
-        // Set the inheritance map for subclasses
-        if (isset($map[$class])) {
+        if (isset($map[get_class($this)])) {
             // fix for #1621 
-            $mapFieldNames = $map[$class]; 
+            $mapFieldNames = $map[get_class($this)]; 
             $mapColumnNames = array(); 
 
             foreach ($mapFieldNames as $fieldName => $val) { 
@@ -160,13 +159,8 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
  
             $this->_table->setOption('inheritanceMap', $mapColumnNames);
             return;
-        } else {
-            // Put an index on the key column
-            $mapFieldName = array_keys(end($map));
-            $this->index($this->getTable()->getTableName().'_'.$mapFieldName[0], array('fields' => array($mapFieldName[0])));
         }
 
-        // Set the subclasses array for the parent class
         $this->_table->setOption('subclasses', array_keys($map));
     }
 
@@ -174,7 +168,7 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
      * attribute
      * sets or retrieves an option
      *
-     * @see Doctrine_Core::ATTR_* constants   availible attributes
+     * @see Doctrine::ATTR_* constants   availible attributes
      * @param mixed $attr
      * @param mixed $value
      * @return mixed
@@ -219,7 +213,8 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
     }
 
     /**
-     * Binds One-to-One aggregate relation
+     * hasOne
+     * binds One-to-One aggregate relation
      *
      * @param string $componentName     the name of the related component
      * @param string $options           relation options
@@ -234,7 +229,8 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
     }
 
     /**
-     * Binds One-to-Many / Many-to-Many aggregate relation
+     * hasMany
+     * binds One-to-Many / Many-to-Many aggregate relation
      *
      * @param string $componentName     the name of the related component
      * @param string $options           relation options
@@ -249,7 +245,8 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
     }
 
     /**
-     * Sets a column definition
+     * hasColumn
+     * sets a column definition
      *
      * @param string $name
      * @param string $type
@@ -261,55 +258,12 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
     {
         $this->_table->setColumn($name, $type, $length, $options);
     }
-
-    /**
-     * Set multiple column definitions at once
-     *
-     * @param array $definitions 
-     * @return void
-     */
     public function hasColumns(array $definitions)
     {
         foreach ($definitions as $name => $options) {
             $length = isset($options['length']) ? $options['length']:null;
             $this->hasColumn($name, $options['type'], $length, $options);
         }
-    }
-
-    /**
-     * Customize the array of options for a column or multiple columns. First
-     * argument can be a single field/column name or an array of them. The second
-     * argument is an array of options.
-     *
-     *     [php]
-     *     public function setTableDefinition()
-     *     {
-     *         parent::setTableDefinition();
-     *         $this->setColumnOptions('username', array(
-     *             'unique' => true
-     *         ));
-     *     }
-     *
-     * @param string $columnName 
-     * @param array $validators 
-     * @return void
-     */
-    public function setColumnOptions($name, array $options)
-    {
-        $this->_table->setColumnOptions($name, $options);
-    }
-
-    /**
-     * Set an individual column option
-     *
-     * @param string $columnName 
-     * @param string $option 
-     * @param string $value 
-     * @return void
-     */
-    public function setColumnOption($columnName, $option, $value)
-    {
-        $this->_table->setColumnOption($columnName, $option, $value);
     }
 
     /**
@@ -332,6 +286,7 @@ abstract class Doctrine_Record_Abstract extends Doctrine_Access
 
         $this->_table->addGenerator($generator, get_class($generator));
     }
+
 
     /**
      * Loads the given plugin.

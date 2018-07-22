@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Array.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Array.php 16208 2009-06-21 19:19:26Z thomas $
  */
 
 
@@ -31,7 +31,7 @@ require_once 'Zend/XmlRpc/Value/Collection.php';
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_XmlRpc_Value_Array extends Zend_XmlRpc_Value_Collection
@@ -49,25 +49,30 @@ class Zend_XmlRpc_Value_Array extends Zend_XmlRpc_Value_Collection
 
 
     /**
-     * Generate the XML code that represent an array native MXL-RPC value
+     * Return the XML code that represent an array native MXL-RPC value
      *
-     * @return void
+     * @return string
      */
-    protected function _generateXml()
+    public function saveXML()
     {
-        $generator = $this->getGenerator();
-        $generator->openElement('value')
-                  ->openElement('array')
-                  ->openElement('data');
+        if (!$this->_as_xml) {   // The XML code was not calculated yet
+            $dom   = new DOMDocument('1.0');
+            $value = $dom->appendChild($dom->createElement('value'));
+            $array = $value->appendChild($dom->createElement('array'));
+            $data  = $array->appendChild($dom->createElement('data'));
 
-        if (is_array($this->_value)) {
-            foreach ($this->_value as $val) {
-                $val->generateXml();
+            if (is_array($this->_value)) {
+                foreach ($this->_value as $val) {
+                    /* @var $val Zend_XmlRpc_Value */
+                    $data->appendChild($dom->importNode($val->getAsDOM(), true));
+                }
             }
+
+            $this->_as_dom = $value;
+            $this->_as_xml = $this->_stripXmlDeclaration($dom);
         }
-        $generator->closeElement('data')
-                  ->closeElement('array')
-                  ->closeElement('value');
+
+        return $this->_as_xml;
     }
 }
 

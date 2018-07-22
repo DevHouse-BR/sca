@@ -62,3 +62,18 @@ ScmGroupRule:
   Group_Rule_22:
     ScmGroup: Group_1
     ScmRule: Rule_22
+  Group_Rule_23:
+    ScmGroup: Group_1
+    ScmRule: Rule_23
+  Group_Rule_24:
+    ScmGroup: Group_1
+    ScmRule: Rule_24
+  Group_Rule_25:
+    ScmGroup: Group_1
+    ScmRule: Rule_25
+  Group_Rule_26:
+    ScmGroup: Group_1
+    ScmRule: Rule_26
+  Group_Rule_27:
+    ScmGroup: Group_1
+    ScmRule: Rule_27

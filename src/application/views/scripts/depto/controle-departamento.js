@@ -42,6 +42,9 @@ dpto.ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 			autoLoad: true,
 			autoDestroy: true,
 			remoteSort: true,
+			listeners:{
+				exception: Application.app.failHandler
+			},
 			sortInfo: {
 				field: 'id',
 				direction: 'ASC'
@@ -55,8 +58,8 @@ dpto.ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 				{name: 'cod_dpto', type: 'string'},
 				{name: 'nm_gerente', type: 'string'},
 				{name: 'nm_criador', type: 'string'},
-				{name: 'data_criacao', type: 'string'},
-				{name: 'nm_account', type: 'string'},
+				{name: 'data_criacao', type: "date", dateFormat: "Y-m-d H:i:s"},
+				{name: 'nm_account', type: 'string'}
 			]
 		});
 		var paginator = new Ext.PagingToolbar({
@@ -110,7 +113,11 @@ dpto.ControleDepartamentosWindow = Ext.extend(Ext.grid.GridPanel, {
 			}, {
 				dataIndex: 'data_criacao',
 				header: Application.app.language('departamento.columns.data_criacao.text'),
-				sortable: true
+				sortable: true,
+				width:130,
+				renderer:  function(data, cell, record, rowIndex, columnIndex, store) {
+    				return data.format("d/m/Y H:i \\h\\s");
+    			}
 			}, {
 				dataIndex: 'nm_account',
 				header: Application.app.language('administration.user.form.account.text'),

@@ -8,12 +8,14 @@ class Khronos_Menu {
 				array('nome' => 'menu.administration.user', 'permissao' => 3, 'eXtype' => 'administration-user', 'iconCls' => 'icon-user'),
 				array('nome' => 'menu.administration.configuration', 'permissao' => array(1, 14), 'eXtype' => 'administration-config', 'iconCls' => 'icon-config'),
 				array('nome' => 'menu.administration.settings', 'permissao' => 1, 'eXtype' => 'administration-settings', 'iconCls' => 'icon-config'),
+				array('nome' => 'menu.administration.extplorer', 'permissao' => 27, 'eXtype'=> 'extplorer', 'iconCls' => 'icon-explorer'),
 				array('nome' => 'menu.administration.acc', 'permissao' => 14, 'eXtype'=> 'administration-acc', 'iconCls' => 'icon-config')
 			)),
 			array('nome' => 'menu.controle', 'iconCls' => 'icon-postagens', 'filhos' => array(
 				array('nome' => 'menu.controle.departamentos', 'permissao' => 15, 'eXtype' => 'controle-departamentos', 'iconCls' => 'icon-departamento'),
 				array('nome' => 'menu.controle.clientes', 'permissao' => 17, 'eXtype' => 'controle-clientes', 'iconCls' => 'icon-cliente'),
-				array('nome' => 'menu.controle', 'permissao' => 21, 'eXtype' => 'controle-postagens', 'iconCls' => 'icon-postagens')
+				array('nome' => 'menu.controle', 'permissao' => 21, 'eXtype' => 'controle-postagens', 'iconCls' => 'icon-postagens'),
+				array('nome' => 'menu.controle.mensagens', 'permissao' => 24, 'eXtype' => 'controle-mensagens', 'iconCls' => 'icon-mensagens')
 			)),
 		);
 		$json = array();

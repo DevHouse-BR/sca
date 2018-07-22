@@ -50,7 +50,7 @@ class DepartamentosController extends Zend_Controller_Action {
 					->addSelect('sd.id')
 					->addSelect('sd.cod_departamento as cod_dpto')
 					->addSelect('sd.nome_departamento as nm_dpto')
-					->addSelect('sd.dt_criacao as data_criacao')
+					->addSelect("to_char(sd.dt_criacao, 'YYYY-MM-DD HH:MI:SS') as dt_criacao")
 					->addSelect('(SELECT u1.nome_usuario FROM ScmUser u1 WHERE u1.id = sd.id) AS nm_criador')
 					->addSelect('(SELECT u2.nome_usuario FROM ScmUser u2 WHERE u2.id = sd.id) AS nm_gerente')
 					->addWhere('sd.sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)
@@ -163,16 +163,18 @@ class DepartamentosController extends Zend_Controller_Action {
 			}
 			catch (Exception $e) {
 				Doctrine_Manager::getInstance()->getCurrentConnection()->rollback();
-				$this->_helper->json(array('failure' => true, 'message' => DMG_Translate::_('departamento.cannotdelete')));
+				//$this->_helper->json(array('failure' => true, 'message' => DMG_Translate::_('departamento.cannotdelete')));
+				$this->_helper->json(array('failure' => true, 'message' => $e->getMessage()));
 			}
 		}
 	}
 	protected function deleteDepartamento ($id) {
-		$group = Doctrine::getTable('ScaDepartamentos')->find($id);
-		for ($i = 0; $i < count($group->ScmUser); $i++) {
-			$group->ScmUser[$i]->delete();
+		$users = Doctrine::getTable('ScmUser')->findByScaDepartamentosId($id);
+		if($users->count()>0) throw new Exception(DMG_Translate::_('departamento.cannotdelete.users'));
+		else{		
+			$group = Doctrine::getTable('ScaDepartamentos')->find($id);
+			$group->delete();
 		}
-		$group->delete();
 	}
 	public function saveAction () {
 		if (DMG_Acl::canAccess(18)) {
@@ -182,7 +184,9 @@ class DepartamentosController extends Zend_Controller_Action {
 			$codigo = $this->getRequest()->getParam('cod');
 			$id_gerente = $this->getRequest()->getParam('listUser');
 			$cliente = false;
-			
+		
+			$departamento = false;
+	
 			if($id) $departamento = Doctrine::getTable('ScaDepartamentos')->find($id);
 			
 			if(($id == 0)||($departamento->nome_departamento != $nome_departamento)){
@@ -206,12 +210,15 @@ class DepartamentosController extends Zend_Controller_Action {
 
 			$departamento->nome_departamento = $nome_departamento;
 			$departamento->cod_departamento = $codigo;
-			if($id_gerente) $departamento->id_gerente = $id_gerente;
+			if($id_gerente) $departamento->id_gerente = $id_gerente; else $departamento->id_gerente = null;
 
 			try {
 				$departamento->save();
 			} catch (exception $e) {
-				$this->_helper->json(array('success' => false, 'errormsg' => $e->getMessage()));
+				if(strstr($e->getMessage(), $this->getRequest()->getParam('listUser')))
+					$this->_helper->json(array('success' => false, 'errormsg' => DMG_Translate::_('departamento.form.departamento.invalidUser') ));
+				else
+					$this->_helper->json(array('success' => false, 'errormsg' => $e->getMessage() ));
 				return;
 			}
 			$this->_helper->json(array('success' => true));

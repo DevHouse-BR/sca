@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Validator.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Validator.php 6399 2009-09-24 14:54:22Z guilhermeblanco $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,9 +25,9 @@
  * @package     Doctrine
  * @subpackage  Validator
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 6399 $
  * @author      Roman Borschel <roman@code-factory.org>
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  */
@@ -89,22 +89,17 @@ class Doctrine_Validator extends Doctrine_Locator_Injectable
      */
     public static function validateLength($value, $type, $maximumLength)
     {
-        if ($maximumLength === null ) {
+        if( $maximumLength === null ) {
             return true;
         }
         if ($type == 'timestamp' || $type == 'integer' || $type == 'enum') {
             return true;
         } else if ($type == 'array' || $type == 'object') {
             $length = strlen(serialize($value));
-        } else if ($type == 'decimal' || $type == 'float') {
+        } else if ($type == 'decimal' || $type == 'float' || $type == 'double') {
             $value = abs($value);
-
-            $localeInfo = localeconv();
-            $decimalPoint = $localeInfo['mon_decimal_point'] ? $localeInfo['mon_decimal_point'] : $localeInfo['decimal_point'];
-            $e = explode($decimalPoint, $value);
-
+            $e = explode('.', $value);
             $length = strlen($e[0]);
-            
             if (isset($e[1])) {
                 $length = $length + strlen($e[1]);
             }
@@ -127,7 +122,9 @@ class Doctrine_Validator extends Doctrine_Locator_Injectable
      */
     public static function getStringLength($string)
     {
-        if (function_exists('mb_strlen')) {
+        if (function_exists('iconv_strlen')) {
+            return iconv_strlen($string, 'UTF-8');
+        } else if (function_exists('mb_strlen')) {
             return mb_strlen($string, 'utf8');
         } else {
             return strlen(utf8_decode($string));
@@ -165,13 +162,12 @@ class Doctrine_Validator extends Doctrine_Locator_Injectable
              case 'float':
              case 'double':
              case 'decimal':
-                 return (string) $var == strval(floatval($var));
+                 return (string)$var == strval(floatval($var));
              case 'integer':
-                 return (string) $var == strval(round(floatval($var)));
+                 return (string)$var == strval(round(floatval($var)));
              case 'string':
                  return is_string($var) || is_numeric($var);
              case 'blob':
-                 return is_string($var) || is_resource($var);
              case 'clob':
              case 'gzip':
                  return is_string($var);
@@ -192,10 +188,8 @@ class Doctrine_Validator extends Doctrine_Locator_Injectable
                  return $validator->validate($var);
              case 'enum':
                  return is_string($var) || is_int($var);
-             case 'set':
-                 return is_array($var) || is_string($var);
              default:
-                 return true;
+                 return false;
          }
      }
 }

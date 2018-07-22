@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Abstract.php 16971 2009-07-22 18:05:45Z mikaelkael $
  */
 
 /**
@@ -25,35 +25,29 @@
  */
 require_once 'Zend/Tool/Framework/Registry/EnabledInterface.php';
 
-require_once 'Zend/Tool/Framework/Loader/Interface.php';
-require_once 'Zend/Tool/Framework/Manifest/Interface.php';
-require_once 'Zend/Tool/Framework/Provider/Interface.php';
-
-
 /**
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-abstract class Zend_Tool_Framework_Loader_Abstract
-    implements Zend_Tool_Framework_Loader_Interface, Zend_Tool_Framework_Registry_EnabledInterface
+abstract class Zend_Tool_Framework_Loader_Abstract implements Zend_Tool_Framework_Registry_EnabledInterface
 {
     /**
      * @var Zend_Tool_Framework_Repository_Interface
      */
     protected $_registry = null;
-
+    
     /**
      * @var array
      */
     private $_retrievedFiles = array();
-
+    
     /**
      * @var array
      */
     private $_loadedClasses  = array();
-
+    
     /**
      * _getFiles
      *
@@ -73,7 +67,7 @@ abstract class Zend_Tool_Framework_Loader_Abstract
         $this->_registry = $registry;
         return $this;
     }
-
+    
     /**
      * load() - called by the client initialize routine to load files
      *
@@ -82,18 +76,14 @@ abstract class Zend_Tool_Framework_Loader_Abstract
     {
         $this->_retrievedFiles = $this->getRetrievedFiles();
         $this->_loadedClasses  = array();
-
-        $manifestRepository = $this->_registry->getManifestRepository();
-        $providerRepository = $this->_registry->getProviderRepository();
-
+        
+        $manifestRegistry = $this->_registry->getManifestRepository();
+        $providerRegistry = $this->_registry->getProviderRepository();
+        
         $loadedClasses = array();
-
+        
         // loop through files and find the classes declared by loading the file
         foreach ($this->_retrievedFiles as $file) {
-            if(is_dir($file)) {
-                continue;
-            }
-
             $classesLoadedBefore = get_declared_classes();
             $oldLevel = error_reporting(E_ALL | ~E_STRICT); // remove strict so that other packages wont throw warnings
             // should we lint the files here? i think so
@@ -102,32 +92,32 @@ abstract class Zend_Tool_Framework_Loader_Abstract
             $classesLoadedAfter = get_declared_classes();
             $loadedClasses = array_merge($loadedClasses, array_diff($classesLoadedAfter, $classesLoadedBefore));
         }
-
-        // loop through the loaded classes and ensure that
+        
+        // loop through the loaded classes and ensure that 
         foreach ($loadedClasses as $loadedClass) {
-
+            
             // reflect class to see if its something we want to load
             $reflectionClass = new ReflectionClass($loadedClass);
-            if ($reflectionClass->implementsInterface('Zend_Tool_Framework_Manifest_Interface')
-                && !$reflectionClass->isAbstract())
+            if ($reflectionClass->implementsInterface('Zend_Tool_Framework_Manifest_Interface') 
+                && !$reflectionClass->isAbstract()) 
             {
-                $manifestRepository->addManifest($reflectionClass->newInstance());
+                $manifestRegistry->addManifest($reflectionClass->newInstance());
                 $this->_loadedClasses[] = $loadedClass;
             }
-
-            if ($reflectionClass->implementsInterface('Zend_Tool_Framework_Provider_Interface')
+            
+            if ($reflectionClass->implementsInterface('Zend_Tool_Framework_Provider_Interface') 
                 && !$reflectionClass->isAbstract()
-                && !$providerRepository->hasProvider($reflectionClass->getName(), false))
+                && !$providerRegistry->hasProvider($reflectionClass->getName(), false)) 
             {
-                $providerRepository->addProvider($reflectionClass->newInstance());
+                $providerRegistry->addProvider($reflectionClass->newInstance());
                 $this->_loadedClasses[] = $loadedClass;
             }
 
         }
-
+        
         return $this->_loadedClasses;
     }
-
+    
     /**
      * getRetrievedFiles()
      *
@@ -138,10 +128,10 @@ abstract class Zend_Tool_Framework_Loader_Abstract
         if ($this->_retrievedFiles == null) {
             $this->_retrievedFiles = $this->_getFiles();
         }
-
+        
         return $this->_retrievedFiles;
     }
-
+    
     /**
      * getLoadedClasses()
      *
@@ -152,5 +142,5 @@ abstract class Zend_Tool_Framework_Loader_Abstract
         return $this->_loadedClasses;
     }
 
-
+    
 }

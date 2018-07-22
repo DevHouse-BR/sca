@@ -1,175 +1,289 @@
 <?php
 
-class PortalController extends Zend_Controller_Action {
+class PortalController extends Zend_Controller_Action
+{
+
+    public function init(){
+        $this->_helper->viewRenderer->setNoRender(true);
+
+		$this->css = array(
+			'extjs/resources/css/ext-all.css',
+			'css/base-css.css'
+		);
+		
+		$this->jsLogin = array(
+			'portal/app.js'
+		);
+		
+		$this->js = array(
+			'portal/app.js',
+			'portal/edit-profile.js',
+			'ppostagens/pcontrole-postagens.js',
+			'ppostagens/pcontrole-postagens-form.js',
+			'ppostagens/pcontrole-view-postagem.js'
+		
+		);
+		
+		$this->uxLogin = array(
+			'extjs/ux/PasswordField.js',
+			'extjs/ux/md5.js'
+		);
+
+    }
+
+    public function indexAction(){
+	$this->setCockiePlace(); //seta um cookie no usuario para podermos recuperar o token, isso facilita a vida do usuario
+	$this->setRememberThings();
+
+    	$this->view->logado = $logado = Zend_Auth::getInstance()->hasIdentity();
+    	
+    	if(APPLICATION_ENV == "development"){
+    		$ext = array(
+    			'extjs/adapter/ext/ext-base-debug.js',
+    			'extjs/ext-all-debug.js'
+    		);
+    		
+    		$ux = Khronos_UxScript::add();
+    		
+    		$js = array();
+    		$caminho = '../application/views/scripts/';
+    		if($logado){
+	    		foreach($this->js as $script){
+	    			$js[] = $caminho . $script;
+	    		}
+				$this->view->js = array_merge($ext, $ux, $js);
+    		}
+    		else{
+	    		foreach($this->jsLogin as $script){
+	    			$js[] = $caminho . $script;
+	    		}
+    			$this->view->js = array_merge($ext, $this->uxLogin, $js);
+    		}
+    		
+			$this->view->css = $this->css;
+    	}
+    	else {
+    		$this->view->js = array('portal/compressedjs');
+    		$this->view->css = array(
+    			'extjs/resources/css/ext-all-css.css',
+    			'css/base-css.css'
+    		);
+		}
+		 	
+		if($logado){
+			$this->setCockiePlace();
 	
-	public function init () {
-		$this->_helper->viewRenderer->setNoRender(true);
+			$this->view->account = Zend_Auth::getInstance()->getIdentity()->sca_account_id;
+			$this->view->token = DMG_Asc2Hex::toHex(Zend_Auth::getInstance()->getIdentity()->ScaAccount->nome_account);
+			
+			$idCliente = Zend_Auth::getInstance()->getIdentity()->sca_clientes_id;
+			$this->view->personalCliLogo = 'files/'.$this->view->account.'/client_logo_'.$idCliente;
+			
+			if( !file_exists($this->view->personalCliLogo) ){
+				$this->view->personalCliLogo = "";
+			}
+		}
+		else {
+			$token = Zend_Controller_Action::_getParam('token');
+			$account = DMG_Asc2Hex::toAsc($token);
+			$account = Doctrine::getTable('ScaAccount')->findByNomeAccount($account);
+			$this->view->account = $account[0]->id;
+		
+			$this->view->logoPath = DMG_Config::getAccountCfgWithId(2, $account[0]->id);
+			
+			$this->view->mainTitle = DMG_Config::getAccountCfgWithId(6, $account[0]->id);
+			
+			$this->view->welcomeMsg = DMG_Config::getAccountCfgWithId(8, $account[0]->id);
+			
+			$this->view->copyright = DMG_Config::get(3);
+	
+		}
+	
+		$this->view->footerMsg = Doctrine_Query::create()
+				->select()
+				->from('ScaAccountRelationConfig sarc')
+				->where('sarc.sca_account_id = ?', $this->view->account)
+				->addWhere('sca_account_config_id = ?', 7) // <---
+				->fetchOne()
+					->valor_parametro;
+	
+	
+		//436F6E74612050616472C3A36F
+
+    	echo $this->view->render('portal/index.phtml');
+    }
+    
+    public function compressedjsAction(){
+    	$logado = Zend_Auth::getInstance()->hasIdentity();
+    	if($logado){
+	    	$ux  = Khronos_UxScript::add();
+	    	$js = $this->js;
+    	}
+    	else{
+    		$ux = $this->uxLogin;
+    		$js = $this->jsLogin;
+    	}
+		
+		$ext  = @file_get_contents('extjs/adapter/ext/ext-base.js') . chr(10);
+		$ext .= @file_get_contents('extjs/ext-all.js') . chr(10);
+		
+		foreach($ux as $script){
+			$output .= @file_get_contents($script) . chr(10);
+		}
+		foreach($js as $script){
+			//$script = str_replace("../application/views/scripts/", "", $script);
+			$output .= $this->view->render($script) . chr(10);
+		}
+		
+		ob_start("ob_gzhandler");
+		$this->view->headMeta()->appendHttpEquiv('Content-Encoding', 'gzip,deflate');
+		echo $ext;
+		echo DMG_JSMin::minify($output);
+		ob_end_flush();
+    }
+    
+    public function compressedcssAction($request){
+    	$output = "";
+   		foreach($this->css as $script){
+			$output .= @file_get_contents($script) . chr(10);
+		}
+		ob_start("ob_gzhandler");
+		$this->getResponse()->setHeader("Content-Type", "text/css");
+		$this->view->headMeta()->appendHttpEquiv('Content-Encoding', 'gzip,deflate');
+		echo DMG_CSSMin::minify($output);
+		ob_end_flush();
+    }
+
+	public function languageAction(){
+		if (Zend_Auth::getInstance()->hasIdentity()) {
+			$language = Zend_Auth::getInstance()->getIdentity()->idioma_usuario;
+			if (!$language) {
+				$language = DMG_Config::get(1);
+			}
+		} else {
+			$language = DMG_Config::get(1);
+		}
+		
+		$traducao = utf8_encode(@file_get_contents(APPLICATION_PATH . "/translations/" . $language . ".php"));
+		$traducao = str_replace('<?php', '', $traducao);
+		$traducao = str_replace('return', '$traducao =', $traducao);
+		eval($traducao);
+		$this->_helper->json($traducao);
 	}
 	
-	public function logoutAction () {
-		Zend_Auth::getInstance()->clearIdentity();
-		$this->_helper->redirector('index', 'portal');
-	}
-	public function indexAction () {
-		echo $this->view->render('portal/index.phtml');
+	public function userinfoAction(){
+		if (Zend_Auth::getInstance()->hasIdentity()) {
+			$identidade = Zend_Auth::getInstance()->getIdentity();
+			$user = array(
+				'id'=> $identidade->id,
+				'sca_account_id'=> $identidade->sca_account_id,
+				'sca_clientes_id'=> $identidade->sca_clientes_id,
+				'sca_departamentos_id'=> $identidade->sca_departamentos_id,
+				'tipo_usuario'=> $identidade->tipo_usuario,
+				'nome_usuario'=> $identidade->nome_usuario,
+				'login_usuario'=> $identidade->login_usuario,
+				'recebe_mensagem'=> $identidade->recebe_mensagem,
+				'idioma_usuario'=> $identidade->idioma_usuario,
+				'email'=> $identidade->email,
+				'fl_system'=> $identidade->fl_system,
+				'fl_status'=> $identidade->fl_status
+			);
+		} else {
+			$user = array();
+		}
+		$this->_helper->json($user);
 	}
 	
-	public function authAction () {
+	public function menuAction(){
+		$this->getResponse()->setHeader("Content-Type", "application/json");
+		echo Khronos_MenuPortal::getJson();
+	}
+	
+	public function authAction (){
 		if (!$this->getRequest()->isPost()) {
 			return;
 		}
-		$auth = Zend_Auth::getInstance();
-		$auth->setStorage(new Zend_Auth_Storage_Session('portalAuth'));
-		
-		$resultado = $auth->authenticate(new DMG_PortalAuth_Adapter($this->getRequest()->getParam('loginUsername'),$this->getRequest()->getParam('loginPassword')));
-		$this->getResponse()->setHeader('Content-Type', 'application/json');
-		if (!$resultado->isValid()) {
-			echo Zend_Json::encode(array('failure' => true, 'errormsg'=>$resultado->getMessages()));
+	
+		$resultado = Zend_Auth::getInstance()->authenticate(new DMG_Portal_Auth_Adapter($this->getRequest()->getParam('login_usuario'),$this->getRequest()->getParam('senha_usuario'), $this->getRequest()->getParam('id_account')))->isValid();
+
+		if (!$resultado) {
+			$this->_helper->json(array('success' => false, 'errormsg'=>DMG_Translate::_('auth.error')));
+			return;
+		} 
+
+		if($this->getRequest()->getParam('remember_user') == 'on'){
+			$usr = $this->getRequest()->getParam('login_usuario');
+			setcookie("remember_usr_sca_dmg", DMG_Asc2Hex::toHex($usr), time()+1300000); //pouco menos de um ano
+		} else {
+			setcookie("remember_usr_sca_dmg", '', time()+1300000);
 		}
-		else echo Zend_Json::encode(array('success' => true));
-	}
-	
-	public function desktopAction () {
-		$auth = Zend_Auth::getInstance();
-		$auth->setStorage(new Zend_Auth_Storage_Session('portalAuth'));
-		if($auth->hasIdentity()) echo $this->view->render('portal/desktop.phtml');
-		else echo $this->view->render('portal/index.phtml');
-	}
-	
-	public function jsloginAction () {		
-		$this->view->headMeta()->appendHttpEquiv('Content-Type', 'text/javascript; charset=UTF-8');
-			
-		$js = $this->view->render('index/i18n.js');
-		$js .= $this->view->render('portal/pt-BR.js');
-		
-		
-		/*$js = str_replace('"images/', '"../images/', $js);
-		$js = str_replace("'images/", "'../images/", $js);
-		$js = str_replace("'extjs/resources", "'../extjs/resources", $js);
-		$js = str_replace('"extjs/resources', '"../extjs/resources', $js);*/
-		
-		if(getenv('APPLICATION_ENV') == 'development') echo($js);
-		else echo(DMG_JSMin::minify($js));
-	}
-	
-	public function jsAction () {
-		$auth = Zend_Auth::getInstance();
-		$auth->setStorage(new Zend_Auth_Storage_Session('portalAuth'));
-		if(!$auth->hasIdentity()) return;
-		
-		$this->view->headMeta()->appendHttpEquiv('Content-Type', 'text/javascript; charset=UTF-8');
-			
-		$js = $this->view->render('index/i18n.js');
-		$js .= $this->view->render('portal/base.js');
-		$js .= $this->view->render('portal/pt-BR.js');
-		
-		
-		$js = str_replace('"images/', '"../images/', $js);
-		$js = str_replace("'images/", "'../images/", $js);
-		$js = str_replace("'extjs/resources", "'../extjs/resources", $js);
-		$js = str_replace('"extjs/resources', '"../extjs/resources', $js);
-		
-		$js .= $this->view->render('portal/consulta-parque-maquinas.js');
-		$js .= $this->view->render('portal/consulta-contadores.js');
-		
-		
-		
-		if(getenv('APPLICATION_ENV') == 'development') echo($js);
-		else echo DMG_JSMin::minify($js);
-	}
-	
-	public function parquelistAction() {
-		$auth = Zend_Auth::getInstance();
-		$auth->setStorage(new Zend_Auth_Storage_Session('portalAuth'));
-		if(!$auth->hasIdentity()) return;
-		
-		$id_local = Zend_Auth::getInstance()->getIdentity()->id_local;
-		
-		$query = Doctrine_Query::create()->from('ScmMaquina m');
-		$query->where('m.id_local = ' . $id_local);
-		$query->innerJoin('m.ScmStatusMaquina s')->addWhere('s.fl_alta = 1');
-		
-		$limit = (int) $this->getRequest()->getParam('limit');
-		if ($limit > 0) $query->limit($limit);
-		
-		$offset = (int) $this->getRequest()->getParam('start');
-		if ($offset > 0) $query->offset($offset);
-		
-		$sort = (string) $this->getRequest()->getParam('sort');
-		$dir = (string) $this->getRequest()->getParam('dir');
-		
-		if ($sort && ($dir == 'ASC' || $dir == 'DESC')) {
-			$query->orderby($sort . ' ' . $dir);
+		if($this->getRequest()->getParam('remember_pass') == 'on'){
+			$pas = $this->getRequest()->getParam('senha_usuario');
+			setcookie("remember_pas_sca_dmg", DMG_Asc2Hex::toHex($pas), time()+1300000); //pouco menos de um ano
+		} else {
+			setcookie("remember_pas_sca_dmg", '', time()+1300000);
 		}
-		
+
+		$this->_helper->json(array('success' => true, 'user' => array(
+			'id' => Zend_Auth::getInstance()->getIdentity()->id,
+			'nome_usuario' => Zend_Auth::getInstance()->getIdentity()->nome_usuario
+		)));
+	}
+	
+	public function logoutAction () {
+		Zend_Auth::getInstance()->clearIdentity();	
+		$this->_helper->_redirector->gotoSimple('portal', '', null, array('login' => $this->getRequest()->getParam('token')));	
+	}
+	
+	public function accesscontrolAction(){
+		$acl = $this->getRequest()->getParam('acl');
 		$data = array();
-		foreach ($query->execute() as $k) {
-			$data[] = array(
-				'id' => $k->id,
-				'nr_serie_connect' => $k->nr_serie_connect,
-				'nr_serie_aux' => $k->nr_serie_aux,
-				'nm_jogo' => $k->ScmJogo->nm_jogo,
-				'nr_versao_jogo' => $k->nr_versao_jogo,
-				'nm_gabinete' => $k->ScmGabinete->nm_gabinete,
-				'nm_moeda' => $k->ScmMoeda->nm_moeda,
-				'vl_credito' => $k->vl_credito,
-				'dt_ultima_movimentacao' => $k->dt_ultima_movimentacao,
-				'dt_ultimo_faturamento' => $k->dt_ultimo_faturamento,
-				'dt_ultima_transformacao' => $k->dt_ultima_transformacao,
-				'dt_ultima_regularizacao' => $k->dt_ultima_regularizacao
-			);
+		foreach($acl as $a){
+			$data[$a] = ($a != "")? (DMG_Acl::canAccess($a) ? true : false):false;
 		}
-		echo Zend_Json::encode(array('success' => true,'total' => $query->count(), 'data' => $data));
+		$this->_helper->json(array('success' => true,'data'=> $data));
 	}
-	
-	public function contadoreslistAction() {
-		$auth = Zend_Auth::getInstance();
-		$auth->setStorage(new Zend_Auth_Storage_Session('portalAuth'));
-		if(!$auth->hasIdentity()) return;
-		
-		$id_local = Zend_Auth::getInstance()->getIdentity()->id_local;
-		
-		$query = Doctrine_Query::create()->from('ScmMaquina m');
-		$query->where('m.id_local = ' . $id_local);
-		$query->innerJoin('m.ScmStatusMaquina s')->addWhere('s.fl_alta = 1');
-		
-		$limit = (int) $this->getRequest()->getParam('limit');
-		if ($limit > 0) $query->limit($limit);
-		
-		$offset = (int) $this->getRequest()->getParam('start');
-		if ($offset > 0) $query->offset($offset);
-		
-		$sort = (string) $this->getRequest()->getParam('sort');
-		$dir = (string) $this->getRequest()->getParam('dir');
-		
-		if ($sort && ($dir == 'ASC' || $dir == 'DESC')) {
-			$query->orderby($sort . ' ' . $dir);
+
+	private function setCockiePlace(){
+		$tokenData = $this->getRequest()->getParam('token');
+		if($tokenData){
+			return;
 		}
-		
-		$query->innerJoin('m.ScmFilial f')->innerJoin('f.ScmEmpresa e')->innerJoin('e.ScmUserEmpresa ue')->addWhere('ue.user_id = ' . Zend_Auth::getInstance()->getIdentity()->id);
-		$data = array();
-		foreach ($query->execute() as $k) {
-			$data[] = array(
-				'id' => $k->id,
-				'nr_serie_connect' => $k->nr_serie_connect,
-				'nr_serie_aux' => $k->nr_serie_aux,
-				'nm_jogo' => $k->ScmJogo->nm_jogo,
-				'nr_versao_jogo' => $k->nr_versao_jogo,
-				'nm_status_maquina' => $k->ScmStatusMaquina->nm_status_maquina,
-				'nm_moeda' => $k->ScmMoeda->nm_moeda,
-				'vl_credito' => $k->vl_credito,
-				'id_local' => $k->id_local,
-				'id_protocolo' => $k->id_protocolo,
-				'dt_ultima_movimentacao' => $k->dt_ultima_movimentacao,
-				'dt_ultimo_faturamento' => $k->dt_ultimo_faturamento,
-				'dt_ultima_transformacao' => $k->dt_ultima_transformacao,
-				'dt_ultima_regularizacao' => $k->dt_ultima_regularizacao			
-			);
+
+		if(Zend_Auth::getInstance()->hasIdentity()){
+			$tokenData = DMG_Asc2Hex::toHex(Zend_Auth::getInstance()->getIdentity()->ScaAccount->nome_account);
 		}
-		echo Zend_Json::encode(array('success' => true,'total' => $query->count(), 'data' => $data));
+
+		if($tokenData) {
+			setcookie("portalToken", $tokenData, time()+1300000); //pouco menos de um ano
+		} else if($_COOKIE["portalToken"]) {
+			$this->_helper->_redirector->gotoSimple('portal', '', null, array('login' => $_COOKIE["portalToken"]));
+		}
+
 	}
-	
-	public function getcontadoresAction() {
-		Khronos_Servidor::getContadoresPorMaquinas($this->getRequest()->getParam('id'));
+
+	private function setRememberThings(){
+		 if(!Zend_Auth::getInstance()->hasIdentity()) { //nao esta logado
+			$user = '';
+			$pass = '';
+			if(isset($_COOKIE['remember_usr_sca_dmg'])){
+				$user = $_COOKIE["remember_usr_sca_dmg"];
+			}
+			if(isset($_COOKIE['remember_pas_sca_dmg'])){
+				$pass = $_COOKIE["remember_pas_sca_dmg"];
+			}
+			
+			if($user){  //foi possivel regatar as informacoes de login
+				$user = DMG_Asc2Hex::toAsc($user);
+				$this->view->enableUsrRemember = $user;
+			
+				if($pass){
+					$pass = DMG_Asc2Hex::toAsc($pass);
+					$this->view->enablePassRemember = $pass;
+				}
+			}
+
+		}
 	}
 }
+

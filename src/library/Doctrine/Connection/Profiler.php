@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -26,7 +26,7 @@
  * @subpackage  Connection
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision$
  */
@@ -48,11 +48,6 @@ class Doctrine_Connection_Profiler implements Doctrine_Overloadable, IteratorAgg
      * @param array $events         an array containing all listened events
      */
     private $events     = array();
-
-    /**
-     * @param array $eventSequences         an array containing sequences of all listened events as keys
-     */
-    private $eventSequences = array();
 
     /**
      * constructor
@@ -92,15 +87,25 @@ class Doctrine_Connection_Profiler implements Doctrine_Overloadable, IteratorAgg
             // pre-event listener found
             $a[0]->start();
 
-            $eventSequence = $a[0]->getSequence();
-            if ( ! isset($this->eventSequences[$eventSequence])) {
+            if ( ! in_array($a[0], $this->events, true)) {
                 $this->events[] = $a[0];
-                $this->eventSequences[$eventSequence] = true;
             }
         } else {
             // after-event listener found
             $a[0]->end();
         }
+        /**
+         * If filtering by query type is enabled, only keep the query if
+         * it was one of the allowed types.
+         */
+         /**
+        if ( ! is_null($this->filterTypes)) {
+            if ( ! ($a[0]->getQueryType() & $this->_filterTypes)) {
+
+            }
+        }
+        */
+
     }
 
     /**
@@ -156,12 +161,7 @@ class Doctrine_Connection_Profiler implements Doctrine_Overloadable, IteratorAgg
      */
     public function pop() 
     {
-        $event = array_pop($this->events);
-        if ($event !== null)
-        {
-            unset($this->eventSequences[$event->getSequence()]);
-        }
-        return $event;
+        return array_pop($this->events);
     }
 
     /**

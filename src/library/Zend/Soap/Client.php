@@ -15,24 +15,18 @@
  * @category   Zend
  * @package    Zend_Soap
  * @subpackage Client
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Client.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Client.php 18570 2009-10-16 12:41:35Z sgehrig $
  */
 
-/**
- * @see Zend_Soap_Server
- */
+/** Zend_Soap_Server */
 require_once 'Zend/Soap/Server.php';
 
-/**
- * @see Zend_Soap_Client_Local
- */
+/** Zend_Soap_Client_Local */
 require_once 'Zend/Soap/Client/Local.php';
 
-/**
- * @see Zend_Soap_Client_Common
- */
+/** Zend_Soap_Client_Common */
 require_once 'Zend/Soap/Client/Common.php';
 
 /**
@@ -41,7 +35,7 @@ require_once 'Zend/Soap/Client/Common.php';
  * @category   Zend
  * @package    Zend_Soap
  * @subpackage Client
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Soap_Client
@@ -317,18 +311,8 @@ class Zend_Soap_Client
         $options['user_agent']     = $this->getUserAgent();
 
         foreach ($options as $key => $value) {
-            /*
-             * ugly hack as I don't know if checking for '=== null'
-             * breaks some other option
-             */
-            if (in_array($key, array('user_agent', 'cache_wsdl', 'compression'))) {
-                if ($value === null) {
-                    unset($options[$key]);
-                }
-            } else {
-                if ($value == null) {
-                    unset($options[$key]);
-                }
+            if ($value == null) {
+                unset($options[$key]);
             }
         }
 
@@ -438,14 +422,13 @@ class Zend_Soap_Client
      */
     public function validateUrn($urn)
     {
-        $scheme = parse_url($urn, PHP_URL_SCHEME);
-        if ($scheme === false || $scheme === null) {
-            require_once 'Zend/Soap/Client/Exception.php';
-            throw new Zend_Soap_Client_Exception('Invalid URN');
+        $segs = parse_url($urn);
+        if (isset($segs['scheme'])) {
+            return true;
         }
 
-        return true;
-
+        require_once 'Zend/Soap/Client/Exception.php';
+        throw new Zend_Soap_Client_Exception('Invalid URN');
     }
 
     /**
@@ -767,17 +750,15 @@ class Zend_Soap_Client
     /**
      * Set compression options
      *
-     * @param  int|null $compressionOptions
+     * @param  int $compressionOptions
      * @return Zend_Soap_Client
      */
     public function setCompressionOptions($compressionOptions)
     {
-        if ($compressionOptions === null) {
-            $this->_compression = null;
-        } else {
-            $this->_compression = (int)$compressionOptions;
-        }
+        $this->_compression = $compressionOptions;
+
         $this->_soapClient = null;
+
         return $this;
     }
 
@@ -859,23 +840,17 @@ class Zend_Soap_Client
     /**
      * Set the SOAP Wsdl Caching Options
      *
-     * @param string|int|boolean|null $caching
+     * @param string|int|boolean $caching
      * @return Zend_Soap_Client
      */
-    public function setWsdlCache($caching)
+    public function setWsdlCache($options)
     {
-        if ($caching === null) {
-            $this->_cache_wsdl = null;
-        } else {
-            $this->_cache_wsdl = (int)$caching;
-        }
+        $this->_cache_wsdl = $options;
         return $this;
     }
 
     /**
      * Get current SOAP Wsdl Caching option
-     *
-     * @return int
      */
     public function getWsdlCache()
     {
@@ -885,23 +860,17 @@ class Zend_Soap_Client
     /**
      * Set the string to use in User-Agent header
      *
-     * @param  string|null $userAgent
+     * @param  string $userAgent
      * @return Zend_Soap_Client
      */
     public function setUserAgent($userAgent)
     {
-        if ($userAgent === null) {
-            $this->_user_agent = null;
-        } else {
-            $this->_user_agent = (string)$userAgent;
-        }
+        $this->_user_agent = (string)$userAgent;
         return $this;
     }
 
     /**
      * Get current string to use in User-Agent header
-     *
-     * @return string|null
      */
     public function getUserAgent()
     {
@@ -1068,13 +1037,13 @@ class Zend_Soap_Client
      */
     public function addSoapInputHeader(SoapHeader $header, $permanent = false)
     {
-        if ($permanent) {
-            $this->_permanentSoapInputHeaders[] = $header;
-        } else {
-            $this->_soapInputHeaders[] = $header;
-        }
+    	if ($permanent) {
+    		$this->_permanentSoapInputHeaders[] = $header;
+    	} else {
+    		$this->_soapInputHeaders[] = $header;
+    	}
 
-        return $this;
+    	return $this;
     }
 
     /**
@@ -1097,7 +1066,7 @@ class Zend_Soap_Client
      */
     public function getLastSoapOutputHeaderObjects()
     {
-        return $this->_soapOutputHeaders;
+    	return $this->_soapOutputHeaders;
     }
 
     /**

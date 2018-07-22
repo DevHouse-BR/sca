@@ -1,6 +1,6 @@
-Ext.namespace('User');
+Ext.namespace('UserCli');
 
-User.AdministrationUserFormEditPerfil = Ext.extend(Ext.Window, {
+UserCli.AdministrationUserCliFormEditPerfil = Ext.extend(Ext.Window, {
 	user: 0,
 	modal: true,
 	constrain: true,
@@ -8,16 +8,16 @@ User.AdministrationUserFormEditPerfil = Ext.extend(Ext.Window, {
 	resizable: false,
 	iconCls:'icon-user',
 	width: 450,
-	height: 260,
+	height: 230,
 	title: Application.app.language('administration.user.form.editPerfil.title'),
 	layout: 'fit',
 	closeAction: 'hide',
-	setUser: function(user) {
+	setUserCli: function(user) {
 		this.user = user;
 	},
 	constructor: function() {
 		this.addEvents({salvar: true, excluir: true});
-		User.AdministrationUserFormEditPerfil.superclass.constructor.apply(this, arguments);
+		UserCli.AdministrationUserCliFormEditPerfil.superclass.constructor.apply(this, arguments);
 	},
 	initComponent: function() {
 		this.languages = new Ext.form.ComboBox({
@@ -49,38 +49,36 @@ User.AdministrationUserFormEditPerfil = Ext.extend(Ext.Window, {
 				allowBlank: false,
 				maxLength: 255
 			},{
-				fieldLabel: Application.app.language('administration.user.form.username.text'),
-				name: 'login_usuario',
-				allowBlank: false,
-				maxLength: 255,
-				id: 'login_usuario_profile'
-			},{
 				fieldLabel: Application.app.language('administration.user.form.email.text'),
 				name: 'email', 
 				allowBlank: false, 
 				maxLength: 255
 			},{
 				fieldLabel: Application.app.language('administration.user.form.password.text'), 
-				name: 'password_', 
+				name: 'password_cli', 
 				allowBlank: false,
 				maxLength: 64, 
 				inputType: 'password',
 				xtype:'passwordfield',
-				id: 'password_',
+				id: 'password_cli',
 				showCapsWarning:true,
 				vtype: 'password', 
-				initialPassField: 'password2_'
+				initialPassField: 'password2_cli'
 			},{
 				fieldLabel: Application.app.language('administration.user.form.password2.text'), 
-				name: 'password2_', 
+				name: 'password2_cli', 
 				allowBlank: false,
 				maxLength: 64, 
 				inputType: 'password',
 				xtype:'passwordfield',
-				id: 'password2_',
+				id: 'password2_cli',
 				showCapsWarning:true,
-				vtype: 'password', 
-				initialPassField: 'password_'
+				vtype: 'password',
+				initialPassField: 'password_cli'
+			},{
+				name: 'login_usuario',
+				id: 'login_usuario_profile_clientes',
+				hidden: true 
 			},
 				this.languages
 			],
@@ -103,17 +101,17 @@ User.AdministrationUserFormEditPerfil = Ext.extend(Ext.Window, {
 		Ext.apply(this, {
 			items: this.formPanel
 		});
-		User.AdministrationUserFormEditPerfil.superclass.initComponent.call(this);
+		UserCli.AdministrationUserCliFormEditPerfil.superclass.initComponent.call(this);
 	},
 	show: function() {
 		this.formPanel.getForm().reset();
-		User.AdministrationUserFormEditPerfil.superclass.show.apply(this, arguments);
+		UserCli.AdministrationUserCliFormEditPerfil.superclass.show.apply(this, arguments);
 		if(this.user !== 0) {
-			this.formPanel.findById("password_").allowBlank = true;
-			this.formPanel.findById("password2_").allowBlank = true;
+			this.formPanel.findById("password_cli").allowBlank = true;
+			this.formPanel.findById("password2_cli").allowBlank = true;
 			this.formPanel.getForm().load({
 				waitTitle: Application.app.language("auth.alert"),
-		        waitMsg: Application.app.language("auth.loading"),
+			        waitMsg: Application.app.language("auth.loading"),
 				url: 'index/user/do/get',
 				params: {
 					id: this.user
@@ -121,35 +119,35 @@ User.AdministrationUserFormEditPerfil = Ext.extend(Ext.Window, {
 				scope: this
 			});
 		} else {
-			this.formPanel.findById("password_").allowBlank = false;
-			this.formPanel.findById("password2_").allowBlank = false;
+			this.formPanel.findById("password_cli").allowBlank = false;
+			this.formPanel.findById("password2_cli").allowBlank = false;
 		}
 	},
 	onDestroy: function() {
-		User.AdministrationUserFormEditPerfil.superclass.onDestroy.apply(this, arguments);
+		UserCli.AdministrationUserCliFormEditPerfil.superclass.onDestroy.apply(this, arguments);
 		this.formPanel = null;
 	},
 	_onBtnSalvarClick: function() {
 		var form = this.formPanel.getForm();
-		var pass = Ext.getCmp('password_').getValue();
+		var pass = Ext.getCmp('password_cli').getValue();
 		
 		if(pass != ""){
 			form.on('beforeaction', function(form, action) {
 				if (action.type == 'submit') {
-					Ext.getCmp('password_').disable();
-					Ext.getCmp('password2_').disable();
+					Ext.getCmp('password_cli').disable();
+					Ext.getCmp('password2_cli').disable();
 					action.options.params = action.options.params || {};
 					Ext.apply(action.options.params, {
-						password_: b64_hmac_md5(b64_hmac_md5(Ext.getCmp('password_').getValue(), "GB7gj123fLphg7%$g2f"), Ext.getCmp('login_usuario_profile').getValue()),
-						password2_: b64_hmac_md5(b64_hmac_md5(Ext.getCmp('password_').getValue(), "GB7gj123fLphg7%$g2f"), Ext.getCmp('login_usuario_profile').getValue())
+						password_cli: b64_hmac_md5(b64_hmac_md5(Ext.getCmp('password_cli').getValue(), "GB7gj123fLphg7%$g2f"), Ext.getCmp('login_usuario_profile_clientes').getValue()),
+						password2_cli: b64_hmac_md5(b64_hmac_md5(Ext.getCmp('password2_cli').getValue(), "GB7gj123fLphg7%$g2f"), Ext.getCmp('login_usuario_profile_clientes').getValue())
 					});
 				}
 			});
 			
 			form.on('actionfailed', function(form, action) {
 				if (action.type == 'submit') {
-					Ext.getCmp('password_').enable();
-					Ext.getCmp('password2_').enable();
+					Ext.getCmp('password_cli').enable();
+					Ext.getCmp('password2_cli').enable();
 				}
 			});
 		}
@@ -166,8 +164,20 @@ User.AdministrationUserFormEditPerfil = Ext.extend(Ext.Window, {
 			success: function() {
 				this.hide();
 				this.fireEvent('salvar', this);
+
+				Ext.getCmp('password_cli').enable();
+				Ext.getCmp('password2_cli').enable();
 			},
 			failure: Application.app.failHandler
 		});
 	}
 });
+
+Ext.apply(Ext.form.VTypes, {
+	password: function(value, field) {
+		var pwd = Ext.getCmp(field.initialPassField);
+		this.passwordText = Application.app.language('administration.user.form.password.error');
+		return (value == pwd.getValue());
+	}
+});
+

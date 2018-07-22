@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: PartialLoop.php 25203 2013-01-10 11:02:17Z frosch $
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: PartialLoop.php 16222 2009-06-21 19:55:20Z thomas $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -29,7 +29,7 @@ require_once 'Zend/View/Helper/Partial.php';
  *
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_PartialLoop extends Zend_View_Helper_Partial
@@ -71,9 +71,7 @@ class Zend_View_Helper_PartialLoop extends Zend_View_Helper_Partial
             && (is_object($model) && !method_exists($model, 'toArray'))
         ) {
             require_once 'Zend/View/Helper/Partial/Exception.php';
-            $e = new Zend_View_Helper_Partial_Exception('PartialLoop helper requires iterable data');
-            $e->setView($this->view);
-            throw $e;
+            throw new Zend_View_Helper_Partial_Exception('PartialLoop helper requires iterable data');
         }
 
         if (is_object($model)
@@ -85,9 +83,7 @@ class Zend_View_Helper_PartialLoop extends Zend_View_Helper_Partial
 
         $content = '';
         // reset the counter if it's call again
-        $this->partialCounter    = 0;
-        $this->partialTotalCount = count($model);
-
+        $this->partialCounter = 0;
         foreach ($model as $item) {
             // increment the counter variable
             $this->partialCounter++;

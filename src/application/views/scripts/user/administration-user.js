@@ -32,6 +32,10 @@ User.AdministrationUserWindow = Ext.extend(Ext.grid.GridPanel, {
 					funcao:'_onGridRowDblClick',
 					acl:4,
 					tipo:'funcao'
+				},{
+					objeto:grid,
+					funcao:'_beforeHideCadastroUsuario',
+					acl:5
 				}]
 			});
 		}
@@ -45,6 +49,9 @@ User.AdministrationUserWindow = Ext.extend(Ext.grid.GridPanel, {
 			autoLoad: true,
 			autoDestroy: true,
 			remoteSort: true,
+			listeners:{
+				exception: Application.app.failHandler
+			},
 			sortInfo: {
 				field: 'id',
 				direction: 'ASC'
@@ -260,17 +267,26 @@ User.AdministrationUserWindow = Ext.extend(Ext.grid.GridPanel, {
 	_onCadastroUsuarioSalvarExcluir: function () {
 		this.store.reload();
 	},
+	_beforeHideCadastroUsuario: function(){
+		Ext.getCmp('btnNovoUsuario_AdministrationUserWindow').enable();
+		Ext.getCmp('btnExcluirUsuario_AdministrationUserWindow').enable();
+		Ext.getCmp('btnGrupoUsuario_AdministrationUserWindow').enable();
+	},
 	_newForm: function () {
-		//if (!this.window) {
-			this.window = new User.AdministrationUserForm({
-				renderTo: this.body,
-				listeners: {
-					scope: this,
-					salvar: this._onCadastroUsuarioSalvarExcluir,
-					excluir: this._onCadastroUsuarioSalvarExcluir
-				}
-			});
-		//}
+		Ext.getCmp('btnNovoUsuario_AdministrationUserWindow').disable();
+		Ext.getCmp('btnExcluirUsuario_AdministrationUserWindow').disable();
+		Ext.getCmp('btnGrupoUsuario_AdministrationUserWindow').disable();
+
+		this.window = new User.AdministrationUserForm({
+			renderTo: this.body,
+			scope: this,
+			listeners: {
+				scope: this,
+				salvar: this._onCadastroUsuarioSalvarExcluir,
+				excluir: this._onCadastroUsuarioSalvarExcluir,
+				beforehide: this._beforeHideCadastroUsuario
+			}
+		});
 		return this.window;
 	}
 });

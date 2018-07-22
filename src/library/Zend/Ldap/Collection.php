@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Ldap
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Collection.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Collection.php 17829 2009-08-26 15:07:10Z sgehrig $
  */
 
 /**
@@ -24,7 +24,7 @@
  *
  * @category   Zend
  * @package    Zend_Ldap
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Ldap_Collection implements Iterator, Countable
@@ -32,7 +32,7 @@ class Zend_Ldap_Collection implements Iterator, Countable
     /**
      * Iterator
      *
-     * @var Zend_Ldap_Collection_Iterator_Default
+     * @var Zend_Ldap_Collection_Iterator_Interface
      */
     protected $_iterator = null;
 
@@ -41,7 +41,7 @@ class Zend_Ldap_Collection implements Iterator, Countable
      *
      * @var integer
      */
-    protected $_current = -1;
+    protected $_currentNumber = -1;
 
     /**
      * Container for item caching to speed up multiple iterations
@@ -53,9 +53,9 @@ class Zend_Ldap_Collection implements Iterator, Countable
     /**
      * Constructor.
      *
-     * @param Zend_Ldap_Collection_Iterator_Default $iterator
+     * @param Zend_Ldap_Collection_Iterator_Interface $iterator
      */
-    public function __construct(Zend_Ldap_Collection_Iterator_Default $iterator)
+    public function __construct(Zend_Ldap_Collection_Iterator_Interface $iterator)
     {
         $this->_iterator = $iterator;
     }
@@ -96,22 +96,11 @@ class Zend_Ldap_Collection implements Iterator, Countable
      */
     public function getFirst()
     {
-        if ($this->count() > 0) {
+        if ($this->count()>0) {
             $this->rewind();
             return $this->current();
-        } else {
-            return null;
         }
-    }
-
-    /**
-     * Returns the underlying iterator
-     *
-     * @return Zend_Ldap_Collection_Iterator_Default
-     */
-    public function getInnerIterator()
-    {
-        return $this->_iterator;
+        else return null;
     }
 
     /**
@@ -129,26 +118,17 @@ class Zend_Ldap_Collection implements Iterator, Countable
      * Return the current result item
      * Implements Iterator
      *
-     * @return array|null
+     * @return array
      * @throws Zend_Ldap_Exception
      */
     public function current()
     {
-        if ($this->count() > 0) {
-            if ($this->_current < 0) {
-                $this->rewind();
-            }
-            if (!array_key_exists($this->_current, $this->_cache)) {
-                $current = $this->_iterator->current();
-                if ($current === null) {
-                    return null;
-                }
-                $this->_cache[$this->_current] = $this->_createEntry($current);
-            }
-            return $this->_cache[$this->_current];
-        } else {
-            return null;
+        if (!array_key_exists($this->_currentNumber, $this->_cache))
+        {
+            $this->_cache[$this->_currentNumber] =
+                $this->_createEntry($this->_iterator->current());
         }
+        return $this->_cache[$this->_currentNumber];
     }
 
     /**
@@ -163,38 +143,14 @@ class Zend_Ldap_Collection implements Iterator, Countable
     }
 
     /**
-     * Return the current result item DN
-     *
-     * @return string|null
-     */
-    public function dn()
-    {
-        if ($this->count() > 0) {
-            if ($this->_current < 0) {
-                $this->rewind();
-            }
-            return $this->_iterator->key();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Return the current result item key
+     * Return the result item key
      * Implements Iterator
      *
-     * @return int|null
+     * @return int
      */
     public function key()
     {
-        if ($this->count() > 0) {
-            if ($this->_current < 0) {
-                $this->rewind();
-            }
-            return $this->_current;
-        } else {
-            return null;
-        }
+        return $this->_currentNumber;
     }
 
     /**
@@ -206,7 +162,7 @@ class Zend_Ldap_Collection implements Iterator, Countable
     public function next()
     {
         $this->_iterator->next();
-        $this->_current++;
+        $this->_currentNumber++;
     }
 
     /**
@@ -218,7 +174,7 @@ class Zend_Ldap_Collection implements Iterator, Countable
     public function rewind()
     {
         $this->_iterator->rewind();
-        $this->_current = 0;
+        $this->_currentNumber = 0;
     }
 
     /**
@@ -230,7 +186,7 @@ class Zend_Ldap_Collection implements Iterator, Countable
      */
     public function valid()
     {
-        if (isset($this->_cache[$this->_current])) {
+        if (isset($this->_cache[$this->_currentNumber])) {
             return true;
         } else {
             return $this->_iterator->valid();

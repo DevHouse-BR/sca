@@ -59,3 +59,15 @@ ScaAccountConfig:
       id: 15
       nome_parametro: 'Extensões Permitidas'
       desc_parametro: 'Extensões de arquivos permitidos para Upload (separados por vírgula). Se estiver em branco, permite todas as extensões!'
+   AccountConfig_16:
+      id: 16
+      nome_parametro: 'Validação por MimeType'
+      desc_parametro: 'Requer a extensão FileInfo do PHP para verificar se os arquivos enviados são permitidos.'
+   AccountConfig_17:
+      id: 17
+      nome_parametro: 'Segurança de Conexão SMTP'
+      desc_parametro: 'Tipo da segurança requerida para conexão com o servidor SMTP'
+   AccountConfig_18:
+      id: 18
+      nome_parametro: 'Usar UploadProgress'
+      desc_parametro: 'Exibe uma barra de progresso do upload apenas se a extesão upload_progress do PHP estiver disponível.'

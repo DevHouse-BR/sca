@@ -15,9 +15,8 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Sqlsrv.php 25077 2012-11-06 20:06:24Z rob $
  */
 
 /**
@@ -34,7 +33,7 @@ require_once 'Zend/Db/Statement/Sqlsrv.php';
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
@@ -148,11 +147,11 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
             foreach ($this->_config['driver_options'] as $option => $value) {
                 // A value may be a constant.
                 if (is_string($value)) {
-                    $constantName = strtoupper($value);
-                    if (defined($constantName)) {
-                        $connectionInfo[$option] = constant($constantName);
-                    } else {
+                    $constantValue = @constant(strtoupper($value));
+                    if ($constantValue === null) {
                         $connectionInfo[$option] = $value;
+                    } else {
+                        $connectionInfo[$option] = $constantValue;
                     }
                 }
             }
@@ -437,13 +436,6 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
         $sql    = "exec sp_columns @table_name = " . $this->quoteIdentifier($tableName, true);
         $stmt   = $this->query($sql);
         $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
-        
-        // ZF-7698
-        $stmt->closeCursor();
-
-        if (count($result) == 0) {
-            return array();
-        }
 
         $owner           = 1;
         $table_name      = 2;
@@ -612,32 +604,23 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
             throw new Zend_Db_Adapter_Exception("LIMIT argument offset=$offset is not valid");
         }
 
-        if ($offset == 0) {
-            $sql = preg_replace('/^SELECT\s/i', 'SELECT TOP ' . $count . ' ', $sql);
-        } else {
-            $orderby = stristr($sql, 'ORDER BY');
+        $orderby = stristr($sql, 'ORDER BY');
+        if ($orderby !== false) {
+            $sort  = (stripos($orderby, ' desc') !== false) ? 'desc' : 'asc';
+            $order = str_ireplace('ORDER BY', '', $orderby);
+            $order = trim(preg_replace('/\bASC\b|\bDESC\b/i', '', $order));
+        }
 
-            if (!$orderby) {
-                $over = 'ORDER BY (SELECT 0)';
-            } else {
-                $over = preg_replace('/\"[^,]*\".\"([^,]*)\"/i', '"inner_tbl"."$1"', $orderby);
-            }
+        $sql = preg_replace('/^SELECT\s/i', 'SELECT TOP ' . ($count+$offset) . ' ', $sql);
 
-            // Remove ORDER BY clause from $sql
-            $sql = preg_replace('/\s+ORDER BY(.*)/', '', $sql);
-
-            // Add ORDER BY clause as an argument for ROW_NUMBER()
-            $sql = "SELECT ROW_NUMBER() OVER ($over) AS \"ZEND_DB_ROWNUM\", * FROM ($sql) AS inner_tbl";
-
-            $start = $offset + 1;
-
-            if ($count == PHP_INT_MAX) {
-                $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl WHERE \"ZEND_DB_ROWNUM\" >= $start";
-            }
-            else {
-                $end = $offset + $count;
-                $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl WHERE \"ZEND_DB_ROWNUM\" BETWEEN $start AND $end";
-            }
+        $sql = 'SELECT * FROM (SELECT TOP ' . $count . ' * FROM (' . $sql . ') AS inner_tbl';
+        if ($orderby !== false) {
+            $sql .= ' ORDER BY ' . $order . ' ';
+            $sql .= (stripos($sort, 'asc') !== false) ? 'DESC' : 'ASC';
+        }
+        $sql .= ') AS outer_tbl';
+        if ($orderby !== false) {
+            $sql .= ' ORDER BY ' . $order . ' ' . $sort;
         }
 
         return $sql;
@@ -667,10 +650,10 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
     public function getServerVersion()
     {
         $this->_connect();
-        $serverInfo = sqlsrv_server_info($this->_connection);
+        $version = sqlsrv_client_info($this->_connection);
 
-        if ($serverInfo !== false) {
-            return $serverInfo['SQLServerVersion'];
+        if ($version !== false) {
+            return $version['DriverVer'];
         }
 
         return null;

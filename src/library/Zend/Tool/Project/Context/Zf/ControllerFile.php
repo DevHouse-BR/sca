@@ -15,52 +15,63 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: ControllerFile.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: ControllerFile.php 16972 2009-07-22 18:44:24Z ralph $
  */
+
+/**
+ * @see Zend_Tool_Project_Context_Filesystem_File
+ */
+require_once 'Zend/Tool/Project/Context/Filesystem/File.php';
+
+/**
+ * @see Zend_CodeGenerator_Php_File
+ */
+require_once 'Zend/CodeGenerator/Php/File.php';
+
+/**
+ * @see Zend_Filter_Word_DashToCamelCase
+ */
+require_once 'Zend/Filter/Word/DashToCamelCase.php';
 
 /**
  * This class is the front most class for utilizing Zend_Tool_Project
  *
  * A profile is a hierarchical set of resources that keep track of
  * items within a specific project.
- *
+ * 
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Context_Filesystem_File
+class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Context_Filesystem_File 
 {
-
+    
     /**
      * @var string
      */
     protected $_controllerName = 'index';
-
-    /**
-     * @var string
-     */
-    protected $_moduleName = null;
-
+    
     /**
      * @var string
      */
     protected $_filesystemName = 'controllerName';
-
+    
     /**
      * init()
      *
+     * @return Zend_Tool_Project_Context_Zf_ControllerFile
      */
     public function init()
     {
         $this->_controllerName = $this->_resource->getAttribute('controllerName');
-        $this->_moduleName = $this->_resource->getAttribute('moduleName');
         $this->_filesystemName = ucfirst($this->_controllerName) . 'Controller.php';
         parent::init();
+        return $this;
     }
-
+    
     /**
      * getPersistentAttributes
      *
@@ -72,7 +83,7 @@ class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Cont
             'controllerName' => $this->getControllerName()
             );
     }
-
+    
     /**
      * getName()
      *
@@ -82,7 +93,7 @@ class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Cont
     {
         return 'ControllerFile';
     }
-
+    
     /**
      * getControllerName()
      *
@@ -92,7 +103,7 @@ class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Cont
     {
         return $this->_controllerName;
     }
-
+  
     /**
      * getContents()
      *
@@ -100,11 +111,11 @@ class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Cont
      */
     public function getContents()
     {
+
         $filter = new Zend_Filter_Word_DashToCamelCase();
         
-        $className = ($this->_moduleName) ? $filter->filter(ucfirst($this->_moduleName)) . '_' : '';
-        $className .= ucfirst($this->_controllerName) . 'Controller';
-
+        $className = $filter->filter($this->_controllerName) . 'Controller';
+        
         $codeGenFile = new Zend_CodeGenerator_Php_File(array(
             'fileName' => $this->getPath(),
             'classes' => array(
@@ -115,15 +126,15 @@ class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Cont
                         new Zend_CodeGenerator_Php_Method(array(
                             'name' => 'init',
                             'body' => '/* Initialize action controller here */',
-                            ))
-                        )
-                    ))
-                )
-            ));
-
+                        ))
+                    )
+                ))
+            )
+        ));
+        
 
         if ($className == 'ErrorController') {
-
+            
             $codeGenFile = new Zend_CodeGenerator_Php_File(array(
                 'fileName' => $this->getPath(),
                 'classes' => array(
@@ -136,65 +147,37 @@ class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Cont
                                 'body' => <<<EOS
 \$errors = \$this->_getParam('error_handler');
 
-if (!\$errors || !\$errors instanceof ArrayObject) {
-    \$this->view->message = 'You have reached the error page';
-    return;
-}
-
-switch (\$errors->type) {
-    case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ROUTE:
+switch (\$errors->type) { 
     case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_CONTROLLER:
     case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ACTION:
+
         // 404 error -- controller or action not found
         \$this->getResponse()->setHttpResponseCode(404);
-        \$priority = Zend_Log::NOTICE;
         \$this->view->message = 'Page not found';
         break;
     default:
-        // application error
+        // application error 
         \$this->getResponse()->setHttpResponseCode(500);
-        \$priority = Zend_Log::CRIT;
         \$this->view->message = 'Application error';
         break;
 }
 
-// Log exception, if logger available
-if (\$log = \$this->getLog()) {
-    \$log->log(\$this->view->message, \$priority, \$errors->exception);
-    \$log->log('Request Parameters', \$priority, \$errors->request->getParams());
-}
-
-// conditionally display exceptions
-if (\$this->getInvokeArg('displayExceptions') == true) {
-    \$this->view->exception = \$errors->exception;
-}
-
+\$this->view->exception = \$errors->exception;
 \$this->view->request   = \$errors->request;
 EOS
-                                )),
-                            new Zend_CodeGenerator_Php_Method(array(
-                                'name' => 'getLog',
-                                'body' => <<<EOS
-\$bootstrap = \$this->getInvokeArg('bootstrap');
-if (!\$bootstrap->hasResource('Log')) {
-    return false;
-}
-\$log = \$bootstrap->getResource('Log');
-return \$log;
-EOS
-                                )),
+                                ))
                             )
                         ))
                     )
                 ));
 
         }
-
+        
         // store the generator into the registry so that the addAction command can use the same object later
         Zend_CodeGenerator_Php_File::registerFileCodeGenerator($codeGenFile); // REQUIRES filename to be set
         return $codeGenFile->generate();
     }
-
+    
     /**
      * addAction()
      *
@@ -202,11 +185,11 @@ EOS
      */
     public function addAction($actionName)
     {
-        $classCodeGen = $this->getCodeGenerator();
-        $classCodeGen->setMethod(array('name' => $actionName . 'Action', 'body' => '        // action body here'));
-        file_put_contents($this->getPath(), $classCodeGen->generate());
+        $class = $this->getCodeGenerator();
+        $class->setMethod(array('name' => $actionName . 'Action', 'body' => '        // action body here'));
+        file_put_contents($this->getPath(), $codeGenFile->generate());
     }
-
+    
     /**
      * getCodeGenerator()
      *
@@ -219,5 +202,5 @@ EOS
         $class = array_shift($codeGenFileClasses);
         return $class;
     }
-
+    
 }

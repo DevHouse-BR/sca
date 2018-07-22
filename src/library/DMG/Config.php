@@ -24,4 +24,16 @@ class DMG_Config {
 			return $k['c_valor_parametro'];
 		}
 	}
+	
+	public static function getAccountCfgWithId($id, $account) {
+		$config = $query = Doctrine_Query::create()
+				->select('valor_parametro')
+				->from('ScaAccountRelationConfig c')
+				->where('c.sca_account_id = ?', $account)
+				->addWhere('c.sca_account_config_id = ?', $id);
+				
+		foreach ($query->execute(array(), Doctrine::HYDRATE_SCALAR) as $k) {
+			return $k['c_valor_parametro'];
+		}
+	}
 }

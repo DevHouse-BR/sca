@@ -27,7 +27,18 @@ class ConfigController extends Zend_Controller_Action {
 	
 	public function getmultipleAction () {
 		$data = array();
-		if (DMG_Acl::canAccess(1)) {
+
+		/*$canAccess = false;
+		
+		if(DMG_Acl::canAccess(1)){
+			$canAccess = true;
+		} else if(Zend_Auth::getInstance()->hasIdentity()) {
+			if(Zend_Auth::getInstance()->getIdentity()->tipo_usuario == 'P') {
+				$canAccess = true;
+			}
+		}
+
+		if($canAccess) {*/
 			$query = Doctrine_Query::create()
 				->select('id')
 				->addSelect('value')
@@ -37,13 +48,15 @@ class ConfigController extends Zend_Controller_Action {
 			foreach ($query->execute() as $k) {
 				$data[(int)$k->id] = $k->value;
 			}
-		}
+		//}
 		$this->_helper->json($data);
 	}
 	
 	public function getaccountcfgAction () {
 		$data = array();
-		if (DMG_Acl::canAccess(1)) {
+		$acess = false;
+
+		if(Zend_Auth::getInstance()->hasIdentity()) {
 			$query = Doctrine_Query::create()
 				->select('sca_account_config_id')
 				->addSelect('valor_parametro')

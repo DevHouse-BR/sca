@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Apc.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Apc.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,21 +25,20 @@
  * @package     Doctrine
  * @subpackage  Cache
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 5798 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
- * @author      Jonathan H. Wage <jonwage@gmail.com>
  */
 class Doctrine_Cache_Apc extends Doctrine_Cache_Driver
 {
     /**
      * constructor
-     *
+     * 
      * @param array $options    associative array of cache driver options
      */
     public function __construct($options = array())
-    {
+    {      
         if ( ! extension_loaded('apc')) {
             throw new Doctrine_Cache_Exception('The apc extension must be loaded for using this backend !');
         }
@@ -47,69 +46,53 @@ class Doctrine_Cache_Apc extends Doctrine_Cache_Driver
     }
 
     /**
-     * Fetch a cache record from this cache driver instance
-     *
+     * Test if a cache is available for the given id and (if yes) return it (false else).
+     * 
      * @param string $id cache id
      * @param boolean $testCacheValidity        if set to false, the cache validity won't be tested
-     * @return mixed  Returns either the cached data or false
+     * @return mixed The stored variable on success. FALSE on failure.
      */
-    protected function _doFetch($id, $testCacheValidity = true)
+    public function fetch($id, $testCacheValidity = true) 
     {
-        return apc_fetch($id);
+        $results = apc_fetch($this->_getKey($id));
+        $results = (array) $results;
+        return $results[0];
     }
 
     /**
-     * Test if a cache record exists for the passed id
+     * Test if a cache is available or not (for the given id)
      *
      * @param string $id cache id
      * @return mixed false (a cache is not available) or "last modified" timestamp (int) of the available cache record
      */
-    protected function _doContains($id)
+    public function contains($id) 
     {
-        $found = false;
-        apc_fetch($id, $found);
-        return $found;
+        return apc_fetch($this->_getKey($id)) === false ? false : true;
     }
 
     /**
-     * Save a cache record directly. This method is implemented by the cache
-     * drivers and used in Doctrine_Cache_Driver::save()
+     * Save some string datas into a cache record
      *
-     * @param string $id        cache id
+     * Note : $data is always saved as a string
+     *
      * @param string $data      data to cache
+     * @param string $id        cache id
      * @param int $lifeTime     if != false, set a specific lifetime for this cache record (null => infinite lifeTime)
      * @return boolean true if no problem
      */
-    protected function _doSave($id, $data, $lifeTime = false)
+    public function save($id, $data, $lifeTime = false)
     {
-        return apc_store($id, $data, $lifeTime);
+        return (bool) apc_store($this->_getKey($id), $data, $lifeTime);
     }
 
     /**
-     * Remove a cache record directly. This method is implemented by the cache
-     * drivers and used in Doctrine_Cache_Driver::delete()
-     *
+     * Remove a cache record
+     * 
      * @param string $id cache id
      * @return boolean true if no problem
      */
-    protected function _doDelete($id)
+    public function delete($id) 
     {
-        return apc_delete($id);
-    }
-
-    /**
-     * Fetch an array of all keys stored in cache
-     *
-     * @return array Returns the array of cache keys
-     */
-    protected function _getCacheKeys()
-    {
-        $ci = apc_cache_info('user');
-        $keys = array();
-
-        foreach ($ci['cache_list'] as $entry) {
-          $keys[] = $entry['info'];
-        }
-        return $keys;
+        return apc_delete($this->_getKey($id));
     }
 }

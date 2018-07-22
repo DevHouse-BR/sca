@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Condition.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Condition.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,9 +25,9 @@
  * @package     Doctrine
  * @subpackage  Query
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 5798 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  */
 abstract class Doctrine_Query_Condition extends Doctrine_Query_Part
@@ -62,8 +62,6 @@ abstract class Doctrine_Query_Condition extends Doctrine_Query_Part
                 $test = $this->_tokenizer->sqlExplode($parts[$i]);
 
                 if (count($test) == 3 && strtoupper($test[1]) == 'BETWEEN') {
-                    $tmp[] = $parts[$i] . ' AND ' . $parts[++$i];
-                } else if (count($test) == 4 && strtoupper($test[1]) == 'NOT' && strtoupper($test[2]) == 'BETWEEN') {
                     $tmp[] = $parts[$i] . ' AND ' . $parts[++$i];
                 } else {
                     $tmp[] = $parts[$i];
@@ -125,7 +123,7 @@ abstract class Doctrine_Query_Condition extends Doctrine_Query_Part
                     $field     = array_pop($a);
                 	$reference = implode('.', $a);
                     $value     = $this->query->getConnection()->quoteIdentifier(
-                        $this->query->getSqlTableAlias($reference). '.' . $field
+                        $this->query->getTableAlias($reference). '.' . $field
                     );
                 }
             }

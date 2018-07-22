@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FormImage.php 24750 2012-05-05 01:24:21Z adamlundrigan $
+ * @version    $Id: FormImage.php 16541 2009-07-07 06:59:03Z bkarwin $
  */
 
 
@@ -33,7 +33,7 @@ require_once 'Zend/View/Helper/FormElement.php';
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_FormImage extends Zend_View_Helper_FormElement
@@ -79,6 +79,12 @@ class Zend_View_Helper_FormImage extends Zend_View_Helper_FormElement
         if ($disable) {
             $disabled = ' disabled="disabled"';
         }
+        
+        // XHTML or HTML end tag?
+        $endTag = ' />';
+        if (($this->view instanceof Zend_View_Abstract) && !$this->view->doctype()->isXhtml()) {
+            $endTag= '>';
+        }
 
         // build the element
         $xhtml = '<input type="image"'
@@ -87,8 +93,8 @@ class Zend_View_Helper_FormImage extends Zend_View_Helper_FormElement
                 . $src
                 . $value
                 . $disabled
-                . $this->_htmlAttribs($attribs)
-                . $this->getClosingBracket();
+                . $this->_htmlAttribs($attribs) 
+                . $endTag;
 
         return $xhtml;
     }

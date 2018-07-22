@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FormPassword.php 24750 2012-05-05 01:24:21Z adamlundrigan $
+ * @version    $Id: FormPassword.php 16541 2009-07-07 06:59:03Z bkarwin $
  */
 
 
@@ -33,7 +33,7 @@ require_once 'Zend/View/Helper/FormElement.php';
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_FormPassword extends Zend_View_Helper_FormElement
@@ -73,6 +73,12 @@ class Zend_View_Helper_FormPassword extends Zend_View_Helper_FormElement
             }
             unset($attribs['renderPassword']);
         }
+        
+        // XHTML or HTML end tag?
+        $endTag = ' />';
+        if (($this->view instanceof Zend_View_Abstract) && !$this->view->doctype()->isXhtml()) {
+            $endTag= '>';
+        }
 
         // render the element
         $xhtml = '<input type="password"'
@@ -81,7 +87,7 @@ class Zend_View_Helper_FormPassword extends Zend_View_Helper_FormElement
                 . $valueString
                 . $disabled
                 . $this->_htmlAttribs($attribs)
-                . $this->getClosingBracket();
+                . $endTag;
 
         return $xhtml;
     }

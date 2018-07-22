@@ -69,6 +69,8 @@ Application.AccessController = function(){
  					if(args.items[i].action) action = args.items[i].action;
  					if(args.items[i].tipo == "componente"){
  						var el = Ext.getCmp(args.items[i].objeto);
+						if(!el)
+							alert("EL invalido!");
  	 					switch (action) {
  							case 'hide':
  								el.hide();
@@ -77,8 +79,16 @@ Application.AccessController = function(){
  								el.disable();
  								break;
  						}
- 					}
- 					else if(args.items[i].tipo == "coluna"){
+						if(args.items[i].setHeightZero==true){
+							el.height = 0;
+						}
+						if(args.items[i].setFlexZero==true){
+							el.flex = 0;
+						}
+						if(args.items[i].setWidthZero==true){
+							el.width = 0;
+						}
+ 					} else if(args.items[i].tipo == "coluna"){
 						if(args.items[i].objeto.removeColumnMark != true) {
 							args.items[i].objeto.removeColumnMark = true;
  							var config = args.items[i].objeto.config;
@@ -86,13 +96,13 @@ Application.AccessController = function(){
  							config.splice(args.items[i].columnIndex, 1);
  							args.items[i].objeto.setConfig(config);
 						}
- 					}
- 					else if(args.items[i].tipo == "funcao"){
+ 					} else if(args.items[i].tipo == "funcao"){
  						args.items[i].objeto[args.items[i].funcao] = function(){};
- 					}
- 					else if(args.items[i].tipo == "execute"){
+ 					} else if(args.items[i].tipo == "execute"){
  						args.items[i].funcao(args.items[i].objeto);
- 					}
+ 					} else if(args.items[i].tipo == "title"){ //caso n exista a permicao muda-se o titulo
+						args.items[i].objeto.title = args.items[i].title;
+					}
  				}
  			} 			
  		},

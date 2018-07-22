@@ -24,7 +24,7 @@ ScaMensagens:
     sca_postagens_id:
       type: integer(4)
       unsigned: false
-      notnull: true
+      notnull: false
       primary: false
     data_mensagem:
       type: timestamp(25)
@@ -46,7 +46,7 @@ ScaMensagens:
       notnull: false
       primary: false
     corpo:
-      type: string(1000)
+      type: string
       fixed: false
       notnull: false
       primary: false

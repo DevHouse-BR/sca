@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,7 +25,7 @@
  * @package     Doctrine
  * @subpackage  I18n
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision$
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
@@ -34,18 +34,14 @@ class Doctrine_I18n extends Doctrine_Record_Generator
 {
     protected $_options = array(
                             'className'     => '%CLASS%Translation',
-                            'tableName'     => '%TABLE%_translation',
                             'fields'        => array(),
                             'generateFiles' => false,
                             'table'         => false,
                             'pluginTable'   => false,
                             'children'      => array(),
-                            'i18nField'     => 'lang',
                             'type'          => 'string',
                             'length'        => 2,
-                            'options'       => array(),
-                            'cascadeDelete' => true,
-                            'appLevelDelete'=> false
+                            'options'       => array()
                             );
 
     /**
@@ -95,15 +91,13 @@ class Doctrine_I18n extends Doctrine_Record_Generator
 
         $this->hasColumns($columns);
 
-        $defaultOptions = array(
-            'fixed' => true,
-            'primary' => true
-        );
-        $options = array_merge($defaultOptions, $this->_options['options']);
+        $options = $this->_options['options'];
+        $options['fixed'] = true;
+        $options['primary'] = true;
 
-        $this->hasColumn($this->_options['i18nField'], $this->_options['type'], $this->_options['length'], $options);
+        $this->hasColumn('lang', $this->_options['type'], $this->_options['length'], $options);
 
-        $this->bindQueryParts(array('indexBy' => $this->_options['i18nField']));
+        $this->bindQueryParts(array('indexBy' => 'lang'));
  
         // Rewrite any relations to our original table
         $originalName = $this->_options['table']->getClassnameToReturn();
@@ -119,7 +113,7 @@ class Doctrine_I18n extends Doctrine_Record_Generator
                     $this->_table->getRelationParser()->bind($table, $relation);
         
                     // now try to get the reverse relation, to rewrite it
-                    $rp = Doctrine_Core::getTable($table)->getRelationParser();
+                    $rp = Doctrine::getTable($table)->getRelationParser();
                     $others = $rp->getPendingRelation($originalName);
                     if (isset($others)) {
                         $others['class'] = $this->_table->getClassnameToReturn();

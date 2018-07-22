@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -26,7 +26,7 @@
  *
  * @package     Doctrine
  * @subpackage  Export
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @version     $Revision: 1838 $
  * @author      Nicolas Bérard-Nault <nicobn@gmail.com>
@@ -39,17 +39,15 @@ class Doctrine_Export_Schema
      * 
      * Build schema array that can be dumped to file
      *
-     * @param string $directory  The directory of models to build the schema from
-     * @param array $models      The array of model names to build the schema for
-     * @param integer $modelLoading The model loading strategy to use to load the models from the passed directory
+     * @param string $directory 
      * @return void
      */
-    public function buildSchema($directory = null, $models = array(), $modelLoading = null)
+    public function buildSchema($directory = null, $models = array())
     {
         if ($directory !== null) {
-            $loadedModels = Doctrine_Core::filterInvalidModels(Doctrine_Core::loadModels($directory, $modelLoading));
+            $loadedModels = Doctrine::filterInvalidModels(Doctrine::loadModels($directory));
         } else {
-            $loadedModels = Doctrine_Core::getLoadedModels();
+            $loadedModels = Doctrine::getLoadedModels();
         }
         
         $array = array();
@@ -66,12 +64,11 @@ class Doctrine_Export_Schema
                 continue;
             }
 
-            $recordTable = Doctrine_Core::getTable($className);
+            $recordTable = Doctrine::getTable($className);
             
             $data = $recordTable->getExportableFormat();
             
             $table = array();
-            $table['connection'] = $recordTable->getConnection()->getName();
             $remove = array('ptype', 'ntype', 'alltypes');
             // Fix explicit length in schema, concat it to type in this format: type(length)
             foreach ($data['columns'] AS $name => $column) {
@@ -119,7 +116,7 @@ class Doctrine_Export_Schema
                 
                 if ($relationData['type'] === Doctrine_Relation::ONE) {
                     $table['relations'][$relationKey]['type'] = 'one';
-                } else if ($relationData['type'] === Doctrine_Relation::MANY) {
+                } else if($relationData['type'] === Doctrine_Relation::MANY) {
                     $table['relations'][$relationKey]['type'] = 'many';
                 } else {
                     $table['relations'][$relationKey]['type'] = 'one';
@@ -137,13 +134,12 @@ class Doctrine_Export_Schema
      *
      * @param  string $schema 
      * @param  string $directory 
-     * @param string $string of data in the specified format
-     * @param integer $modelLoading The model loading strategy to use to load the models from the passed directory
+     * @return string $string of data in the specified format
      * @return void
      */
-    public function exportSchema($schema, $format = 'yml', $directory = null, $models = array(), $modelLoading = null)
+    public function exportSchema($schema, $format = 'yml', $directory = null, $models = array())
     {
-        $array = $this->buildSchema($directory, $models, $modelLoading);
+        $array = $this->buildSchema($directory, $models);
         
         if (is_dir($schema)) {
           $schema = $schema . DIRECTORY_SEPARATOR . 'schema.' . $format;

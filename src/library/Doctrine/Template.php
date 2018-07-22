@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -26,7 +26,7 @@
  * @package     Doctrine
  * @subpackage  Template
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision$
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
@@ -121,16 +121,6 @@ abstract class Doctrine_Template extends Doctrine_Record_Abstract
     public function getPlugin()
     {
         return $this->_plugin;
-    }
-
-    /**
-     * Check if this template has a generator plugin
-     *
-     * @return boolean
-     */
-    public function hasPlugin()
-    {
-        return isset($this->_plugin) ? true : false;
     }
 
     /**

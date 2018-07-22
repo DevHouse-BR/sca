@@ -70,6 +70,9 @@ Groups.AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 			autoLoad: true,
 			autoDestroy: true,
 			remoteSort: true,
+			listeners:{
+				exception: Application.app.failHandler
+			},
 			sortInfo: {
 				field: 'id',
 				direction: 'ASC'
@@ -208,7 +211,7 @@ Groups.AdministrationGroupWindow = Ext.extend(Ext.grid.GridPanel, {
 						var c = Ext.decode(a.responseText);
 					} catch (e) {};
 					this.store.reload();
-					if (c.sucess == false) {
+					if (c.success == false) {
 						Application.app.showMessageBox({title: Application.app.language('grid.form.alert.title'), msg: c.errormsg});
 						return;
 					}

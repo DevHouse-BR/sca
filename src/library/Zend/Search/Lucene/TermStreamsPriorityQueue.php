@@ -15,32 +15,35 @@
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Index
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: TermStreamsPriorityQueue.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: TermStreamsPriorityQueue.php 16971 2009-07-22 18:05:45Z mikaelkael $
  */
 
 /** Zend_Search_Lucene_Index_TermsStream_Interface */
 require_once 'Zend/Search/Lucene/Index/TermsStream/Interface.php';
+
+/** Zend_Search_Lucene_Index_TermsPriorityQueue */
+require_once 'Zend/Search/Lucene/Index/TermsPriorityQueue.php';
 
 
 /**
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Index
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_Index_TermsStream_Interface
 {
-    /**
-     * Array of term streams (Zend_Search_Lucene_Index_TermsStream_Interface objects)
-     *
-     * @var array
-     */
-    protected $_termStreams;
+	/**
+	 * Array of term streams (Zend_Search_Lucene_Index_TermsStream_Interface objects)
+	 *
+	 * @var array
+	 */
+	protected $_termStreams;
 
-    /**
+	/**
      * Terms stream queue
      *
      * @var Zend_Search_Lucene_Index_TermsPriorityQueue
@@ -60,21 +63,18 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
      *
      * @param array $termStreams  array of term streams (Zend_Search_Lucene_Index_TermsStream_Interface objects)
      */
-    public function __construct(array $termStreams)
-    {
-        $this->_termStreams = $termStreams;
+	public function __construct(array $termStreams)
+	{
+		$this->_termStreams = $termStreams;
 
-        $this->resetTermsStream();
-    }
+		$this->resetTermsStream();
+	}
 
-    /**
+	/**
      * Reset terms stream.
      */
     public function resetTermsStream()
     {
-        /** Zend_Search_Lucene_Index_TermsPriorityQueue */
-        require_once 'Zend/Search/Lucene/Index/TermsPriorityQueue.php';
-
         $this->_termsStreamQueue = new Zend_Search_Lucene_Index_TermsPriorityQueue();
 
         foreach ($this->_termStreams as $termStream) {
@@ -90,7 +90,7 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
     }
 
     /**
-     * Skip terms stream up to the specified term preffix.
+     * Skip terms stream up to specified term preffix.
      *
      * Prefix contains fully specified field info and portion of searched term
      *
@@ -98,9 +98,13 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
      */
     public function skipTo(Zend_Search_Lucene_Index_Term $prefix)
     {
-        $this->_termsStreamQueue = new Zend_Search_Lucene_Index_TermsPriorityQueue();
+        $termStreams = array();
 
-        foreach ($this->_termStreams as $termStream) {
+        while (($termStream = $this->_termsStreamQueue->pop()) !== null) {
+            $termStreams[] = $termStream;
+        }
+
+        foreach ($termStreams as $termStream) {
             $termStream->skipTo($prefix);
 
             if ($termStream->currentTerm() !== null) {
@@ -108,7 +112,7 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
             }
         }
 
-        return $this->nextTerm();
+        $this->nextTerm();
     }
 
     /**

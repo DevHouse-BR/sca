@@ -34,6 +34,9 @@ class IndexController extends Zend_Controller_Action
 		if (DMG_Acl::canAccess(2)) {
 			$this->js[] = 'settings/administration-settings-form.js';
 			$this->js[] = 'settings/administration-settings-upload-form.js';
+			$this->js[] = 'settings/administration-settings-upmaxform.js';
+			$this->js[] = 'settings/administration-settings-smtpsecurity.js';
+			$this->js[] = 'settings/administration-settings-yesno.js';
 		}
 		if (DMG_Acl::canAccess(3)) {
 			$this->js[] = 'user/administration-user.js';
@@ -73,16 +76,22 @@ class IndexController extends Zend_Controller_Action
 		}
 		if (DMG_Acl::canAccess(21)) {
 			$this->js[] = 'postagens/controle-postagens.js';
+			$this->js[] = 'postagens/controle-view-postagem.js';
 		}
-    	if (DMG_Acl::canAccess(22)) {
+	    	if (DMG_Acl::canAccess(22)) {
 			$this->js[] = 'postagens/controle-postagens-form.js';
 		}
-		if (DMG_Acl::canAccess(36)) {
-			//$this->js[] = 'index/reports.js';
+		if (DMG_Acl::canAccess(24)){
+			$this->js[] = 'mensagens/controle-mensagens.js';
+		}
+		if (DMG_Acl::canAccess(27)) {
+			$this->js[] = 'index/extplorer.js';
 		}
     }
 
     public function indexAction(){
+	$this->setCockiePlace();
+
     	$this->view->logado = $logado = Zend_Auth::getInstance()->hasIdentity();
     	
     	if(APPLICATION_ENV == "development"){
@@ -121,13 +130,29 @@ class IndexController extends Zend_Controller_Action
     	if($logado){
     		$this->view->account = Zend_Auth::getInstance()->getIdentity()->sca_account_id;
     		$this->view->token = DMG_Asc2Hex::toHex(Zend_Auth::getInstance()->getIdentity()->ScaAccount->nome_account);
+		$this->view->footerMsg = DMG_Config::getAccountCfgWithId(5, Zend_Auth::getInstance()->getIdentity()->ScaAccount->id);
     	}
     	else{
+			$token = Zend_Controller_Action::_getParam('token');
+			$account = DMG_Asc2Hex::toAsc($token);
+			$account = Doctrine::getTable('ScaAccount')->findByNomeAccount($account);
+			$this->view->account = $account[0]->id;
+	
+			$this->view->logoPath = DMG_Config::getAccountCfgWithId(2, $account[0]->id);
+			$this->view->copyright = DMG_Config::get(3);
+			$this->view->mainTitle = DMG_Config::get(2);
+			$this->view->welcomeMsg = DMG_Config::getAccountCfgWithId(4, $account[0]->id);
+
 	    	$token = Zend_Controller_Action::_getParam('token');
+
 	    	$account = DMG_Asc2Hex::toAsc($token);
 	    	$account = Doctrine::getTable('ScaAccount')->findByNomeAccount($account);
+
 	    	$this->view->account = $account[0]->id;
+
     	}
+
+	$this->setRememberThings();
 
     	//436F6E74612050616472C3A36F
         
@@ -232,15 +257,27 @@ class IndexController extends Zend_Controller_Action
 			return;
 		} 
 
-		$user = Doctrine::getTable('ScmUser')->find(Zend_Auth::getInstance()->getIdentity()->id);
+		if($this->getRequest()->getParam('remember_user') == 'on'){
+			$usr = $this->getRequest()->getParam('login_usuario');
+			setcookie("remember_usr_sca_sist", DMG_Asc2Hex::toHex($usr), time()+1300000, "/"); //pouco menos de um ano
+		} else {        
+			setcookie("remember_usr_sca_sist", '', time()+1300000, '/');
+		} 
+		if($this->getRequest()->getParam('remember_pass') == 'on'){
+			$pas = $this->getRequest()->getParam('senha_usuario');
+			setcookie("remember_pas_sca_sist", DMG_Asc2Hex::toHex($pas), time()+1300000, "/"); //pouco menos de um ano
+		} else {       
+			setcookie("remember_pas_sca_sist", '', time()+1300000, '/');
+		}
+	
 		$this->_helper->json(array('success' => true, 'user' => array(
-			'id' => $user->id,
-			'nome_usuario' => $user->nome_usuario
+			'id' => Zend_Auth::getInstance()->getIdentity()->id,
+			'nome_usuario' => Zend_Auth::getInstance()->getIdentity()->nome_usuario
 		)));
 	}
 	
 	public function logoutAction () {
-		Zend_Auth::getInstance()->clearIdentity();	
+		Zend_Auth::getInstance()->clearIdentity();
 		$this->_helper->_redirector->gotoSimple('', '', null, array('login' => $this->getRequest()->getParam('token')));	
 	}
 	
@@ -266,12 +303,16 @@ class IndexController extends Zend_Controller_Action
 				$obj = Doctrine::getTable('ScmUser')->find(Zend_Auth::getInstance()->getIdentity()->id);
 				if ($obj) {
 					$obj->nome_usuario = $this->getRequest()->getParam('nome_usuario');
-					$obj->login_usuario = $this->getRequest()->getParam('login_usuario');
 					$obj->email = $this->getRequest()->getParam('email');
 					$obj->idioma_usuario = (strlen($this->getRequest()->getParam('idioma_usuario')) ? $this->getRequest()->getParam('idioma_usuario') : null);
 					$validation = $this->saveValidate($obj, Zend_Auth::getInstance()->getIdentity()->id);
 					$pass1 = $this->getRequest()->getParam('password_');
 					$pass2 = $this->getRequest()->getParam('password2_');
+
+					if( !($pass1 or $pass2) ){
+						$pass1 = $this->getRequest()->getParam('password_cli');
+						$pass2 = $this->getRequest()->getParam('password2_cli');
+					}
 
 					if( ($pass1 == $pass2) and $pass1){
 						$obj->senha_usuario=$pass1;
@@ -310,9 +351,6 @@ class IndexController extends Zend_Controller_Action
 		if (!$validator->isValid($obj->email)) {
 			$errors['email'] = DMG_Translate::_('administration.user.form.email.invalidsyntax');
 		}
-		if (!strlen($this->getRequest()->getParam('login_usuario'))) {
-			$errors['login_usuario'] = DMG_Translate::_('administration.user.form.login_usuario.validation');
-		}
 		// valida idioma
 		if ($id == 0) {
 			if (!strlen($this->getRequest()->getParam('senha_usuario'))) {
@@ -340,5 +378,49 @@ class IndexController extends Zend_Controller_Action
 		}
 		$this->_helper->json(array('success' => true,'data'=> $data));
 	}
+
+	private function setCockiePlace(){
+		$tokenData = $this->getRequest()->getParam('token');		
+
+		if($tokenData){
+			return;
+		}       
+		
+		if(Zend_Auth::getInstance()->hasIdentity()){
+			$tokenData = DMG_Asc2Hex::toHex(Zend_Auth::getInstance()->getIdentity()->ScaAccount->nome_account);
+		}  
+		
+		if($tokenData) {
+			setcookie("portalToken", $tokenData, time()+1300000); //pouco menos de um ano
+		} else if($_COOKIE["portalToken"]) {
+			$this->_helper->_redirector->gotoSimple('', '', null, array('login' => $_COOKIE["portalToken"]));
+		}
+	}
+
+	private function setRememberThings(){
+		if(!Zend_Auth::getInstance()->hasIdentity()) { //nao esta logado
+			$user = '';
+			$pass = '';
+			if(isset($_COOKIE['remember_usr_sca_sist'])){
+				$user = $_COOKIE["remember_usr_sca_sist"];
+			}
+			if(isset($_COOKIE['remember_pas_sca_sist'])){
+				$pass = $_COOKIE["remember_pas_sca_sist"];
+			}
+			if($user){  //foi possivel regatar as informacoes de login
+
+				$user = DMG_Asc2Hex::toAsc($user);
+				$this->view->enableUsrRemember = $user;
+			
+				if($pass){
+					$pass = DMG_Asc2Hex::toAsc($pass);
+					$this->view->enablePassRemember = $pass;
+				}
+			}
+		}
+	}
 }
+
+
+
 

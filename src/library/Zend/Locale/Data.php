@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Locale
  * @subpackage Data
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Data.php 24766 2012-05-06 02:51:42Z adamlundrigan $
+ * @version    $Id: Data.php 16561 2009-07-08 15:05:06Z thomas $
  */
 
 /**
@@ -31,7 +31,7 @@ require_once 'Zend/Locale.php';
  * @category   Zend
  * @package    Zend_Locale
  * @subpackage Data
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Locale_Data
@@ -59,13 +59,6 @@ class Zend_Locale_Data
      * @access private
      */
     private static $_cache = null;
-
-    /**
-     * Internal value to remember if cache supports tags
-     *
-     * @var boolean
-     */
-    private static $_cacheTags = false;
 
     /**
      * Internal option, cache disabled
@@ -361,7 +354,7 @@ class Zend_Locale_Data
                 break;
 
             case 'type':
-                if (empty($value)) {
+                if (empty($type)) {
                     $temp = self::_getFile($locale, '/ldml/localeDisplayNames/types/type', 'type');
                 } else {
                     if (($value == 'calendar') or
@@ -908,11 +901,7 @@ class Zend_Locale_Data
         }
 
         if (isset(self::$_cache)) {
-            if (self::$_cacheTags) {
-                self::$_cache->save( serialize($temp), $id, array('Zend_Locale'));
-            } else {
-                self::$_cache->save( serialize($temp), $id);
-            }
+            self::$_cache->save( serialize($temp), $id);
         }
 
         return $temp;
@@ -1137,10 +1126,6 @@ class Zend_Locale_Data
                     $value = array("gregorian", $temp);
                 }
                 $temp = self::_getFile($locale, '/ldml/dates/calendars/calendar[@type=\'' . $value[0] . '\']/fields/field/relative[@type=\'' . $value[1] . '\']', '', $value[1]);
-                break;
-
-            case 'defaultnumberingsystem':
-                $temp = self::_getFile($locale, '/ldml/numbers/defaultNumberingSystem', '', 'default');
                 break;
 
             case 'decimalnumber':
@@ -1419,11 +1404,7 @@ class Zend_Locale_Data
             $temp = current($temp);
         }
         if (isset(self::$_cache)) {
-            if (self::$_cacheTags) {
-                self::$_cache->save( serialize($temp), $id, array('Zend_Locale'));
-            } else {
-                self::$_cache->save( serialize($temp), $id);
-            }
+            self::$_cache->save( serialize($temp), $id);
         }
 
         return $temp;
@@ -1447,7 +1428,6 @@ class Zend_Locale_Data
     public static function setCache(Zend_Cache_Core $cache)
     {
         self::$_cache = $cache;
-        self::_getTagSupportForCache();
     }
 
     /**
@@ -1481,11 +1461,7 @@ class Zend_Locale_Data
      */
     public static function clearCache()
     {
-        if (self::$_cacheTags) {
-            self::$_cache->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array('Zend_Locale'));
-        } else {
-            self::$_cache->clean(Zend_Cache::CLEANING_MODE_ALL);
-        }
+        self::$_cache->clean();
     }
 
     /**
@@ -1496,23 +1472,5 @@ class Zend_Locale_Data
     public static function disableCache($flag)
     {
         self::$_cacheDisabled = (boolean) $flag;
-    }
-
-    /**
-     * Internal method to check if the given cache supports tags
-     *
-     * @param Zend_Cache $cache
-     */
-    private static function _getTagSupportForCache()
-    {
-        $backend = self::$_cache->getBackend();
-        if ($backend instanceof Zend_Cache_Backend_ExtendedInterface) {
-            $cacheOptions = $backend->getCapabilities();
-            self::$_cacheTags = $cacheOptions['tags'];
-        } else {
-            self::$_cacheTags = false;
-        }
-
-        return self::$_cacheTags;
     }
 }

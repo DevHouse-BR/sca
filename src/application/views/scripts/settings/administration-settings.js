@@ -33,6 +33,12 @@ Settings.AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 			autoLoad: true,
 			autoDestroy: true,
 			remoteSort: true,
+			listeners:{
+				exception: Application.app.failHandler,
+				load: function (store, records, options){
+					Application.app.reloadAccountConfig();
+				} 
+			},
 			sortInfo: {
 				field: 'id',
 				direction: 'ASC'
@@ -44,7 +50,7 @@ Settings.AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 				{name: 'id', type: 'int'},
 				{name: 'nome', type: 'string'},
 				{name: 'desc', type: 'string'},
-				{name: 'parm', type: 'string'},
+				{name: 'parm', type: 'string'}
 			]
 		});
 		var paginator = new Ext.PagingToolbar({
@@ -129,7 +135,24 @@ Settings.AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 		if(id == 2){
 			this.newUpForm();
 			this.upWindow.show();
-		} else {
+		} 
+		else if(id == 14){
+			this.newUpMaxForm();
+			this.upMaxWindow.setid(id);
+			this.upMaxWindow.show();
+		}
+		else if(id == 17){
+			this.smtpSSLForm();
+			this.smtpSSLWindow.setid(id);
+			this.smtpSSLWindow.show();
+		} 
+		else if(id == 9 || id == 16 || id == 18){
+			this.newYesNoForm();
+			this.yesNoWindow.setid(id);
+			this.yesNoWindow.show();
+	
+		}
+		else {
 			this._newForm();
 			this.window.setid(id);
 			this.window.show();
@@ -145,6 +168,37 @@ Settings.AdministrationSettings = Ext.extend(Ext.grid.GridPanel, {
 			});
 		}
 		return this.upWindow;
+	},
+	newUpMaxForm: function () {
+		if(!this.upMaxWindow) {
+			this.upMaxWindow = new Settings.AdministrationSettingsUpMaxForm({
+				renderTo: this.body,
+				listeners: {
+					scope: this,
+					salvar: this._onCadastroUsuarioSalvarExcluir
+				}
+			});
+		}
+		return this.upMaxWindow;
+	},
+	newYesNoForm: function () {
+		if(!this.yesNoWindow){
+			this.yesNoWindow = new Settings.AdministrationSettingsYesNoForm({
+				renderTo: this.body,
+			});
+		}
+	},
+	smtpSSLForm: function () {
+		if(!this.smtpSSLWindow) {
+			this.smtpSSLWindow = new Settings.AdministrationSettingsSmtpSSLForm({
+				renderTo: this.body,
+				listeners: {
+					scope: this,
+					salvar: this._onCadastroUsuarioSalvarExcluir
+				}
+			});
+		}
+		return this.upMaxWindow;
 	},
 	_newForm: function () {
 		if (!this.window) {

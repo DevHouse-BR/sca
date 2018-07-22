@@ -14,15 +14,15 @@
  *
  * @category   Zend
  * @package    Zend_Feed_Reader
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: EntryAbstract.php 25275 2013-03-06 09:55:33Z frosch $
+ * @version    $Id: EntryAbstract.php 16966 2009-07-22 15:22:18Z padraic $
  */
 
 /**
  * @category   Zend
  * @package    Zend_Feed_Reader
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Feed_Reader_EntryAbstract
@@ -72,9 +72,9 @@ abstract class Zend_Feed_Reader_EntryAbstract
     /**
      * Constructor
      *
-     * @param  DOMElement  $entry
-     * @param  int         $entryKey
-     * @param  string|null $type
+     * @param  DOMElement $entry
+     * @param  int $entryKey
+     * @param  string $type
      * @return void
      */
     public function __construct(DOMElement $entry, $entryKey, $type = null)
@@ -85,9 +85,7 @@ abstract class Zend_Feed_Reader_EntryAbstract
         if ($type !== null) {
             $this->_data['type'] = $type;
         } else {
-            $this->_data['type'] = Zend_Feed_Reader::detectType(
-                $this->_domDocument
-            );
+            $this->_data['type'] = Zend_Feed_Reader::detectType($feed);
         }
         $this->_loadExtensions();
     }
@@ -120,9 +118,6 @@ abstract class Zend_Feed_Reader_EntryAbstract
     public function getEncoding()
     {
         $assumed = $this->getDomDocument()->encoding;
-        if (empty($assumed)) {
-            $assumed = 'UTF-8';
-        }
         return $assumed;
     }
 
@@ -139,7 +134,7 @@ abstract class Zend_Feed_Reader_EntryAbstract
         return $dom->saveXml();
     }
 
-    /**
+	/**
      * Get the entry type
      *
      * @return string
@@ -156,13 +151,10 @@ abstract class Zend_Feed_Reader_EntryAbstract
      */
     public function getXpath()
     {
-        if (!$this->_xpath) {
-            $this->setXpath(new DOMXPath($this->getDomDocument()));
-        }
         return $this->_xpath;
     }
 
-    /**
+	/**
      * Set the XPath query
      *
      * @param  DOMXPath $xpath
@@ -172,6 +164,16 @@ abstract class Zend_Feed_Reader_EntryAbstract
     {
         $this->_xpath = $xpath;
         return $this;
+    }
+
+    /**
+     * Serialize the entry to an array
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->_data;
     }
 
     /**
@@ -214,10 +216,8 @@ abstract class Zend_Feed_Reader_EntryAbstract
             }
         }
         require_once 'Zend/Feed/Exception.php';
-        throw new Zend_Feed_Exception(
-            'Method: ' . $method
-            . 'does not exist and could not be located on a registered Extension'
-        );
+        throw new Zend_Feed_Exception('Method: ' . $method
+            . 'does not exist and could not be located on a registered Extension');
     }
 
     /**

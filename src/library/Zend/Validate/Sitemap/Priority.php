@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Validate
  * @subpackage Sitemap
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Priority.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Priority.php 16971 2009-07-22 18:05:45Z mikaelkael $
  */
 
 /**
@@ -33,7 +33,7 @@ require_once 'Zend/Validate/Abstract.php';
  * @category   Zend
  * @package    Zend_Validate
  * @subpackage Sitemap
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Validate_Sitemap_Priority extends Zend_Validate_Abstract
@@ -42,8 +42,7 @@ class Zend_Validate_Sitemap_Priority extends Zend_Validate_Abstract
      * Validation key for not valid
      *
      */
-    const NOT_VALID = 'sitemapPriorityNotValid';
-    const INVALID   = 'sitemapPriorityInvalid';
+    const NOT_VALID = 'invalidSitemapPriority';
 
     /**
      * Validation failure message template definitions
@@ -52,7 +51,6 @@ class Zend_Validate_Sitemap_Priority extends Zend_Validate_Abstract
      */
     protected $_messageTemplates = array(
         self::NOT_VALID => "'%value%' is not a valid sitemap priority",
-        self::INVALID   => "Invalid type given. Numeric string, integer or float expected",
     );
 
     /**
@@ -65,18 +63,13 @@ class Zend_Validate_Sitemap_Priority extends Zend_Validate_Abstract
      */
     public function isValid($value)
     {
-        if (!is_numeric($value)) {
-            $this->_error(self::INVALID);
-            return false;
-        }
-
         $this->_setValue($value);
-        $value = (float) $value;
-        if ($value < 0 || $value > 1) {
-            $this->_error(self::NOT_VALID);
+
+        if (!is_numeric($value)) {
             return false;
         }
 
-        return true;
+        $value = (float)$value;
+        return $value >= 0 && $value <= 1;
     }
 }

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Struct.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Struct.php 17759 2009-08-22 21:26:21Z lars $
  */
 
 
@@ -31,7 +31,7 @@ require_once 'Zend/XmlRpc/Value/Collection.php';
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_XmlRpc_Value_Struct extends Zend_XmlRpc_Value_Collection
@@ -49,27 +49,31 @@ class Zend_XmlRpc_Value_Struct extends Zend_XmlRpc_Value_Collection
 
 
     /**
-     * Generate the XML code that represent struct native MXL-RPC value
+     * Return the XML code that represent struct native MXL-RPC value
      *
-     * @return void
+     * @return string
      */
-    protected function _generateXML()
+    public function saveXML()
     {
-        $generator = $this->getGenerator();
-        $generator->openElement('value')
-                  ->openElement('struct');
+        if (!$this->_as_xml) {   // The XML code was not calculated yet
+            $dom    = new DOMDocument('1.0');
+            $value  = $dom->appendChild($dom->createElement('value'));
+            $struct = $value->appendChild($dom->createElement('struct'));
 
-        if (is_array($this->_value)) {
-            foreach ($this->_value as $name => $val) {
-                /* @var $val Zend_XmlRpc_Value */
-                $generator->openElement('member')
-                          ->openElement('name', $name)
-                          ->closeElement('name');
-                $val->generateXml();
-                $generator->closeElement('member');
+            if (is_array($this->_value)) {
+                foreach ($this->_value as $name => $val) {
+                    /* @var $val Zend_XmlRpc_Value */
+                    $member = $struct->appendChild($dom->createElement('member'));
+                    $member->appendChild($dom->createElement('name', $this->_escapeXmlEntities($name)));
+                    $member->appendChild($dom->importNode($val->getAsDOM(), 1));
+                }
             }
+
+            $this->_as_dom = $value;
+            $this->_as_xml = $this->_stripXmlDeclaration($dom);
         }
-        $generator->closeElement('struct')
-                  ->closeElement('value');
+
+        return $this->_as_xml;
     }
 }
+

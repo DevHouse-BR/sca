@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Oracle.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Oracle.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -26,9 +26,9 @@
  * @subpackage  Sequence
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 5798 $
  */
 class Doctrine_Sequence_Oracle extends Doctrine_Sequence
 {
@@ -43,24 +43,22 @@ class Doctrine_Sequence_Oracle extends Doctrine_Sequence
     public function nextID($seqName, $onDemand = true)
     {
         $sequenceName = $this->conn->quoteIdentifier($this->conn->formatter->getSequenceName($seqName), true);
-        $query = 'SELECT ' . $sequenceName . '.nextval FROM DUAL';
+        $query        = 'SELECT ' . $sequenceName . '.nextval FROM DUAL';
 
         try {
             $result = $this->conn->fetchOne($query);
         } catch(Doctrine_Connection_Exception $e) {
-            if ($onDemand && $e->getPortableCode() == Doctrine_Core::ERR_NOSUCHTABLE) {
+            if ($onDemand && $e->getPortableCode() == Doctrine::ERR_NOSUCHTABLE) {
+
                 try {
                     $result = $this->conn->export->createSequence($seqName);
                 } catch(Doctrine_Exception $e) {
                     throw new Doctrine_Sequence_Exception('on demand sequence ' . $seqName . ' could not be created');
                 }
-
                 return $this->nextId($seqName, false);
-            } else {
-                throw new Doctrine_Sequence_Exception('sequence ' .$seqName . ' does not exist');
             }
+            throw $e;
         }
-
         return $result;
     }
 
@@ -86,7 +84,7 @@ class Doctrine_Sequence_Oracle extends Doctrine_Sequence
      *
      * @return integer          current id in the given sequence
      */
-    public function currId($seqName)
+    public function currID($seqName)
     {
         $sequenceName = $this->conn->quoteIdentifier($this->conn->formatter->getSequenceName($seqName), true);
         $query   = 'SELECT (last_number-1) FROM user_sequences';

@@ -15,113 +15,43 @@
  * @category   Zend
  * @package    Zend_Log
  * @subpackage Formatter
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Xml.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Xml.php 16219 2009-06-21 19:45:39Z thomas $
  */
 
-/** Zend_Log_Formatter_Abstract */
-require_once 'Zend/Log/Formatter/Abstract.php';
+/** Zend_Log_Formatter_Interface */
+require_once 'Zend/Log/Formatter/Interface.php';
 
 /**
  * @category   Zend
  * @package    Zend_Log
  * @subpackage Formatter
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Xml.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Xml.php 16219 2009-06-21 19:45:39Z thomas $
  */
-class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
+class Zend_Log_Formatter_Xml implements Zend_Log_Formatter_Interface
 {
     /**
-     * @var string Name of root element
+     * @var Relates XML elements to log data field keys.
      */
     protected $_rootElement;
 
     /**
-     * @var array Relates XML elements to log data field keys.
+     * @var Relates XML elements to log data field keys.
      */
     protected $_elementMap;
 
     /**
-     * @var string Encoding to use in XML
-     */
-    protected $_encoding;
-
-    /**
      * Class constructor
-     * (the default encoding is UTF-8)
      *
-     * @param array|Zend_Config $options
-     * @return void
+     * @param array $elementMap
      */
-    public function __construct($options = array())
+    public function __construct($rootElement = 'logEntry', $elementMap = null)
     {
-        if ($options instanceof Zend_Config) {
-            $options = $options->toArray();
-        } elseif (!is_array($options)) {
-            $args = func_get_args();
-
-            $options = array(
-            	'rootElement' => array_shift($args)
-            );
-
-            if (count($args)) {
-                $options['elementMap'] = array_shift($args);
-            }
-
-            if (count($args)) {
-                $options['encoding'] = array_shift($args);
-            }
-        }
-
-        if (!array_key_exists('rootElement', $options)) {
-            $options['rootElement'] = 'logEntry';
-        }
-
-        if (!array_key_exists('encoding', $options)) {
-            $options['encoding'] = 'UTF-8';
-        }
-
-        $this->_rootElement = $options['rootElement'];
-        $this->setEncoding($options['encoding']);
-
-        if (array_key_exists('elementMap', $options)) {
-            $this->_elementMap  = $options['elementMap'];
-        }
-    }
-
-    /**
-	 * Factory for Zend_Log_Formatter_Xml classe
-	 *
-	 * @param array|Zend_Config $options
-	 * @return Zend_Log_Formatter_Xml
-     */
-    public static function factory($options)
-    {
-        return new self($options);
-    }
-
-    /**
-     * Get encoding
-     *
-     * @return string
-     */
-    public function getEncoding()
-    {
-        return $this->_encoding;
-    }
-
-    /**
-     * Set encoding
-     *
-     * @param  string $value
-     * @return Zend_Log_Formatter_Xml
-     */
-    public function setEncoding($value)
-    {
-        $this->_encoding = (string) $value;
-        return $this;
+        $this->_rootElement = $rootElement;
+        $this->_elementMap  = $elementMap;
     }
 
     /**
@@ -141,20 +71,14 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
             }
         }
 
-        $enc = $this->getEncoding();
-        $dom = new DOMDocument('1.0', $enc);
+        $dom = new DOMDocument();
         $elt = $dom->appendChild(new DOMElement($this->_rootElement));
 
         foreach ($dataToInsert as $key => $value) {
-            if (empty($value) 
-                || is_scalar($value) 
-                || (is_object($value) && method_exists($value,'__toString'))
-            ) {
-                if($key == "message") {
-                    $value = htmlspecialchars($value, ENT_COMPAT, $enc);
-                }
-                $elt->appendChild(new DOMElement($key, (string)$value));
+            if($key == "message") {
+                $value = htmlspecialchars($value);
             }
+            $elt->appendChild(new DOMElement($key, $value));
         }
 
         $xml = $dom->saveXML();
@@ -162,4 +86,5 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
 
         return $xml . PHP_EOL;
     }
+
 }

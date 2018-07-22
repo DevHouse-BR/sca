@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Directory.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Directory.php 16972 2009-07-22 18:44:24Z ralph $
  */
 
 /**
@@ -30,25 +30,15 @@ require_once 'Zend/Tool/Project/Context/Filesystem/Abstract.php';
  *
  * A profile is a hierarchical set of resources that keep track of
  * items within a specific project.
- *
+ * 
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Tool_Project_Context_Filesystem_Directory extends Zend_Tool_Project_Context_Filesystem_Abstract
+abstract class Zend_Tool_Project_Context_Filesystem_Directory extends Zend_Tool_Project_Context_Filesystem_Abstract 
 {
-
-    /**
-     * getName()
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return 'directory';
-    }
-
+    
     /**
      * create()
      *
@@ -63,7 +53,7 @@ class Zend_Tool_Project_Context_Filesystem_Directory extends Zend_Tool_Project_C
                 $parentResource->create();
             }
         }
-
+        
         if (!file_exists($this->getPath())) {
             mkdir($this->getPath());
         }
@@ -80,8 +70,8 @@ class Zend_Tool_Project_Context_Filesystem_Directory extends Zend_Tool_Project_C
     {
         $this->_resource->setDeleted(true);
         rmdir($this->getPath());
-
+        
         return $this;
     }
-
+    
 }

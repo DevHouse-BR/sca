@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Log
  * @subpackage Writer
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Abstract.php 16219 2009-06-21 19:45:39Z thomas $
  */
 
 /** Zend_Log_Filter_Priority */
@@ -27,11 +27,11 @@ require_once 'Zend/Log/Filter/Priority.php';
  * @category   Zend
  * @package    Zend_Log
  * @subpackage Writer
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Abstract.php 16219 2009-06-21 19:45:39Z thomas $
  */
-abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
+abstract class Zend_Log_Writer_Abstract
 {
     /**
      * @var array of Zend_Log_Filter_Interface
@@ -40,7 +40,6 @@ abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
 
     /**
      * Formats the log message before writing.
-     *
      * @var Zend_Log_Formatter_Interface
      */
     protected $_formatter;
@@ -49,28 +48,21 @@ abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
      * Add a filter specific to this writer.
      *
      * @param  Zend_Log_Filter_Interface  $filter
-     * @return Zend_Log_Writer_Abstract
+     * @return void
      */
     public function addFilter($filter)
     {
-        if (is_int($filter)) {
+        if (is_integer($filter)) {
             $filter = new Zend_Log_Filter_Priority($filter);
         }
 
-        if (!$filter instanceof Zend_Log_Filter_Interface) {
-            /** @see Zend_Log_Exception */
-            require_once 'Zend/Log/Exception.php';
-            throw new Zend_Log_Exception('Invalid filter provided');
-        }
-
         $this->_filters[] = $filter;
-        return $this;
     }
 
     /**
      * Log a message to this writer.
      *
-     * @param  array $event log data event
+     * @param  array     $event  log data event
      * @return void
      */
     public function write($event)
@@ -89,12 +81,11 @@ abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
      * Set a new formatter for this writer
      *
      * @param  Zend_Log_Formatter_Interface $formatter
-     * @return Zend_Log_Writer_Abstract
+     * @return void
      */
-    public function setFormatter(Zend_Log_Formatter_Interface $formatter)
+    public function setFormatter($formatter)
     {
         $this->_formatter = $formatter;
-        return $this;
     }
 
     /**
@@ -113,26 +104,4 @@ abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
      */
     abstract protected function _write($event);
 
-    /**
-     * Validate and optionally convert the config to array
-     *
-     * @param  array|Zend_Config $config Zend_Config or Array
-     * @return array
-     * @throws Zend_Log_Exception
-     */
-    static protected function _parseConfig($config)
-    {
-        if ($config instanceof Zend_Config) {
-            $config = $config->toArray();
-        }
-
-        if (!is_array($config)) {
-            require_once 'Zend/Log/Exception.php';
-            throw new Zend_Log_Exception(
-                'Configuration must be an array or instance of Zend_Config'
-            );
-        }
-
-        return $config;
-    }
 }

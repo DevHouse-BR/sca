@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Breadcrumbs.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Breadcrumbs.php 16971 2009-07-22 18:05:45Z mikaelkael $
  */
 
 /**
@@ -31,7 +31,7 @@ require_once 'Zend/View/Helper/Navigation/HelperAbstract.php';
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_Navigation_Breadcrumbs
@@ -260,11 +260,8 @@ class Zend_View_Helper_Navigation_Breadcrumbs
 
         if (empty($partial)) {
             require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception(
-                'Unable to render menu: No partial view script provided'
-            );
-            $e->setView($this->view);
-            throw $e;
+            throw new Zend_View_Exception(
+                    'Unable to render menu: No partial view script provided');
         }
 
         // put breadcrumb pages in model
@@ -292,13 +289,10 @@ class Zend_View_Helper_Navigation_Breadcrumbs
         if (is_array($partial)) {
             if (count($partial) != 2) {
                 require_once 'Zend/View/Exception.php';
-                $e = new Zend_View_Exception(
-                    'Unable to render menu: A view partial supplied as '
-                    .  'an array must contain two values: partial view '
-                    .  'script and module where script can be found'
-                );
-                $e->setView($this->view);
-                throw $e;
+                throw new Zend_View_Exception(
+                        'Unable to render menu: A view partial supplied as ' .
+                        'an array must contain two values: partial view ' .
+                        'script and module where script can be found');
             }
 
             return $this->view->partial($partial[0], $partial[1], $model);

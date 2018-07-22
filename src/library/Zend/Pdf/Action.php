@@ -15,16 +15,13 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Actions
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Action.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Action.php 17182 2009-07-27 13:54:11Z alexander $
  */
 
-
-/** Internally used classes */
-require_once 'Zend/Pdf/Element.php';
-require_once 'Zend/Pdf/Element/Array.php';
-
+/** Zend_Pdf_ElementFactory */
+require_once 'Zend/Pdf/ElementFactory.php';
 
 /** Zend_Pdf_Target */
 require_once 'Zend/Pdf/Target.php';
@@ -35,7 +32,7 @@ require_once 'Zend/Pdf/Target.php';
  *
  * @package    Zend_Pdf
  * @subpackage Actions
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveIterator, Countable
@@ -71,7 +68,6 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
      */
     public function __construct(Zend_Pdf_Element $dictionary, SplObjectStorage $processedActions)
     {
-        require_once 'Zend/Pdf/Element.php';
         if ($dictionary->getType() != Zend_Pdf_Element::TYPE_DICTIONARY) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('$dictionary mast be a direct or an indirect dictionary object.');
@@ -118,7 +114,6 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
             $processedActions = new SplObjectStorage();
         }
 
-        require_once 'Zend/Pdf/Element.php';
         if ($dictionary->getType() != Zend_Pdf_Element::TYPE_DICTIONARY) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('$dictionary mast be a direct or an indirect dictionary object.');
@@ -137,97 +132,97 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
             case 'GoTo':
                 require_once 'Zend/Pdf/Action/GoTo.php';
                 return new Zend_Pdf_Action_GoTo($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'GoToR':
                 require_once 'Zend/Pdf/Action/GoToR.php';
                 return new Zend_Pdf_Action_GoToR($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'GoToE':
                 require_once 'Zend/Pdf/Action/GoToE.php';
                 return new Zend_Pdf_Action_GoToE($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'Launch':
                 require_once 'Zend/Pdf/Action/Launch.php';
                 return new Zend_Pdf_Action_Launch($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'Thread':
                 require_once 'Zend/Pdf/Action/Thread.php';
                 return new Zend_Pdf_Action_Thread($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'URI':
                 require_once 'Zend/Pdf/Action/URI.php';
                 return new Zend_Pdf_Action_URI($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'Sound':
                 require_once 'Zend/Pdf/Action/Sound.php';
                 return new Zend_Pdf_Action_Sound($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'Movie':
                 require_once 'Zend/Pdf/Action/Movie.php';
                 return new Zend_Pdf_Action_Movie($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'Hide':
                 require_once 'Zend/Pdf/Action/Hide.php';
                 return new Zend_Pdf_Action_Hide($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'Named':
                 require_once 'Zend/Pdf/Action/Named.php';
                 return new Zend_Pdf_Action_Named($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'SubmitForm':
                 require_once 'Zend/Pdf/Action/SubmitForm.php';
                 return new Zend_Pdf_Action_SubmitForm($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'ResetForm':
                 require_once 'Zend/Pdf/Action/ResetForm.php';
                 return new Zend_Pdf_Action_ResetForm($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'ImportData':
                 require_once 'Zend/Pdf/Action/ImportData.php';
                 return new Zend_Pdf_Action_ImportData($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'JavaScript':
                 require_once 'Zend/Pdf/Action/JavaScript.php';
                 return new Zend_Pdf_Action_JavaScript($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'SetOCGState':
                 require_once 'Zend/Pdf/Action/SetOCGState.php';
                 return new Zend_Pdf_Action_SetOCGState($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'Rendition':
                 require_once 'Zend/Pdf/Action/Rendition.php';
                 return new Zend_Pdf_Action_Rendition($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'Trans':
                 require_once 'Zend/Pdf/Action/Trans.php';
                 return new Zend_Pdf_Action_Trans($dictionary, $processedActions);
-                break;
+                brake;
 
             case 'GoTo3DView':
                 require_once 'Zend/Pdf/Action/GoTo3DView.php';
                 return new Zend_Pdf_Action_GoTo3DView($dictionary, $processedActions);
-                break;
+                brake;
 
             default:
                 require_once 'Zend/Pdf/Action/Unknown.php';
                 return new Zend_Pdf_Action_Unknown($dictionary, $processedActions);
-                break;
+                brake;
         }
     }
 
@@ -292,7 +287,6 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
                     break;
 
                 default:
-                    require_once 'Zend/Pdf/Element/Array.php';
                     $pdfChildArray = new Zend_Pdf_Element_Array();
                     foreach ($this->next as $child) {
 
@@ -370,7 +364,7 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
     /**
      * Returns the child action.
      *
-     * @return Zend_Pdf_Action|null
+     * @return Zend_Pdf_Outline|null
      */
     public function getChildren()
     {

@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Boolean.php 24593 2012-01-05 20:35:02Z matthew $
+ * @version    $Id: Boolean.php 16541 2009-07-07 06:59:03Z bkarwin $
  */
 
 
@@ -29,7 +29,7 @@ require_once 'Zend/Pdf/Element.php';
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_Element_Boolean extends Zend_Pdf_Element
@@ -51,7 +51,6 @@ class Zend_Pdf_Element_Boolean extends Zend_Pdf_Element
     public function __construct($val)
     {
         if (! is_bool($val)) {
-            require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Argument must be boolean.');
         }
 

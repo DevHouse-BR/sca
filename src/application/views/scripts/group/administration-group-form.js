@@ -48,6 +48,9 @@ Groups.AdministrationGroupForm = Ext.extend(Ext.Window, {
                                 root: 'data',
                                 autoLoad: true,
                                 remoteSort: true,
+								listeners:{
+									exception: Application.app.failHandler
+								},
                                 sortInfo: {
                                         field: 'name',
                                         direction: 'ASC'

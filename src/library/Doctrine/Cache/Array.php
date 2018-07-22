@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Array.php 7490 2010-03-29 19:53:27Z jwage $
+ *  $Id: Array.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,27 +25,28 @@
  * @package     Doctrine
  * @subpackage  Cache
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7490 $
+ * @version     $Revision: 5798 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
- * @author      Jonathan H. Wage <jonwage@gmail.com>
  */
-class Doctrine_Cache_Array extends Doctrine_Cache_Driver
+class Doctrine_Cache_Array extends Doctrine_Cache_Driver implements Countable
 {
     /**
      * @var array $data         an array of cached data
      */
-    protected $data = array();
+    protected $data;
 
     /**
-     * Fetch a cache record from this cache driver instance
-     *
+     * Test if a cache is available for the given id and (if yes) return it (false else)
+     * 
+     * Note : return value is always "string" (unserialization is done by the core not by the backend)
+     * 
      * @param string $id cache id
      * @param boolean $testCacheValidity        if set to false, the cache validity won't be tested
-     * @return mixed  Returns either the cached data or false
+     * @return string cached datas (or false)
      */
-    protected function _doFetch($id, $testCacheValidity = true)
+    public function fetch($id, $testCacheValidity = true) 
     {
         if (isset($this->data[$id])) {
             return $this->data[$id];
@@ -54,55 +55,59 @@ class Doctrine_Cache_Array extends Doctrine_Cache_Driver
     }
 
     /**
-     * Test if a cache record exists for the passed id
+     * Test if a cache is available or not (for the given id)
      *
      * @param string $id cache id
      * @return mixed false (a cache is not available) or "last modified" timestamp (int) of the available cache record
      */
-    protected function _doContains($id)
+    public function contains($id)
     {
-        return isset($this->data[$id]);
+        return isset($this->data[$this->_getKey($id)]);
     }
 
     /**
-     * Save a cache record directly. This method is implemented by the cache
-     * drivers and used in Doctrine_Cache_Driver::save()
+     * Save some string datas into a cache record
      *
-     * @param string $id        cache id
+     * Note : $data is always saved as a string
+     *
      * @param string $data      data to cache
+     * @param string $id        cache id
      * @param int $lifeTime     if != false, set a specific lifetime for this cache record (null => infinite lifeTime)
      * @return boolean true if no problem
      */
-    protected function _doSave($id, $data, $lifeTime = false)
+    public function save($id, $data, $lifeTime = false)
     {
-        $this->data[$id] = $data;
-
-        return true;
+        $this->data[$this->_getKey($id)] = $data;
     }
 
     /**
-     * Remove a cache record directly. This method is implemented by the cache
-     * drivers and used in Doctrine_Cache_Driver::delete()
-     *
+     * Remove a cache record
+     * 
      * @param string $id cache id
      * @return boolean true if no problem
      */
-    protected function _doDelete($id)
+    public function delete($id)
     {
-        $exists = isset($this->data[$id]);
-
-        unset($this->data[$id]);
-
-        return $exists;
+        unset($this->data[$this->_getKey($id)]);
     }
 
     /**
-     * Fetch an array of all keys stored in cache
-     *
-     * @return array Returns the array of cache keys
+     * Remove all cache record
+     * 
+     * @return boolean true if no problem
      */
-    protected function _getCacheKeys()
+    public function deleteAll()
     {
-        return array_keys($this->data);
+        $this->data = array();
+    }
+
+    /**
+     * count
+     *
+     * @return integer
+     */
+    public function count() 
+    {
+        return count($this->data);
     }
 }

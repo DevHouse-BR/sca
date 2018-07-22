@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: Having.php 7666 2010-06-08 19:23:20Z jwage $
+ *  $Id: Having.php 5798 2009-06-02 15:10:46Z piccoloprincipe $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -25,9 +25,9 @@
  * @package     Doctrine
  * @subpackage  Query
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
- * @version     $Revision: 7666 $
+ * @version     $Revision: 5798 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  */
 class Doctrine_Query_Having extends Doctrine_Query_Condition
@@ -41,16 +41,6 @@ class Doctrine_Query_Having extends Doctrine_Query_Condition
     private function parseAggregateFunction($func)
     {
         $pos = strpos($func, '(');
-
-        // Check for subqueries
-        if ($pos === 0 && substr($func, 1, 6) == 'SELECT') {
-            // This code is taken from WHERE.php
-            $sub = $this->_tokenizer->bracketTrim($func);
-            $q = $this->query->createSubquery()->parseDqlQuery($sub, false);
-            $sql = $q->getSqlQuery();
-            $q->free();
-            return '(' . $sql . ')';
-        }
 
         if ($pos !== false) {
             $funcs  = array();
@@ -88,15 +78,14 @@ class Doctrine_Query_Having extends Doctrine_Query_Condition
                 $ref   = implode('.', $a);
                 $map   = $this->query->load($ref, false);
                 $field = $map['table']->getColumnName($field);
-                $value = $this->query->getConnection()->quoteIdentifier($this->query->getSqlTableAlias($ref) . '.' . $field);
+                $value = $this->query->getConnection()->quoteIdentifier($this->query->getTableAlias($ref) . '.' . $field);
             } else {
                 $field = end($a);
-                if ($this->query->hasSqlAggregateAlias($field)) {
-                    $value = $this->query->getSqlAggregateAlias($field);
-                }
+                $value = $this->query->getAggregateAlias($field);
             }
         }
-
+        
+        
         return $value;
     }
 
@@ -115,7 +104,9 @@ class Doctrine_Query_Having extends Doctrine_Query_Condition
         $value     = implode(' ', $tokens);
 
         // check the RHS for aggregate functions
-        $value = $this->parseAggregateFunction($value);
+        if (strpos($value, '(') !== false) {
+          $value = $this->parseAggregateFunction($value);
+        }
 
         $part .= ' ' . $operator . ' ' . $value;
 

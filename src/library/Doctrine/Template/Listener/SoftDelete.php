@@ -16,7 +16,7 @@
  *
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
+ * <http://www.phpdoctrine.org>.
  */
 
 /**
@@ -27,7 +27,7 @@
  * @package     Doctrine
  * @subpackage  Template
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @link        www.doctrine-project.org
+ * @link        www.phpdoctrine.org
  * @since       1.0
  * @version     $Revision$
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
@@ -54,17 +54,6 @@ class Doctrine_Template_Listener_SoftDelete extends Doctrine_Record_Listener
     }
 
     /**
-     * Set the hard delete flag so that it is really deleted
-     *
-     * @param boolean $bool
-     * @return void
-     */
-    public function hardDelete($bool)
-    {
-        $this->_options['hardDelete'] = $bool;
-    }
-
-    /**
      * Skip the normal delete options so we can override it with our own
      *
      * @param Doctrine_Event $event
@@ -81,9 +70,7 @@ class Doctrine_Template_Listener_SoftDelete extends Doctrine_Record_Listener
             $invoker->$name = true;
         }
 
-        if ( ! $this->_options['hardDelete']) {
-            $event->skipOperation();
-        }
+        $event->skipOperation();
     }
 
     /**
@@ -94,9 +81,7 @@ class Doctrine_Template_Listener_SoftDelete extends Doctrine_Record_Listener
      */
     public function postDelete(Doctrine_Event $event)
     {
-        if ( ! $this->_options['hardDelete']) {
-            $event->getInvoker()->save();
-        }
+        $event->getInvoker()->save();
     }
 
     /**

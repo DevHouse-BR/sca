@@ -1,0 +1,10 @@
+ScaStatusMensagem:
+    StatusMensagem_1:
+        id: 1
+        nome_status: "Pendente"
+    StatusMensagem_2:
+        id: 2
+        nome_status: "Enviada"
+    StatusMensagem_3:
+        id: 3
+        nome_status: "Falha de Envio"

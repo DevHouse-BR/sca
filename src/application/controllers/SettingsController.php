@@ -47,31 +47,36 @@ class SettingsController extends Zend_Controller_Action {
 			}
 			$this->_helper->json(array('success' => true, 'data' => $obj));
 		} else {
-			$this->_helper->json(array('success' => false));
+			$this->_helper->json(array('success' => false, 'errormsg'=>DMG_Translate::_('administration.group.permission.denied')));
 		}
 	}
 	public function getAction () {
 		if (DMG_Acl::canAccess(2)) {
-                        $id = (int) $this->getRequest()->getParam('id');
+			$id = (int) $this->getRequest()->getParam('id');
 
 			$query = Doctrine_Query::create()->select()->from('ScaAccountRelationConfig arc')->where('arc.sca_account_id = ?', Zend_Auth::getInstance()->getIdentity()->sca_account_id)->addWhere('arc.sca_account_config_id = ?', $id)->execute();	
-
 
 			try {
 				$obj['id'] = $id;
 				$obj['name'] = $query[0]->ScaAccountConfig->nome_parametro;
 				$obj['value'] = $query[0]->valor_parametro;
-			} catch (exception $e) {
+				if($id == 14){
+					$obj['limit'] =  DMG_Translate::_('administration.setting.max.upload.size') . ini_get('upload_max_filesize');
+				}
+			}
+			catch (exception $e) {
 				$this->_helper->json(array('success' => false));
 			}
 
-                        if ($obj) {
+			if ($obj) {
 				$this->_helper->json(array('success' => true, 'data' => $obj));
-                        } else {
+            }
+            else {
 				$this->_helper->json(array('success' => false));
 			}
-		} else {
-			$this->_helper->json(array('success' => false));
+		} 
+		else {
+			$this->_helper->json(array('success' => false, 'errormsg' => DMG_Translate::_('administration.group.permission.denied')));
 		}
 	}
 	public function saveAction () {
@@ -84,17 +89,23 @@ class SettingsController extends Zend_Controller_Action {
 				try {
 					$obj = Doctrine::getTable('ScaAccountRelationConfig')->find($query[0]->id);
 					$obj->valor_parametro = $this->getRequest()->getParam('value');
+					if($id == 14){
+						$maxbyserver = substr(ini_get('upload_max_filesize'), 0, -1);
+						if((int)$maxbyserver < (int)$obj->valor_parametro){
+							$obj->valor_parametro = $maxbyserver;
+						}
+					}
 					$obj->save();
 					$this->_helper->json(array('success' => true));
 				} catch (exception $e) {
-					$this->_helper->json(array('success' => false));
+					$this->_helper->json(array('success' => false, 'errormsg'=>$e->getMessage()));
 				}
 
 			} else {
 				$this->_helper->json(array('success' => false));
 			}
 		} else {
-			$this->_helper->json(array('success' => false));
+			$this->_helper->json(array('success' => false, 'errormsg'=>DMG_Translate::_('administration.group.permission.denied')));
 		}
 	}
 	
@@ -104,14 +115,16 @@ class SettingsController extends Zend_Controller_Action {
 			
 			$info = @$upload->getFileInfo();
 			
-			$filename = 'files/'. Zend_Auth::getInstance()->getIdentity()->sca_account_id . '/' . "account_logo." . $this->_findexts($info['logo']['name']);
+			$filename =  'files/'. Zend_Auth::getInstance()->getIdentity()->sca_account_id . '/' . "account_logo." . $this->_findexts($info['logo']['name']);
 						
 			@$upload->addFilter('Rename', array(
 				'target'=> $filename,
 				'overwrite' => true
 			),'logo');
 			
-			$upload->addValidator('IsImage', false, array('image/jpeg', 'image/gif', 'image/png'));
+			if(DMG_Config::getAccountCfg(16) == "SIM"){
+				$upload->addValidator('IsImage', false, array('image/jpeg', 'image/gif', 'image/png'));
+			}
 			
 			if (!$upload->isValid()) {
 				throw new Exception(DMG_Translate::_('administration.setting.form.upload.notimage'));

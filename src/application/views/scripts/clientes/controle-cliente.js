@@ -44,6 +44,9 @@ Clientes.ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
 			idProperty: 'id',
 			totalProperty: 'total',
 			autoLoad: true,
+			listeners:{
+				exception: Application.app.failHandler
+			},
 			autoDestroy: false,
 			remoteSort: true,
 			sortInfo: {
@@ -60,7 +63,7 @@ Clientes.ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
 				{name: 'responsavel', type: 'string'},
 				{name: 'fl_acesso_portal', type: 'boolean'},
                 {name: 'nm_criador', type: 'string'},
-                {name: 'data_criacao', type: 'string'},
+                {name: 'dt_cadastro', type: "date", dateFormat: "Y-m-d H:i:s"},
 				{name: 'nome_account', type: 'string'}
 			]
 		});
@@ -89,11 +92,11 @@ Clientes.ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
 				scope: this,
 				handler: this._onBtnExcluirSelecionadosClick
 			},{
-                text: Application.app.language('controle.cliente.addUser.text'),
-                id:'btnAddUser_ControleClientesWindow',
-                iconCls: 'silk-group',
-                scope: this,
-                handler: this._onBtnAddUserClick
+		                text: Application.app.language('controle.cliente.addUser.text'),
+		                id:'btnAddUser_ControleClientesWindow',
+		                iconCls: 'silk-group',
+		                scope: this,
+		                handler: this._onBtnAddUserClick
 			}],
 			columns: [Clientes.smGridPrincipal, {
 				dataIndex: 'id',
@@ -117,9 +120,13 @@ Clientes.ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
                 header: Application.app.language('departamento.columns.nm_criador.text'),
                 sortable: true
             }, {
-                dataIndex: 'data_criacao',
+                dataIndex: 'dt_cadastro',
                 header: Application.app.language('departamento.columns.data_criacao.text'),
-                sortable: true
+                sortable: true,
+				width:130,
+				renderer:  function(data, cell, record, rowIndex, columnIndex, store) {
+					return data.format("d/m/Y H:i \\h\\s");
+    			}
             }, {
                 dataIndex: 'fl_acesso_portal',
                 header: Application.app.language('controle.clientes.portal.text'),
@@ -237,19 +244,26 @@ Clientes.ControleClientesWindow = Ext.extend(Ext.grid.GridPanel, {
         }                       
 		return this.windowAddUser;     
  	},
-
+	_onBeforeCloseCadastroUsuario: function() {
+		Ext.getCmp('btnAdicionar_ControleClientesWindow').enable();
+		Ext.getCmp('btnDelete_ControleClientesWindow').enable();
+		Ext.getCmp('btnAddUser_ControleClientesWindow').enable();
+		
+	},
 	_newForm: function (id) {
-		//if (!this.window) {
-			this.window = new Clientes.ControleClientesForm({
-				renderTo: this.body,
-				group:id,
-				listeners: {
-					scope: this,
-					salvar: this._onCadastroUsuarioSalvarExcluir,
-					excluir: this._onCadastroUsuarioSalvarExcluir
-				}
-			});
-		//}
+		Ext.getCmp('btnAdicionar_ControleClientesWindow').disable();
+		Ext.getCmp('btnDelete_ControleClientesWindow').disable();
+		Ext.getCmp('btnAddUser_ControleClientesWindow').disable();
+		this.window = new Clientes.ControleClientesForm({
+			renderTo: this.body,
+			group:id,
+			listeners: {
+				scope: this,
+				salvar: this._onCadastroUsuarioSalvarExcluir,
+				excluir: this._onCadastroUsuarioSalvarExcluir,
+				beforeclose: this._onBeforeCloseCadastroUsuario
+			}
+		});
 		return this.window;
 	}
 });

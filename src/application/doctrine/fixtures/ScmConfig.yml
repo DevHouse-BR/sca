@@ -10,5 +10,10 @@ ScmConfig:
   Config_3:
     id: 3
     name: 'Copyright'
-    value: 'Copyright &copy; DMG | All rights reserved - Desenvolvido por <a target="_blank" href="http://www.agenciadmg.com.br/">DMG</a>'
+    value: 'Desenvolvido por <a target="_blank" href="http://www.agenciadmg.com.br/">DMG Digital</a>'
+    fl_system: true
+  Config_4:
+    id: 4
+    name: 'URL Sistema com (/) no Final'
+    value: 'http://online:8080/leo/sca/public/'
     fl_system: true

@@ -31,9 +31,11 @@ class DMG_Auth_Adapter implements Zend_Auth_Adapter_Interface {
 					->addWhere('u.tipo_usuario = ?', 'I')
 					->addWhere('a.fl_ativa = ?', true)
 					->fetchOne();
+			
 			if (!$user) {
 				return new Zend_Auth_Result(Zend_Auth_Result::FAILURE, null, array('auth.loginerror'));
-			} else {
+			}
+			else {
 				return new Zend_Auth_Result(Zend_Auth_Result::SUCCESS, $user, array());
 			}
 		} catch(Exception $e) {
