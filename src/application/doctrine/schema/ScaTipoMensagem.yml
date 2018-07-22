@@ -1,0 +1,18 @@
+ScaTipoMensagem:
+  tableName: sca_tipo_mensagem
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    nome_tipo_mensagem:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+  relations:
+    ScaMensagens:
+      local: id
+      foreign: sca_tipo_mensagem_id
+      type: many

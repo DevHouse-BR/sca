@@ -1,0 +1,33 @@
+ScaAccountConfig:
+  tableName: sca_account_config
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      sequence: sca_account_config_id
+    sca_account_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    nome_parametro:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+    desc_parametro:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    valor_parametro:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+  relations:
+    ScaAccount:
+      local: sca_account_id
+      foreign: id
+      type: one

@@ -1,0 +1,140 @@
+ScmUser:
+  User_1:
+    nome_usuario: 'Administrador'
+    login_usuario: 'admin'
+    senha_usuario: '1234'
+    email: 'rafael@agenciadmg.com.br'
+    idioma_usuario: 'es'
+    tipo_usuario: 'I'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaAccount: Account_1 
+    ScaDepartamentos: Departamentos_1
+  User_2:
+    nome_usuario: 'Gerente'
+    login_usuario: 'gerente'
+    senha_usuario: '1234'
+    email: 'rafael@agenciadmg.com.br'
+    idioma_usuario: 'es'
+    tipo_usuario: 'I'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaAccount: Account_1
+    ScaDepartamentos: Departamentos_1
+  User_3:
+    nome_usuario: 'Tecnico'
+    login_usuario: 'tecnico'
+    senha_usuario: '1234'
+    email: 'rafael@agenciadmg.com.br'
+    idioma_usuario: 'es'
+    tipo_usuario: 'I'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaAccount: Account_1
+    ScaDepartamentos: Departamentos_1
+  User_4:
+    nome_usuario: 'Listados'
+    login_usuario: 'listados'
+    senha_usuario: '1234'
+    email: 'rafael@agenciadmg.com.br'
+    idioma_usuario: 'es'
+    tipo_usuario: 'I'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaAccount: Account_1
+    ScaDepartamentos: Departamentos_1
+  User_5:
+    nome_usuario: 'Super User'
+    login_usuario: 'root'
+    senha_usuario: 'h7b3&3mnptt89('
+    email: 'none'
+    idioma_usuario: 'es'
+    tipo_usuario: 'I'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaAccount: Account_2
+    ScaDepartamentos: Departamentos_2
+  User_6:
+    nome_usuario: 'user1'
+    login_usuario: 'user1'
+    senha_usuario: '1234'
+    email: 'none'
+    idioma_usuario: 'es'
+    tipo_usuario: 'P'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaDepartamentos: Departamentos_1
+    ScaAccount: Account_1
+    ScaClientes: Clientes_1
+  User_7:
+    nome_usuario: 'user2'
+    login_usuario: 'user2'
+    senha_usuario: '1234'
+    email: 'none'
+    idioma_usuario: 'es'
+    tipo_usuario: 'P'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaDepartamentos: Departamentos_1
+    ScaAccount: Account_1
+    ScaClientes: Clientes_1
+  User_8:
+    nome_usuario: 'user3'
+    login_usuario: 'user3'
+    senha_usuario: '1234'
+    email: 'none'
+    idioma_usuario: 'es'
+    tipo_usuario: 'P'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaDepartamentos: Departamentos_1
+    ScaAccount: Account_1
+    ScaClientes: Clientes_2
+  User_9:
+    nome_usuario: 'user4'
+    login_usuario: 'user4'
+    senha_usuario: '1234'
+    email: 'none'
+    idioma_usuario: 'es'
+    tipo_usuario: 'P'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaDepartamentos: Departamentos_1
+    ScaAccount: Account_1
+    ScaClientes: Clientes_2
+  User_10:
+    nome_usuario: 'user5'
+    login_usuario: 'user5'
+    senha_usuario: '1234'
+    email: 'none'
+    idioma_usuario: 'es'
+    tipo_usuario: 'P'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaDepartamentos: Departamentos_1
+    ScaAccount: Account_1
+    ScaClientes: Clientes_3
+  User_11:
+    nome_usuario: 'user6'
+    login_usuario: 'user6'
+    senha_usuario: '1234'
+    email: 'none'
+    idioma_usuario: 'es'
+    tipo_usuario: 'P'
+    recebe_mensagem: true
+    fl_system: true
+    fl_status: true
+    ScaDepartamentos: Departamentos_1
+    ScaAccount: Account_1
+    ScaClientes: Clientes_3
+

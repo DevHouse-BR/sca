@@ -1,0 +1,81 @@
+ScmRule:
+  Rule_1:
+    id: 1
+    name: 'Visualizar configurações do sistema'
+    ScmModule: Module_1
+  Rule_2:
+    id: 2
+    name: 'Modificar configurações do sistema'
+    ScmModule: Module_1
+  Rule_3:
+    id: 3
+    name: 'Visualizar lista de usuários'
+    ScmModule: Module_1
+  Rule_4:
+    id: 4
+    name: 'Modificar usuários'
+    ScmModule: Module_1
+  Rule_5:
+    id: 5
+    name: 'Adicionar usuários'
+    ScmModule: Module_1
+  Rule_6:
+    id: 6
+    name: 'Deletar usuários'
+    ScmModule: Module_1
+  Rule_7:
+    id: 7
+    name: 'Visualizar lista de grupos'
+    ScmModule: Module_1
+  Rule_8:
+    id: 8
+    name: 'Modificar grupos'
+    ScmModule: Module_1
+  Rule_9:
+    id: 9
+    name: 'Adicionar grupos'
+    ScmModule: Module_1
+  Rule_10:
+    id: 10
+    name: 'Deletar grupos'
+    ScmModule: Module_1
+  Rule_11:
+    id: 11
+    name: 'Modificar permissões do grupo'
+    ScmModule: Module_1
+  Rule_12:
+    id: 12
+    name: 'Modificar grupos do usuário'
+    ScmModule: Module_1
+  Rule_13:
+    id: 13
+    name: 'Listar Departamentos'
+    ScmModule: Module_1
+  Rule_14:
+    id: 14
+    name: 'Gerenciar Accounts'
+    ScmModule: Module_1
+  Rule_15:
+    id: 15
+    name: 'Visualizar Deparatamentos'
+    ScmModule: Module_1
+  Rule_16:
+    id: 16
+    name: 'Gerir Departamentos'
+    ScmModule: Module_1
+  Rule_17:
+    id: 17
+    name: 'Visualizar Clientes'
+    ScmModule: Module_1
+  Rule_18:
+   id: 18
+   name: 'Gerir Clientes'
+   ScmModule: Module_1
+  Rule_19:
+   id: 19
+   name: 'Visualizar usuarios de clientes'
+   ScmModule: Module_1
+  Rule_20:
+   id: 20
+   name: 'Gerenciar usuarios de clientes'
+   ScmModule: Module_1

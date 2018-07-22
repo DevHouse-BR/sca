@@ -1,0 +1,86 @@
+ScmUser:
+  tableName: scm_user
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    sca_account_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    sca_clientes_id:
+      type: integer(4)
+      unsigned: false
+      notnull: false
+      primary: false
+    sca_departamentos_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    tipo_usuario:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+    nome_usuario:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+    login_usuario:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+    senha_usuario:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+    recebe_mensagem:
+      type: boolean(1)
+      notnull: false
+      primary: false
+    idioma_usuario:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    email:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    fl_system:
+      type: boolean(1)
+      notnull: true
+      primary: false
+    fl_status:
+      type: boolean(1)
+      notnull: false
+      primary: false
+  relations:
+    ScaDepartamentos:
+      local: sca_departamentos_id
+      foreign: id
+      type: one
+    ScaClientes:
+      local: sca_clientes_id
+      foreign: id
+      type: one
+    ScaAccount:
+      local: sca_account_id
+      foreign: id
+      type: one
+    ScaPostagens:
+      local: id
+      foreign: scm_user_id
+      type: many
+    ScmUserGroup:
+      local: id
+      foreign: user_id
+      type: many

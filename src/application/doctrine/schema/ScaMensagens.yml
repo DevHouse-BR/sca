@@ -1,0 +1,73 @@
+ScaMensagens:
+  tableName: sca_mensagens
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    sca_account_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    sca_tipo_mensagem_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    sca_status_mensagem_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    sca_postagens_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    data_mensagem:
+      type: timestamp(25)
+      notnull: false
+      primary: false
+    remetente:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    destinatarios:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    assunto:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    corpo:
+      type: string(1000)
+      fixed: false
+      notnull: false
+      primary: false
+  relations:
+    ScaPostagens:
+      local: sca_postagens_id
+      foreign: id
+      type: one
+    ScaStatusMensagem:
+      local: sca_status_mensagem_id
+      foreign: id
+      type: one
+    ScaTipoMensagem:
+      local: sca_tipo_mensagem_id
+      foreign: id
+      type: one
+    ScaAccount:
+      local: sca_account_id
+      foreign: id
+      type: one
+    ScaMensagensLog:
+      local: id
+      foreign: sca_mensagens_id
+      type: many

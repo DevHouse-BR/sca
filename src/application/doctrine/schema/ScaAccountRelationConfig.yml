@@ -1,0 +1,28 @@
+ScaAccountRelationConfig:
+   tableName: sca_account_relation_config
+   columns:
+      id:
+         type: int(4)
+         notnull: true
+         primary: true
+         autoincrement: true
+      sca_account_id:
+         type: int(4)
+         notnull: true
+      sca_account_config_id:
+         type: int(4)
+         notnull: true
+      valor_parametro:
+         type: string()
+         fixed: false
+         notnull: true
+   relations:
+      ScaAccount:
+         local: sca_account_id
+         foreign: id
+         type: one
+      ScaAccountConfig:
+         local: sca_account_config_id
+         foreign: id
+         type: one
+         

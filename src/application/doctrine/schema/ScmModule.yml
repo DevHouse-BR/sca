@@ -1,0 +1,18 @@
+ScmModule:
+  tableName: scm_module
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    name:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+  relations:
+    ScmRule:
+      local: id
+      foreign: module_id
+      type: many

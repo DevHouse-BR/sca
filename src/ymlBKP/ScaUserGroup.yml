@@ -1,0 +1,27 @@
+ScmUserGroup:
+  tableName: scm_user_group
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      sequence: scm_user_group_id
+    user_id:
+      type: integer(4)
+      unsigned: false
+      notnull: false
+      primary: false
+    group_id:
+      type: integer(4)
+      unsigned: false
+      notnull: false
+      primary: false
+  relations:
+    ScmGroup:
+      local: group_id
+      foreign: id
+      type: one
+    ScmUser:
+      local: user_id
+      foreign: id
+      type: one

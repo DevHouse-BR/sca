@@ -1,0 +1,37 @@
+ScaDepartamentos:
+  tableName: sca_departamentos
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      sequence: sca_departamentos_id
+    cod_departamento:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    nome_departamento:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+    id_gerente:
+      type: integer(4)
+      unsigned: false
+      notnull: false
+      primary: false
+    sca_account_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+  relations:
+    ScaAccount:
+      local: sca_account_id
+      foreign: id
+      type: one
+    ScmUser:
+      local: id
+      foreign: sca_departamentos_id
+      type: many

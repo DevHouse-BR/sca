@@ -1,0 +1,37 @@
+ScaAnexos:
+  tableName: sca_anexos
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    sca_postagens_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    nome_anexo:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    caminho_anexo:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    tipo_anexo:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+  relations:
+    ScaPostagens:
+      local: sca_postagens_id
+      foreign: id
+      type: one
+    ScaLogdownloads:
+      local: id
+      foreign: sca_anexos_id
+      type: many

@@ -1,0 +1,47 @@
+ScaAccount:
+  tableName: sca_account
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    nome_account:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+    email_account:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+    fl_ativa:
+      type: boolean(1)
+      notnull: true
+      primary: false
+  relations:
+    ScaClientes:
+      local: id
+      foreign: sca_account_id
+      type: many
+    ScaDepartamentos:
+      local: id
+      foreign: sca_account_id
+      type: many
+    ScaMensagens:
+      local: id
+      foreign: sca_account_id
+      type: many
+    ScaPostagens:
+      local: id
+      foreign: sca_account_id
+      type: many
+    ScmGroup:
+      local: id
+      foreign: sca_account_id
+      type: many
+    ScmUser:
+      local: id
+      foreign: sca_account_id
+      type: many

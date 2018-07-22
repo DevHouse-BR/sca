@@ -1,0 +1,18 @@
+ScaAccountConfig:
+  tableName: sca_account_config
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+    nome_parametro:
+      type: string()
+      fixed: false
+      notnull: true
+      primary: false
+    desc_parametro:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+

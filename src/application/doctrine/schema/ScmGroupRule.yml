@@ -1,0 +1,27 @@
+ScmGroupRule:
+  tableName: scm_group_rule
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    group_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    rule_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+  relations:
+    ScmRule:
+      local: rule_id
+      foreign: id
+      type: one
+    ScmGroup:
+      local: group_id
+      foreign: id
+      type: one

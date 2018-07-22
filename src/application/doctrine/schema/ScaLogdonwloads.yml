@@ -1,0 +1,27 @@
+ScaLogdownloads:
+  tableName: sca_logdownloads
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    sca_anexos_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    data_download:
+      type: timestamp(25)
+      notnull: false
+      primary: false
+    id_usuario:
+      type: integer(4)
+      unsigned: false
+      notnull: false
+      primary: false
+  relations:
+    ScaAnexos:
+      local: sca_anexos_id
+      foreign: id
+      type: one

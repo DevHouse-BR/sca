@@ -1,0 +1,27 @@
+ScaMensagensLog:
+  tableName: sca_mensagens_log
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    sca_mensagens_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    data_log:
+      type: timestamp(25)
+      notnull: false
+      primary: false
+    texto_log:
+      type: string()
+      fixed: false
+      notnull: false
+      primary: false
+  relations:
+    ScaMensagens:
+      local: sca_mensagens_id
+      foreign: id
+      type: one

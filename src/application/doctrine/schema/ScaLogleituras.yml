@@ -1,0 +1,27 @@
+ScaLogleituras:
+  tableName: sca_logleituras
+  columns:
+    id:
+      type: integer(4)
+      unsigned: false
+      primary: true
+      autoincrement: true
+    sca_postagens_id:
+      type: integer(4)
+      unsigned: false
+      notnull: true
+      primary: false
+    data_leitura:
+      type: timestamp(25)
+      notnull: false
+      primary: false
+    id_usuario:
+      type: integer(4)
+      unsigned: false
+      notnull: false
+      primary: false
+  relations:
+    ScaPostagens:
+      local: sca_postagens_id
+      foreign: id
+      type: one
